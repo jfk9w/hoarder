@@ -17,8 +17,20 @@ jobs:
         with:
           go-version: stable
       - name: Build
-        run: go build -v ./...
+        run: make build
+      - name: Lint
+        uses: golangci/golangci-lint-action@v3
+        with:
+          version: v1.53
+      - name: Check config schema & defaults
+        run: |
+          make config
+          if [[ $(git diff --stat) != '' ]]; then
+            git --no-pager diff
+            echo 'run make config and commit changes'
+            exit 1
+          fi
       - name: Test
-        run: go test -v ./...
+        run: make test
       - name: Update test coverage
         uses: ncruces/go-coverage-report@main

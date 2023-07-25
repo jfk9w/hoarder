@@ -5,6 +5,7 @@ import (
 	"os"
 
 	"github.com/jfk9w-go/confi"
+
 	"github.com/jfk9w/hoarder/jabber"
 )
 
@@ -14,7 +15,7 @@ type Dump struct {
 }
 
 type Config struct {
-	Schema string         `yaml:"$schema,omitempty" default:"https://raw.githubusercontent.com/jfk9w-go/hoarder/master/config.schema.json"`
+	Schema string         `yaml:"$schema,omitempty" default:"https://raw.githubusercontent.com/jfk9w/hoarder/master/config.schema.json"`
 	Dump   Dump           `yaml:"dump,omitempty"`
 	Jabber *jabber.Config `yaml:"jabber,omitempty"`
 }

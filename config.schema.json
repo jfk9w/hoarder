@@ -2,18 +2,18 @@
   "additionalProperties": false,
   "properties": {
     "$schema": {
-      "default": "https://raw.githubusercontent.com/jfk9w-go/hoarder/master/config.schema.json",
+      "default": "https://raw.githubusercontent.com/jfk9w/hoarder/master/config.schema.json",
       "type": "string"
     },
-    "config": {
+    "dump": {
       "additionalProperties": false,
       "properties": {
         "schema": {
-          "description": "Print configuration schema in JSON format.",
+          "description": "Dump configuration schema in JSON format.",
           "type": "boolean"
         },
         "values": {
-          "description": "Print configuration values in JSON format.",
+          "description": "Dump configuration values in JSON format.",
           "type": "boolean"
         }
       },
