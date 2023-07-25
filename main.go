@@ -5,7 +5,7 @@ import (
 	"os"
 
 	"github.com/jfk9w-go/confi"
-	"github.com/jfk9w-go/hoarder/jabber"
+	"github.com/jfk9w/hoarder/jabber"
 )
 
 type Dump struct {

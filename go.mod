@@ -1,4 +1,4 @@
-module github.com/jfk9w-go/hoarder
+module github.com/jfk9w/hoarder
 
 go 1.20
 
