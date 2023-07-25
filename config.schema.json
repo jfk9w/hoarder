@@ -1,0 +1,40 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "$schema": {
+      "default": "https://raw.githubusercontent.com/jfk9w-go/hoarder/master/config.schema.json",
+      "type": "string"
+    },
+    "config": {
+      "additionalProperties": false,
+      "properties": {
+        "schema": {
+          "description": "Print configuration schema in JSON format.",
+          "type": "boolean"
+        },
+        "values": {
+          "description": "Print configuration values in JSON format.",
+          "type": "boolean"
+        }
+      },
+      "type": "object"
+    },
+    "jabber": {
+      "additionalProperties": false,
+      "properties": {
+        "jid": {
+          "type": "string"
+        },
+        "password": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "jid",
+        "password"
+      ],
+      "type": "object"
+    }
+  },
+  "type": "object"
+}

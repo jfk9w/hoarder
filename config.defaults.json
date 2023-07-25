@@ -1,0 +1,7 @@
+{
+  "$schema": "https://github.com/jfk9w-go/hoarder/config.schema.json",
+  "jabber": {
+    "jid": "",
+    "password": ""
+  }
+}
