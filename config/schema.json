@@ -1,0 +1,106 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "$schema": {
+      "default": "https://raw.githubusercontent.com/jfk9w/hoarder/master/config/schema.json",
+      "type": "string"
+    },
+    "dump": {
+      "additionalProperties": false,
+      "properties": {
+        "schema": {
+          "description": "Dump configuration schema in JSON format.",
+          "type": "boolean"
+        },
+        "values": {
+          "description": "Dump configuration values in JSON format.",
+          "type": "boolean"
+        }
+      },
+      "type": "object"
+    },
+    "lkdr": {
+      "additionalProperties": false,
+      "properties": {
+        "db": {
+          "additionalProperties": false,
+          "description": "Database connection settings.",
+          "properties": {
+            "driver": {
+              "default": "sqlite",
+              "enum": [
+                "postgres",
+                "mysql",
+                "sqlite"
+              ],
+              "type": "string"
+            },
+            "dsn": {
+              "default": "file::memory:?cache=shared",
+              "type": "string"
+            }
+          },
+          "required": [
+            "driver",
+            "dsn"
+          ],
+          "type": "object"
+        },
+        "deviceId": {
+          "description": "Device ID to use when making requests to lkdr-api.",
+          "type": "string"
+        },
+        "tenants": {
+          "additionalProperties": {
+            "items": {
+              "additionalProperties": false,
+              "properties": {
+                "phone": {
+                  "pattern": "7\\d{10}",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "phone"
+              ],
+              "type": "object"
+            },
+            "type": "array"
+          },
+          "type": "object"
+        },
+        "userAgent": {
+          "description": "User agent to use when making requests to lkdr-api.",
+          "type": "string"
+        }
+      },
+      "required": [
+        "db",
+        "deviceId",
+        "userAgent",
+        "tenants"
+      ],
+      "type": "object"
+    },
+    "rucaptcha": {
+      "additionalProperties": false,
+      "properties": {
+        "key": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "key"
+      ],
+      "type": "object"
+    },
+    "tenant": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "lkdr",
+    "tenant"
+  ],
+  "type": "object"
+}

@@ -7,10 +7,10 @@ test:
 	go test -v ./...
 
 schema:
-	go run main.go --dump.schema > config.schema.json
+	mkdir -p config && go run main.go --dump.schema > config/schema.json
 
 defaults:
-	go run main.go --dump.values > config.defaults.json
+	mkdir -p config && go run main.go --dump.values > config/defaults.json
 
 config: schema defaults
 

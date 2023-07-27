@@ -4,9 +4,13 @@ import (
 	"context"
 	"os"
 
-	"github.com/jfk9w-go/confi"
+	"github.com/jfk9w-go/rucaptcha-api"
 
-	"github.com/jfk9w/hoarder/jabber"
+	"github.com/jfk9w-go/based"
+
+	"github.com/jfk9w/hoarder/etl/lkdr"
+
+	"github.com/jfk9w-go/confi"
 )
 
 type Dump struct {
@@ -15,9 +19,13 @@ type Dump struct {
 }
 
 type Config struct {
-	Schema string         `yaml:"$schema,omitempty" default:"https://raw.githubusercontent.com/jfk9w/hoarder/master/config.schema.json"`
-	Dump   Dump           `yaml:"dump,omitempty"`
-	Jabber *jabber.Config `yaml:"jabber,omitempty"`
+	Schema    string      `yaml:"$schema,omitempty" default:"https://raw.githubusercontent.com/jfk9w/hoarder/master/config/schema.json"`
+	Dump      Dump        `yaml:"dump,omitempty"`
+	LKDR      lkdr.Config `yaml:"lkdr"`
+	Rucaptcha *struct {
+		Key string `yaml:"key"`
+	} `yaml:"rucaptcha,omitempty"`
+	Tenant string `yaml:"tenant"`
 }
 
 func main() {
@@ -40,6 +48,27 @@ func main() {
 		return
 	}
 
+	var (
+		clock           = based.StandardClock
+		rucaptchaClient lkdr.RucaptchaClient
+	)
+
+	if cfg.Rucaptcha != nil {
+		rucaptchaClient, err = rucaptcha.ClientBuilder{
+			Clock: clock,
+			Config: rucaptcha.Config{
+				Key: cfg.Rucaptcha.Key,
+			},
+		}.Build(ctx)
+		if err != nil {
+			panic(err)
+		}
+	}
+
+	lkdrProcessor := lkdr.NewProcessor(cfg.LKDR, based.StandardClock, rucaptchaClient)
+	if err := lkdrProcessor.Process(ctx, cfg.Tenant); err != nil {
+		panic(err)
+	}
 }
 
 func dump(value any) {

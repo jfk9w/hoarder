@@ -1,0 +1,16 @@
+{
+  "$schema": "https://raw.githubusercontent.com/jfk9w/hoarder/master/config/schema.json",
+  "lkdr": {
+    "db": {
+      "driver": "sqlite",
+      "dsn": "file::memory:?cache=shared"
+    },
+    "deviceId": "",
+    "tenants": {},
+    "userAgent": ""
+  },
+  "rucaptcha": {
+    "key": ""
+  },
+  "tenant": ""
+}
