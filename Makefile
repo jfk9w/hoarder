@@ -7,7 +7,7 @@ test:
 	go test -v ./...
 
 schema:
-	mkdir -p config && go run main.go --dump.schema > config/schema.json
+	mkdir -p config && go run main.go --dump.schema > config/schema.yaml
 
 defaults:
 	mkdir -p config && go run main.go --dump.values > config/defaults.json

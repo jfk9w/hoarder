@@ -4,7 +4,7 @@ import (
 	"context"
 	"os"
 
-	"github.com/jfk9w-go/rucaptcha-api"
+	"github.com/AlekSi/pointer"
 
 	"github.com/jfk9w-go/based"
 
@@ -13,19 +13,25 @@ import (
 	"github.com/jfk9w-go/confi"
 )
 
-type Dump struct {
-	Schema bool `yaml:"schema,omitempty" doc:"Dump configuration schema in JSON format."`
-	Values bool `yaml:"values,omitempty" doc:"Dump configuration values in JSON format."`
-}
-
 type Config struct {
-	Schema    string      `yaml:"$schema,omitempty" default:"https://raw.githubusercontent.com/jfk9w/hoarder/master/config/schema.json"`
-	Dump      Dump        `yaml:"dump,omitempty"`
-	LKDR      lkdr.Config `yaml:"lkdr"`
-	Rucaptcha *struct {
-		Key string `yaml:"key"`
-	} `yaml:"rucaptcha,omitempty"`
-	Tenant string `yaml:"tenant"`
+	Schema string `yaml:"$schema,omitempty" default:"https://raw.githubusercontent.com/jfk9w/hoarder/master/config/schema.yaml"`
+
+	Dump *struct {
+		Schema bool `yaml:"schema,omitempty" doc:"Вывод схемы конфигурации в YAML."`
+		Values bool `yaml:"values,omitempty" doc:"Вывод значений конфигурации по умолчанию в JSON."`
+	} `yaml:"dump,omitempty" doc:"Вывод параметров конфигурации в стандартный поток вывода.\n\nПредназначены для использования как CLI-параметры."`
+
+	LKDR *struct {
+		lkdr.Config `yaml:"-,inline"`
+		Init        *struct {
+			Tenant string `yaml:"tenant" doc:"Пользователь, для которого нужно провести инициализацию."`
+		} `yaml:"authorize,omitempty" doc:"Инициализация БД и получение начальных данных."`
+	} `yaml:"lkdr,omitempty" doc:"Настройка загрузчиков из сервиса ФНС \"Мои чеки онлайн\"."`
+
+	CaptchaSolver *struct {
+		RucaptchaKey *string `yaml:"rucaptchaKey,omitempty" doc:"API-ключ для сервиса rucaptcha.com."`
+		Token        *string `yaml:"token,omitempty" doc:"Фиксированный капча-токен для выполнения одноразовой операции."`
+	} `yaml:"captchaSolver,omitempty" doc:"Настройки для решения капчи."`
 }
 
 func main() {
@@ -37,42 +43,33 @@ func main() {
 		panic(err)
 	}
 
-	if cfg.Dump.Schema {
-		dump(schema)
+	if pointer.Get(cfg.Dump).Schema {
+		dump(schema, confi.YAML)
 		return
 	}
 
-	if cfg.Dump.Values {
-		cfg.Dump = Dump{}
-		dump(cfg)
+	if pointer.Get(cfg.Dump).Values {
+		cfg.Dump = nil
+		dump(cfg, confi.JSON)
 		return
 	}
 
-	var (
-		clock           = based.StandardClock
-		rucaptchaClient lkdr.RucaptchaClient
-	)
+	clock := based.StandardClock
 
-	if cfg.Rucaptcha != nil {
-		rucaptchaClient, err = rucaptcha.ClientBuilder{
-			Clock: clock,
-			Config: rucaptcha.Config{
-				Key: cfg.Rucaptcha.Key,
-			},
-		}.Build(ctx)
-		if err != nil {
-			panic(err)
+	if cfg := cfg.LKDR; cfg != nil {
+		lkdrProcessor := lkdr.NewProcessor(cfg.Config, clock, nil)
+		if cfg := cfg.Init; cfg != nil {
+			if err := lkdrProcessor.Process(ctx, cfg.Tenant); err != nil {
+				panic(err)
+			}
+
+			return
 		}
-	}
-
-	lkdrProcessor := lkdr.NewProcessor(cfg.LKDR, based.StandardClock, rucaptchaClient)
-	if err := lkdrProcessor.Process(ctx, cfg.Tenant); err != nil {
-		panic(err)
 	}
 }
 
-func dump(value any) {
-	if err := confi.JSON.Marshal(value, os.Stdout); err != nil {
+func dump(value any, codec confi.Codec) {
+	if err := codec.Marshal(value, os.Stdout); err != nil {
 		panic(err)
 	}
 }

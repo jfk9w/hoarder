@@ -9,15 +9,17 @@ import (
 	"github.com/AlekSi/pointer"
 	"github.com/jfk9w-go/based"
 	"github.com/jfk9w-go/lkdr-api"
-	"github.com/jfk9w/hoarder/database"
-	"github.com/jfk9w/hoarder/util"
 	"github.com/pkg/errors"
 	"gorm.io/gorm"
+
+	"github.com/jfk9w/hoarder/database"
+	"github.com/jfk9w/hoarder/util"
 )
 
 type Processor struct {
-	clients map[string]map[string]*based.Lazy[Client]
-	db      *based.Lazy[*gorm.DB]
+	clients   map[string]map[string]*based.Lazy[Client]
+	db        *based.Lazy[*gorm.DB]
+	batchSize int
 }
 
 func NewProcessor(cfg Config, clock based.Clock, rucaptchaClient RucaptchaClient) *Processor {
@@ -75,8 +77,9 @@ func NewProcessor(cfg Config, clock based.Clock, rucaptchaClient RucaptchaClient
 	}
 
 	return &Processor{
-		clients: clients,
-		db:      db,
+		clients:   clients,
+		db:        db,
+		batchSize: cfg.BatchSize,
 	}
 }
 
@@ -99,7 +102,7 @@ func (p *Processor) Process(ctx context.Context, tenant string) error {
 			return errors.Wrapf(err, "get client for %s", phone)
 		}
 
-		if err := updateData(ctx, tenant, phone, client, db); err != nil {
+		if err := p.updateData(ctx, tenant, phone, client, db); err != nil {
 			return errors.Wrapf(err, "update data for %s", phone)
 		}
 	}
@@ -107,62 +110,70 @@ func (p *Processor) Process(ctx context.Context, tenant string) error {
 	return nil
 }
 
-func updateData(ctx context.Context, tenant, phone string, client Client, db *gorm.DB) error {
-	if err := updateReceipts(ctx, tenant, phone, client, db); err != nil {
+func (p *Processor) updateData(ctx context.Context, tenant, phone string, client Client, db *gorm.DB) error {
+	if err := p.updateReceipts(ctx, tenant, phone, client, db); err != nil {
 		return errors.Wrap(err, "update receipts")
 	}
 
-	if err := updateFiscalData(ctx, phone, client, db); err != nil {
+	if err := p.updateFiscalData(ctx, phone, client, db); err != nil {
 		return errors.Wrap(err, "update fiscal data")
 	}
 
 	return nil
 }
 
-func updateFiscalData(ctx context.Context, phone string, client Client, db *gorm.DB) error {
-	var receiptKeys []string
-	if err := db.Model(new(Receipt)).
-		Select("receipts.key").
-		Joins("left join fiscal_data on receipts.key = fiscal_data.receipt_key").
-		Where("receipts.phone = ? and fiscal_data.receipt_key is null", phone).
-		Scan(&receiptKeys).
-		Error; err != nil {
-		return errors.Wrap(err, "select receipt keys w/o fiscal data")
-	}
-
-	for _, key := range receiptKeys {
-		fiscalDataIn := &lkdr.FiscalDataIn{
-			Key: key,
+func (p *Processor) updateFiscalData(ctx context.Context, phone string, client Client, db *gorm.DB) error {
+	offset := 0
+	for {
+		var receiptKeys []string
+		if err := db.Model(new(Receipt)).
+			Select("receipts.key").
+			Joins("left join fiscal_data on receipts.key = fiscal_data.receipt_key").
+			Where("receipts.phone = ? and fiscal_data.receipt_key is null", phone).
+			Order(clause.OrderByColumn{Column: clause.Column{Name: "receive_date"}}).
+			Limit(p.batchSize).
+			Offset(offset).
+			Scan(&receiptKeys).
+			Error; err != nil {
+			return errors.Wrap(err, "select receipt keys w/o fiscal data")
 		}
 
-		fiscalDataOut, err := client.FiscalData(ctx, fiscalDataIn)
-		if err != nil {
-			// TODO error handling
-			//return errors.Wrapf(err, "get fiscal data %s", key)
-			continue
+		for _, key := range receiptKeys {
+			fiscalDataIn := &lkdr.FiscalDataIn{
+				Key: key,
+			}
+
+			fiscalDataOut, err := client.FiscalData(ctx, fiscalDataIn)
+			if err != nil {
+				// TODO error handling
+				//return errors.Wrapf(err, "get fiscal data %s", key)
+				continue
+			}
+
+			fiscalData, err := util.ToViaJSON[FiscalData](fiscalDataOut)
+			if err != nil {
+				return errors.Wrapf(err, "convert fiscal data %s to entity", key)
+			}
+
+			fiscalData.ReceiptKey = key
+			for i := range fiscalData.Items {
+				fiscalData.Items[i].ReceiptKey = key
+			}
+
+			if err := db.Create(fiscalData).Error; err != nil {
+				return errors.Wrapf(err, "upsert fiscal data %s", key)
+			}
 		}
 
-		fiscalData, err := util.ToViaJSON[FiscalData](fiscalDataOut)
-		if err != nil {
-			return errors.Wrapf(err, "convert fiscal data %s to entity", key)
-		}
-
-		fiscalData.ReceiptKey = key
-		for i := range fiscalData.Items {
-			fiscalData.Items[i].ReceiptKey = key
-		}
-
-		if err := db.Create(fiscalData).Error; err != nil {
-			return errors.Wrapf(err, "upsert fiscal data %s", key)
+		if len(receiptKeys) < p.batchSize {
+			break
 		}
 	}
 
 	return nil
 }
 
-const receiptLimit = 1000
-
-func updateReceipts(ctx context.Context, tenant, phone string, client Client, db *gorm.DB) error {
+func (p *Processor) updateReceipts(ctx context.Context, tenant, phone string, client Client, db *gorm.DB) error {
 	var latestReceiptDate sql.NullTime
 	if err := db.Model(new(Receipt)).
 		Select("receive_date").
@@ -192,7 +203,7 @@ func updateReceipts(ctx context.Context, tenant, phone string, client Client, db
 			DateFrom: receiptDateFrom,
 			OrderBy:  "RECEIVE_DATE:ASC",
 			Offset:   offset,
-			Limit:    receiptLimit,
+			Limit:    p.batchSize,
 		}
 
 		receiptOut, err := client.Receipt(ctx, receiptIn)
@@ -225,7 +236,7 @@ func updateReceipts(ctx context.Context, tenant, phone string, client Client, db
 		}
 
 		hasMore = receiptOut.HasMore
-		offset += receiptLimit
+		offset += p.batchSize
 	}
 
 	return nil

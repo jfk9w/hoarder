@@ -5,9 +5,10 @@ import (
 
 	"github.com/jfk9w-go/based"
 	"github.com/jfk9w-go/lkdr-api"
-	"github.com/jfk9w/hoarder/util"
 	"github.com/pkg/errors"
 	"gorm.io/gorm"
+
+	"github.com/jfk9w/hoarder/util"
 )
 
 type tokenStorage struct {

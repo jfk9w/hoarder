@@ -1,6 +1,14 @@
 {
-  "$schema": "https://raw.githubusercontent.com/jfk9w/hoarder/master/config/schema.json",
+  "$schema": "https://raw.githubusercontent.com/jfk9w/hoarder/master/config/schema.yaml",
+  "captchaSolver": {
+    "rucaptchaKey": "",
+    "token": ""
+  },
   "lkdr": {
+    "authorize": {
+      "tenant": ""
+    },
+    "batchSize": 1000,
     "db": {
       "driver": "sqlite",
       "dsn": "file::memory:?cache=shared"
@@ -8,9 +16,5 @@
     "deviceId": "",
     "tenants": {},
     "userAgent": ""
-  },
-  "rucaptcha": {
-    "key": ""
-  },
-  "tenant": ""
+  }
 }

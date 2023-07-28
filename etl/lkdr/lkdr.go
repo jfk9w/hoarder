@@ -4,18 +4,20 @@ import (
 	"context"
 
 	"github.com/jfk9w-go/lkdr-api"
+
 	"github.com/jfk9w/hoarder/database"
 )
 
 type Credential struct {
-	Phone string `yaml:"phone" pattern:"7\\d{10}"`
+	Phone string `yaml:"phone" pattern:"7\\d{10}" doc:"Номер телефона пользователя."`
 }
 
 type Config struct {
-	DB        database.Config         `yaml:"db" doc:"Database connection settings."`
-	DeviceID  string                  `yaml:"deviceId" doc:"Device ID to use when making requests to lkdr-api."`
-	UserAgent string                  `yaml:"userAgent" doc:"User agent to use when making requests to lkdr-api."`
-	Tenants   map[string][]Credential `yaml:"tenants"`
+	DB        database.Config         `yaml:"db" doc:"Настройки подключения к БД."`
+	DeviceID  string                  `yaml:"deviceId" doc:"Используется для авторизации и обновления токена доступа.\n\nМожно подсмотреть в браузере при попытке авторизации."`
+	UserAgent string                  `yaml:"userAgent" doc:"Используется для авторизации и обновления токена доступа.\n\nМожно подсмотреть в браузере при попытке авторизации."`
+	BatchSize int                     `yaml:"batchSize,omitempty" default:"1000" doc:"Количество чеков в одном запросе и количество фискальных данных за одно обновление."`
+	Tenants   map[string][]Credential `yaml:"tenants" doc:"Пользователи и их авторизационные данные."`
 }
 
 type Client interface {
