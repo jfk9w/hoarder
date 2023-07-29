@@ -50,13 +50,13 @@ properties:
           - driver
           - dsn
         type: object
-      deviceId:
-        description: |-
-          Используется для авторизации и обновления токена доступа.
-          Можно подсмотреть в браузере при попытке авторизации.
-        type: string
       init:
         description: Пользователь, для которого нужно провести инициализацию.
+        type: string
+      timeout:
+        default: 5m0s
+        description: Таймаут для запросов.
+        pattern: (\d+h)?(\d+m)?(\d+s)?(\d+ms)?(\d+µs)?(\d+ns)?
         type: string
       userAgent:
         description: |-
@@ -80,7 +80,6 @@ properties:
         type: object
     required:
       - db
-      - deviceId
       - userAgent
       - users
     type: object

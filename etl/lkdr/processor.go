@@ -3,7 +3,9 @@ package lkdr
 import (
 	"context"
 	"database/sql"
+	"hash/fnv"
 	"log"
+	"math/rand"
 	"time"
 
 	"github.com/AlekSi/pointer"
@@ -23,6 +25,7 @@ type Processor struct {
 	clients   map[string]map[string]*based.Lazy[Client]
 	db        *based.Lazy[*gorm.DB]
 	batchSize int
+	timeout   time.Duration
 }
 
 func NewProcessor(cfg Config, clock based.Clock, captchaTokenProvider captcha.TokenProvider) *Processor {
@@ -58,10 +61,15 @@ func NewProcessor(cfg Config, clock based.Clock, captchaTokenProvider captcha.To
 			credential := credential
 			clients[credential.Phone] = &based.Lazy[Client]{
 				Fn: func(ctx context.Context) (Client, error) {
+					deviceID, err := generateDeviceID(cfg.UserAgent, credential.Phone)
+					if err != nil {
+						return nil, errors.Wrap(err, "generate device ID")
+					}
+
 					return lkdr.ClientBuilder{
 						Phone:                credential.Phone,
 						Clock:                clock,
-						DeviceID:             cfg.DeviceID,
+						DeviceID:             deviceID,
 						UserAgent:            cfg.UserAgent,
 						TokenStorage:         tokenStorage,
 						CaptchaTokenProvider: captchaTokenProvider,
@@ -76,7 +84,29 @@ func NewProcessor(cfg Config, clock based.Clock, captchaTokenProvider captcha.To
 		clients:   clients,
 		db:        db,
 		batchSize: cfg.BatchSize,
+		timeout:   cfg.Timeout,
 	}
+}
+
+func generateDeviceID(userAgent, phone string) (string, error) {
+	hash := fnv.New64()
+	if _, err := hash.Write([]byte(userAgent)); err != nil {
+		return "", errors.Wrap(err, "hash user agent")
+	}
+
+	if _, err := hash.Write([]byte(phone)); err != nil {
+		return "", errors.Wrap(err, "hash phone")
+	}
+
+	source := rand.NewSource(int64(hash.Sum64()))
+
+	const symbols = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
+	var deviceID []byte
+	for i := 0; i < 21; i++ {
+		deviceID = append(deviceID, symbols[source.Int63()%int64(len(symbols))])
+	}
+
+	return string(deviceID), nil
 }
 
 func (p *Processor) Process(ctx context.Context, username string) error {
@@ -108,11 +138,12 @@ func (p *Processor) Process(ctx context.Context, username string) error {
 		}
 
 		it := &iterator{
-			client: client,
-			db:     db,
-			phone:  phone,
-			limit:  p.batchSize,
-			init:   isInit(ctx),
+			client:  client,
+			db:      db,
+			phone:   phone,
+			limit:   p.batchSize,
+			init:    isInit(ctx),
+			timeout: p.timeout,
 		}
 
 		if err := updateData(ctx, it); err != nil {
@@ -143,21 +174,22 @@ func updateData(ctx context.Context, it *iterator) error {
 		receiptDateFrom = pointer.To(lkdr.Date(latestReceiptDate.Time))
 	}
 
-iteratorLoop:
 	for _, fn := range []iteratorFunc{
 		receipts(receiptDateFrom),
 		fiscalData,
 	} {
-		offset := 0
-		for {
-			err := fn(ctx, it, offset)
-			switch {
-			case errors.Is(err, errStopIteration):
-				continue iteratorLoop
-			case err != nil:
+		var (
+			hasMore = true
+			offset  = 0
+			err     error
+		)
+
+		for hasMore {
+			hasMore, err = fn(ctx, it, offset)
+			if err != nil {
 				err = errors.Wrapf(err, "on offset %d", offset)
 				log.Println(err)
-				continue iteratorLoop
+				break
 			}
 
 			if it.init {
@@ -171,7 +203,7 @@ iteratorLoop:
 	return nil
 }
 
-func fiscalData(ctx context.Context, it *iterator, offset int) error {
+func fiscalData(ctx context.Context, it *iterator, offset int) (bool, error) {
 	var receiptKeys []string
 	if err := it.db.Model(new(Receipt)).
 		Select("receipts.key").
@@ -182,11 +214,19 @@ func fiscalData(ctx context.Context, it *iterator, offset int) error {
 		Limit(it.limit).
 		Scan(&receiptKeys).
 		Error; err != nil {
-		return errors.Wrap(err, "select receipt keys w/o fiscal data")
+		return false, errors.Wrap(err, "select receipt keys w/o fiscal data")
 	}
 
 	for _, key := range receiptKeys {
-		fiscalDataOut, err := getFiscalData(ctx, it.client, key)
+		var (
+			fiscalDataOut *lkdr.FiscalDataOut
+			err           error
+		)
+
+		withTimeout(ctx, it.timeout, func(ctx context.Context) {
+			fiscalDataOut, err = it.client.FiscalData(ctx, &lkdr.FiscalDataIn{Key: key})
+		})
+
 		if err != nil {
 			err = errors.Wrapf(err, "on key %s", key)
 			log.Println(err)
@@ -195,7 +235,7 @@ func fiscalData(ctx context.Context, it *iterator, offset int) error {
 
 		fiscalData, err := util.ToViaJSON[FiscalData](fiscalDataOut)
 		if err != nil {
-			return errors.Wrapf(err, "convert fiscal data %s to entity", key)
+			return false, errors.Wrapf(err, "convert fiscal data %s to entity", key)
 		}
 
 		fiscalData.Receipt.Key = key
@@ -205,25 +245,15 @@ func fiscalData(ctx context.Context, it *iterator, offset int) error {
 		}
 
 		if err := it.db.Clauses(util.Upsert("receipt_key")).Create(&fiscalData).Error; err != nil {
-			return errors.Wrapf(err, "upsert fiscal data %s", key)
+			return false, errors.Wrapf(err, "upsert fiscal data %s", key)
 		}
 	}
 
-	if len(receiptKeys) < it.limit {
-		return errStopIteration
-	}
-
-	return nil
-}
-
-func getFiscalData(ctx context.Context, client Client, key string) (*lkdr.FiscalDataOut, error) {
-	ctx, cancel := context.WithTimeout(ctx, 10*time.Second)
-	defer cancel()
-	return client.FiscalData(ctx, &lkdr.FiscalDataIn{Key: key})
+	return len(receiptKeys) == it.limit, nil
 }
 
 func receipts(receiptDateFrom *lkdr.Date) iteratorFunc {
-	return func(ctx context.Context, it *iterator, offset int) error {
+	return func(ctx context.Context, it *iterator, offset int) (bool, error) {
 		receiptIn := &lkdr.ReceiptIn{
 			DateFrom: receiptDateFrom,
 			OrderBy:  "RECEIVE_DATE:ASC",
@@ -231,23 +261,31 @@ func receipts(receiptDateFrom *lkdr.Date) iteratorFunc {
 			Limit:    it.limit,
 		}
 
-		receiptOut, err := it.client.Receipt(ctx, receiptIn)
+		var (
+			receiptOut *lkdr.ReceiptOut
+			err        error
+		)
+
+		withTimeout(ctx, it.timeout, func(ctx context.Context) {
+			receiptOut, err = it.client.Receipt(ctx, receiptIn)
+		})
+
 		if err != nil {
-			return errors.Wrap(err, "get receipts")
+			return false, errors.Wrap(err, "get receipts")
 		}
 
 		brands, err := util.ToViaJSON[[]Brand](receiptOut.Brands)
 		if err != nil {
-			return errors.Wrap(err, "convert brands to entities")
+			return false, errors.Wrap(err, "convert brands to entities")
 		}
 
 		if err := it.db.Clauses(util.Upsert("id")).Create(brands).Error; err != nil {
-			return errors.Wrap(err, "upsert brands")
+			return false, errors.Wrap(err, "upsert brands")
 		}
 
 		receipts, err := util.ToViaJSON[[]Receipt](receiptOut.Receipts)
 		if err != nil {
-			return errors.Wrap(err, "convert receipts to entities")
+			return false, errors.Wrap(err, "convert receipts to entities")
 		}
 
 		for i := range receipts {
@@ -256,25 +294,26 @@ func receipts(receiptDateFrom *lkdr.Date) iteratorFunc {
 		}
 
 		if err := it.db.Clauses(util.Upsert("key")).Create(receipts).Error; err != nil {
-			return errors.Wrap(err, "upsert receipts")
+			return false, errors.Wrap(err, "upsert receipts")
 		}
 
-		if !receiptOut.HasMore {
-			return errStopIteration
-		}
-
-		return nil
+		return receiptOut.HasMore, nil
 	}
 }
 
-var errStopIteration = errors.New("stop iteration")
+func withTimeout(ctx context.Context, timeout time.Duration, fn func(ctx context.Context)) {
+	ctx, cancel := context.WithTimeout(ctx, timeout)
+	defer cancel()
+	fn(ctx)
+}
 
-type iteratorFunc func(ctx context.Context, it *iterator, offset int) error
+type iteratorFunc func(ctx context.Context, it *iterator, offset int) (hasMore bool, err error)
 
 type iterator struct {
-	client Client
-	db     *gorm.DB
-	phone  string
-	limit  int
-	init   bool
+	client  Client
+	db      *gorm.DB
+	phone   string
+	limit   int
+	timeout time.Duration
+	init    bool
 }

@@ -2,6 +2,7 @@ package lkdr
 
 import (
 	"context"
+	"time"
 
 	"github.com/jfk9w-go/lkdr-api"
 
@@ -14,9 +15,9 @@ type Credential struct {
 
 type Config struct {
 	DB        database.Config         `yaml:"db" doc:"Настройки подключения к БД."`
-	DeviceID  string                  `yaml:"deviceId" doc:"Используется для авторизации и обновления токена доступа.\n\nМожно подсмотреть в браузере при попытке авторизации."`
 	UserAgent string                  `yaml:"userAgent" doc:"Используется для авторизации и обновления токена доступа.\n\nМожно подсмотреть в браузере при попытке авторизации."`
 	BatchSize int                     `yaml:"batchSize,omitempty" default:"1000" doc:"Количество чеков в одном запросе и количество фискальных данных за одно обновление."`
+	Timeout   time.Duration           `yaml:"timeout,omitempty" default:"5m" doc:"Таймаут для запросов."`
 	Users     map[string][]Credential `yaml:"users" doc:"Пользователи и их авторизационные данные."`
 }
 

@@ -6,7 +6,7 @@
       "driver": "",
       "dsn": ""
     },
-    "deviceId": "",
+    "timeout": "5m0s",
     "userAgent": "",
     "users": {}
   }
