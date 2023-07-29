@@ -3,10 +3,11 @@ package lkdr
 import (
 	"context"
 
-	"github.com/jfk9w-go/based"
-	"github.com/jfk9w-go/lkdr-api"
 	"github.com/pkg/errors"
 	"gorm.io/gorm"
+
+	"github.com/jfk9w-go/based"
+	"github.com/jfk9w-go/lkdr-api"
 
 	"github.com/jfk9w/hoarder/util"
 )
@@ -48,9 +49,9 @@ func (s *tokenStorage) UpdateTokens(ctx context.Context, phone string, tokens *l
 		return err
 	}
 
-	entity.Phone = phone
+	entity.UserPhone = phone
 
-	if err := db.Clauses(util.Upsert("phone")).Create(entity).Error; err != nil {
+	if err := db.Clauses(util.Upsert("user_phone")).Create(entity).Error; err != nil {
 		return errors.Wrap(err, "upsert token record")
 	}
 

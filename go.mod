@@ -5,8 +5,8 @@ go 1.20
 require (
 	github.com/AlekSi/pointer v1.2.0
 	github.com/jfk9w-go/based v0.0.0-20230616111634-4e2ddc5b26a5
-	github.com/jfk9w-go/confi v0.0.0-20230705172352-a8a5f0412528
-	github.com/jfk9w-go/lkdr-api v0.0.0-20230727071917-63207c6b65a4
+	github.com/jfk9w-go/confi v0.0.0-20230729073824-2a4c73b177a0
+	github.com/jfk9w-go/lkdr-api v0.0.0-20230729073824-788ffb9af83a
 	github.com/jfk9w-go/rucaptcha-api v0.0.0-20230727070445-50e652b28bd7
 	github.com/pkg/errors v0.9.1
 	gorm.io/driver/mysql v1.5.1

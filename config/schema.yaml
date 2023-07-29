@@ -3,15 +3,12 @@ properties:
   $schema:
     default: https://raw.githubusercontent.com/jfk9w/hoarder/master/config/schema.yaml
     type: string
-  captchaSolver:
+  captcha:
     additionalProperties: false
     description: Настройки для решения капчи.
     properties:
       rucaptchaKey:
         description: API-ключ для сервиса rucaptcha.com.
-        type: string
-      token:
-        description: Фиксированный капча-токен для выполнения одноразовой операции.
         type: string
     type: object
   dump:
@@ -31,16 +28,6 @@ properties:
     additionalProperties: false
     description: Настройка загрузчиков из сервиса ФНС "Мои чеки онлайн".
     properties:
-      authorize:
-        additionalProperties: false
-        description: Инициализация БД и получение начальных данных.
-        properties:
-          tenant:
-            description: Пользователь, для которого нужно провести инициализацию.
-            type: string
-        required:
-          - tenant
-        type: object
       batchSize:
         default: 1000
         description: Количество чеков в одном запросе и количество фискальных данных за одно обновление.
@@ -50,14 +37,14 @@ properties:
         description: Настройки подключения к БД.
         properties:
           driver:
-            default: sqlite
             enum:
+              - postgres
               - mysql
               - sqlite
-              - postgres
             type: string
           dsn:
-            default: file::memory:?cache=shared
+            examples:
+              - file::memory:?cache=shared
             type: string
         required:
           - driver
@@ -68,7 +55,15 @@ properties:
           Используется для авторизации и обновления токена доступа.
           Можно подсмотреть в браузере при попытке авторизации.
         type: string
-      tenants:
+      init:
+        description: Пользователь, для которого нужно провести инициализацию.
+        type: string
+      userAgent:
+        description: |-
+          Используется для авторизации и обновления токена доступа.
+          Можно подсмотреть в браузере при попытке авторизации.
+        type: string
+      users:
         additionalProperties:
           items:
             additionalProperties: false
@@ -83,15 +78,10 @@ properties:
           type: array
         description: Пользователи и их авторизационные данные.
         type: object
-      userAgent:
-        description: |-
-          Используется для авторизации и обновления токена доступа.
-          Можно подсмотреть в браузере при попытке авторизации.
-        type: string
     required:
       - db
       - deviceId
       - userAgent
-      - tenants
+      - users
     type: object
 type: object

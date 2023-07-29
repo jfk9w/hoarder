@@ -17,7 +17,7 @@ type Config struct {
 	DeviceID  string                  `yaml:"deviceId" doc:"Используется для авторизации и обновления токена доступа.\n\nМожно подсмотреть в браузере при попытке авторизации."`
 	UserAgent string                  `yaml:"userAgent" doc:"Используется для авторизации и обновления токена доступа.\n\nМожно подсмотреть в браузере при попытке авторизации."`
 	BatchSize int                     `yaml:"batchSize,omitempty" default:"1000" doc:"Количество чеков в одном запросе и количество фискальных данных за одно обновление."`
-	Tenants   map[string][]Credential `yaml:"tenants" doc:"Пользователи и их авторизационные данные."`
+	Users     map[string][]Credential `yaml:"users" doc:"Пользователи и их авторизационные данные."`
 }
 
 type Client interface {

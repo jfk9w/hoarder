@@ -7,10 +7,10 @@ import (
 	"github.com/AlekSi/pointer"
 
 	"github.com/jfk9w-go/based"
-
-	"github.com/jfk9w/hoarder/etl/lkdr"
-
 	"github.com/jfk9w-go/confi"
+
+	"github.com/jfk9w/hoarder/captcha"
+	"github.com/jfk9w/hoarder/etl/lkdr"
 )
 
 type Config struct {
@@ -23,15 +23,10 @@ type Config struct {
 
 	LKDR *struct {
 		lkdr.Config `yaml:"-,inline"`
-		Init        *struct {
-			Tenant string `yaml:"tenant" doc:"Пользователь, для которого нужно провести инициализацию."`
-		} `yaml:"authorize,omitempty" doc:"Инициализация БД и получение начальных данных."`
+		Init        string `yaml:"init,omitempty" doc:"Пользователь, для которого нужно провести инициализацию."`
 	} `yaml:"lkdr,omitempty" doc:"Настройка загрузчиков из сервиса ФНС \"Мои чеки онлайн\"."`
 
-	CaptchaSolver *struct {
-		RucaptchaKey *string `yaml:"rucaptchaKey,omitempty" doc:"API-ключ для сервиса rucaptcha.com."`
-		Token        *string `yaml:"token,omitempty" doc:"Фиксированный капча-токен для выполнения одноразовой операции."`
-	} `yaml:"captchaSolver,omitempty" doc:"Настройки для решения капчи."`
+	Captcha captcha.Config `yaml:"captcha,omitempty" doc:"Настройки для решения капчи."`
 }
 
 func main() {
@@ -55,11 +50,16 @@ func main() {
 	}
 
 	clock := based.StandardClock
+	captchaTokenProvider, err := captcha.NewTokenProvider(ctx, clock, cfg.Captcha)
+	if err != nil {
+		panic(err)
+	}
 
 	if cfg := cfg.LKDR; cfg != nil {
-		lkdrProcessor := lkdr.NewProcessor(cfg.Config, clock, nil)
-		if cfg := cfg.Init; cfg != nil {
-			if err := lkdrProcessor.Process(ctx, cfg.Tenant); err != nil {
+		processor := lkdr.NewProcessor(cfg.Config, clock, captchaTokenProvider)
+		if user := cfg.Init; user != "" {
+			ctx := lkdr.Init(ctx)
+			if err := processor.Process(ctx, user); err != nil {
 				panic(err)
 			}
 

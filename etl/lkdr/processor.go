@@ -3,15 +3,18 @@ package lkdr
 import (
 	"context"
 	"database/sql"
-
-	"gorm.io/gorm/clause"
+	"log"
+	"time"
 
 	"github.com/AlekSi/pointer"
-	"github.com/jfk9w-go/based"
-	"github.com/jfk9w-go/lkdr-api"
 	"github.com/pkg/errors"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 
+	"github.com/jfk9w-go/based"
+	"github.com/jfk9w-go/lkdr-api"
+
+	"github.com/jfk9w/hoarder/captcha"
 	"github.com/jfk9w/hoarder/database"
 	"github.com/jfk9w/hoarder/util"
 )
@@ -22,7 +25,7 @@ type Processor struct {
 	batchSize int
 }
 
-func NewProcessor(cfg Config, clock based.Clock, rucaptchaClient RucaptchaClient) *Processor {
+func NewProcessor(cfg Config, clock based.Clock, captchaTokenProvider captcha.TokenProvider) *Processor {
 	db := &based.Lazy[*gorm.DB]{
 		Fn: func(ctx context.Context) (*gorm.DB, error) {
 			db, err := database.Open(cfg.DB)
@@ -31,6 +34,7 @@ func NewProcessor(cfg Config, clock based.Clock, rucaptchaClient RucaptchaClient
 			}
 
 			if err := db.WithContext(ctx).AutoMigrate(
+				new(User),
 				new(Tokens),
 				new(Brand),
 				new(Receipt),
@@ -40,24 +44,16 @@ func NewProcessor(cfg Config, clock based.Clock, rucaptchaClient RucaptchaClient
 				return nil, errors.Wrap(err, "migrate db tables")
 			}
 
-			return db, nil
+			return db.Debug(), nil
 		},
 	}
 
-	var (
-		tokenStorage         = &tokenStorage{db: db}
-		captchaTokenProvider lkdr.CaptchaTokenProvider
-	)
-
-	if rucaptchaClient != nil {
-		captchaTokenProvider = &rucaptchaTokenProvider{client: rucaptchaClient}
-	}
-
+	tokenStorage := &tokenStorage{db: db}
 	clients := make(map[string]map[string]*based.Lazy[Client])
-	for tenant, credentials := range cfg.Tenants {
-		tenant, credentials := tenant, credentials
-		clients[tenant] = make(map[string]*based.Lazy[Client])
-		clients := clients[tenant]
+	for username, credentials := range cfg.Users {
+		username, credentials := username, credentials
+		clients[username] = make(map[string]*based.Lazy[Client])
+		clients := clients[username]
 		for _, credential := range credentials {
 			credential := credential
 			clients[credential.Phone] = &based.Lazy[Client]{
@@ -83,8 +79,8 @@ func NewProcessor(cfg Config, clock based.Clock, rucaptchaClient RucaptchaClient
 	}
 }
 
-func (p *Processor) Process(ctx context.Context, tenant string) error {
-	clients, ok := p.clients[tenant]
+func (p *Processor) Process(ctx context.Context, username string) error {
+	clients, ok := p.clients[username]
 	if !ok {
 		return nil
 	}
@@ -102,82 +98,36 @@ func (p *Processor) Process(ctx context.Context, tenant string) error {
 			return errors.Wrapf(err, "get client for %s", phone)
 		}
 
-		if err := p.updateData(ctx, tenant, phone, client, db); err != nil {
-			return errors.Wrapf(err, "update data for %s", phone)
+		user := User{
+			Name:  username,
+			Phone: phone,
+		}
+
+		if err := db.Clauses(util.Upsert("phone")).Create(user).Error; err != nil {
+			return errors.Wrapf(err, "create user %s:%s in db", username, phone)
+		}
+
+		it := &iterator{
+			client: client,
+			db:     db,
+			phone:  phone,
+			limit:  p.batchSize,
+			init:   isInit(ctx),
+		}
+
+		if err := updateData(ctx, it); err != nil {
+			return errors.Wrapf(err, "on %s", phone)
 		}
 	}
 
 	return nil
 }
 
-func (p *Processor) updateData(ctx context.Context, tenant, phone string, client Client, db *gorm.DB) error {
-	if err := p.updateReceipts(ctx, tenant, phone, client, db); err != nil {
-		return errors.Wrap(err, "update receipts")
-	}
-
-	if err := p.updateFiscalData(ctx, phone, client, db); err != nil {
-		return errors.Wrap(err, "update fiscal data")
-	}
-
-	return nil
-}
-
-func (p *Processor) updateFiscalData(ctx context.Context, phone string, client Client, db *gorm.DB) error {
-	offset := 0
-	for {
-		var receiptKeys []string
-		if err := db.Model(new(Receipt)).
-			Select("receipts.key").
-			Joins("left join fiscal_data on receipts.key = fiscal_data.receipt_key").
-			Where("receipts.phone = ? and fiscal_data.receipt_key is null", phone).
-			Order(clause.OrderByColumn{Column: clause.Column{Name: "receive_date"}}).
-			Limit(p.batchSize).
-			Offset(offset).
-			Scan(&receiptKeys).
-			Error; err != nil {
-			return errors.Wrap(err, "select receipt keys w/o fiscal data")
-		}
-
-		for _, key := range receiptKeys {
-			fiscalDataIn := &lkdr.FiscalDataIn{
-				Key: key,
-			}
-
-			fiscalDataOut, err := client.FiscalData(ctx, fiscalDataIn)
-			if err != nil {
-				// TODO error handling
-				//return errors.Wrapf(err, "get fiscal data %s", key)
-				continue
-			}
-
-			fiscalData, err := util.ToViaJSON[FiscalData](fiscalDataOut)
-			if err != nil {
-				return errors.Wrapf(err, "convert fiscal data %s to entity", key)
-			}
-
-			fiscalData.ReceiptKey = key
-			for i := range fiscalData.Items {
-				fiscalData.Items[i].ReceiptKey = key
-			}
-
-			if err := db.Create(fiscalData).Error; err != nil {
-				return errors.Wrapf(err, "upsert fiscal data %s", key)
-			}
-		}
-
-		if len(receiptKeys) < p.batchSize {
-			break
-		}
-	}
-
-	return nil
-}
-
-func (p *Processor) updateReceipts(ctx context.Context, tenant, phone string, client Client, db *gorm.DB) error {
+func updateData(ctx context.Context, it *iterator) error {
 	var latestReceiptDate sql.NullTime
-	if err := db.Model(new(Receipt)).
+	if err := it.db.Model(new(Receipt)).
 		Select("receive_date").
-		Where("phone = ?", phone).
+		Where("user_phone = ?", it.phone).
 		Order(clause.OrderByColumn{
 			Column: clause.Column{Name: "receive_date"},
 			Desc:   true,
@@ -193,20 +143,95 @@ func (p *Processor) updateReceipts(ctx context.Context, tenant, phone string, cl
 		receiptDateFrom = pointer.To(lkdr.Date(latestReceiptDate.Time))
 	}
 
-	var (
-		hasMore = true
-		offset  = 0
-	)
+iteratorLoop:
+	for _, fn := range []iteratorFunc{
+		receipts(receiptDateFrom),
+		fiscalData,
+	} {
+		offset := 0
+		for {
+			err := fn(ctx, it, offset)
+			switch {
+			case errors.Is(err, errStopIteration):
+				continue iteratorLoop
+			case err != nil:
+				err = errors.Wrapf(err, "on offset %d", offset)
+				log.Println(err)
+				continue iteratorLoop
+			}
 
-	for hasMore {
+			if it.init {
+				break
+			}
+
+			offset += it.limit
+		}
+	}
+
+	return nil
+}
+
+func fiscalData(ctx context.Context, it *iterator, offset int) error {
+	var receiptKeys []string
+	if err := it.db.Model(new(Receipt)).
+		Select("receipts.key").
+		Joins("left join fiscal_data on receipts.key = fiscal_data.receipt_key").
+		Where("receipts.user_phone = ? and fiscal_data.receipt_key is null", it.phone).
+		Order(clause.OrderByColumn{Column: clause.Column{Name: "receive_date"}}).
+		Offset(offset).
+		Limit(it.limit).
+		Scan(&receiptKeys).
+		Error; err != nil {
+		return errors.Wrap(err, "select receipt keys w/o fiscal data")
+	}
+
+	for _, key := range receiptKeys {
+		fiscalDataOut, err := getFiscalData(ctx, it.client, key)
+		if err != nil {
+			err = errors.Wrapf(err, "on key %s", key)
+			log.Println(err)
+			continue
+		}
+
+		fiscalData, err := util.ToViaJSON[FiscalData](fiscalDataOut)
+		if err != nil {
+			return errors.Wrapf(err, "convert fiscal data %s to entity", key)
+		}
+
+		fiscalData.Receipt.Key = key
+		for i := range fiscalData.Items {
+			fiscalData.Items[i].ReceiptKey = key
+			fiscalData.Items[i].Position = i + 1
+		}
+
+		if err := it.db.Clauses(util.Upsert("receipt_key")).Create(&fiscalData).Error; err != nil {
+			return errors.Wrapf(err, "upsert fiscal data %s", key)
+		}
+	}
+
+	if len(receiptKeys) < it.limit {
+		return errStopIteration
+	}
+
+	return nil
+}
+
+func getFiscalData(ctx context.Context, client Client, key string) (*lkdr.FiscalDataOut, error) {
+	ctx, cancel := context.WithTimeout(ctx, 10*time.Second)
+	defer cancel()
+	return client.FiscalData(ctx, &lkdr.FiscalDataIn{Key: key})
+}
+
+func receipts(receiptDateFrom *lkdr.Date) iteratorFunc {
+	return func(ctx context.Context, it *iterator, offset int) error {
 		receiptIn := &lkdr.ReceiptIn{
 			DateFrom: receiptDateFrom,
 			OrderBy:  "RECEIVE_DATE:ASC",
 			Offset:   offset,
-			Limit:    p.batchSize,
+			Limit:    it.limit,
 		}
 
-		receiptOut, err := client.Receipt(ctx, receiptIn)
+		receiptOut, err := it.client.Receipt(ctx, receiptIn)
 		if err != nil {
 			return errors.Wrap(err, "get receipts")
 		}
@@ -216,7 +241,7 @@ func (p *Processor) updateReceipts(ctx context.Context, tenant, phone string, cl
 			return errors.Wrap(err, "convert brands to entities")
 		}
 
-		if err := db.Clauses(util.Upsert("id")).Create(brands).Error; err != nil {
+		if err := it.db.Clauses(util.Upsert("id")).Create(brands).Error; err != nil {
 			return errors.Wrap(err, "upsert brands")
 		}
 
@@ -227,17 +252,29 @@ func (p *Processor) updateReceipts(ctx context.Context, tenant, phone string, cl
 
 		for i := range receipts {
 			receipt := &receipts[i]
-			receipt.Tenant = tenant
-			receipt.Phone = phone
+			receipt.UserPhone = it.phone
 		}
 
-		if err := db.Clauses(util.Upsert("key")).Create(receipts).Error; err != nil {
+		if err := it.db.Clauses(util.Upsert("key")).Create(receipts).Error; err != nil {
 			return errors.Wrap(err, "upsert receipts")
 		}
 
-		hasMore = receiptOut.HasMore
-		offset += p.batchSize
-	}
+		if !receiptOut.HasMore {
+			return errStopIteration
+		}
 
-	return nil
+		return nil
+	}
+}
+
+var errStopIteration = errors.New("stop iteration")
+
+type iteratorFunc func(ctx context.Context, it *iterator, offset int) error
+
+type iterator struct {
+	client Client
+	db     *gorm.DB
+	phone  string
+	limit  int
+	init   bool
 }

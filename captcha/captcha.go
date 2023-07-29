@@ -1,0 +1,37 @@
+package captcha
+
+import (
+	"context"
+
+	"github.com/pkg/errors"
+
+	"github.com/jfk9w-go/based"
+	"github.com/jfk9w-go/rucaptcha-api"
+)
+
+type Config struct {
+	RucaptchaKey string `yaml:"rucaptchaKey,omitempty" doc:"API-ключ для сервиса rucaptcha.com."`
+}
+
+type TokenProvider interface {
+	GetCaptchaToken(ctx context.Context, userAgent, siteKey, pageURL string) (string, error)
+}
+
+func NewTokenProvider(ctx context.Context, clock based.Clock, cfg Config) (TokenProvider, error) {
+	if key := cfg.RucaptchaKey; key != "" {
+		client, err := rucaptcha.ClientBuilder{
+			Config: rucaptcha.Config{
+				Key: key,
+			},
+			Clock: clock,
+		}.Build(ctx)
+
+		if err != nil {
+			return nil, errors.Wrap(err, "create rucaptcha client")
+		}
+
+		return &rucaptchaTokenProvider{client: client}, nil
+	}
+
+	return nil, nil
+}

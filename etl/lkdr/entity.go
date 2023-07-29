@@ -6,8 +6,9 @@ import (
 	"encoding/json"
 	"time"
 
-	"github.com/jfk9w-go/based"
 	"github.com/pkg/errors"
+
+	"github.com/jfk9w-go/based"
 )
 
 var dateTimeLocation = &based.Lazy[*time.Location]{
@@ -116,8 +117,15 @@ func (dt *DateTimeTZ) Scan(value any) error {
 	return errors.Errorf("expected time.Time, got %T", value)
 }
 
+type User struct {
+	Phone string `gorm:"primaryKey"`
+	Name  string `gorm:"index"`
+}
+
 type Tokens struct {
-	Phone                 string      `json:"-" gorm:"primaryKey"`
+	UserPhone string `json:"-" gorm:"primaryKey"`
+	User      User   `json:"-" gorm:"constraint:OnDelete:CASCADE"`
+
 	RefreshToken          string      `json:"refreshToken"`
 	RefreshTokenExpiresIn *DateTimeTZ `json:"refreshTokenExpiresIn,omitempty"`
 	Token                 string      `json:"token"`
@@ -125,50 +133,48 @@ type Tokens struct {
 }
 
 type Brand struct {
-	Description string `json:"description"`
-	ID          int64  `json:"id" gorm:"primaryKey"`
-	Image       string `json:"image"`
-	Name        string `json:"name"`
+	Description string  `json:"description"`
+	Id          int64   `json:"id" gorm:"primaryKey"`
+	Image       *string `json:"image"`
+	Name        string  `json:"name"`
 }
 
 type Receipt struct {
-	Tenant string `json:"-"`
-	Phone  string `json:"-"`
+	UserPhone string `json:"-" gorm:"index"`
+	User      User   `json:"-" gorm:"constraint:OnDelete:CASCADE"`
 
-	BrandId              *int64   `json:"brandId"`
+	BrandId *int64 `json:"brandId" gorm:"index"`
+	Brand   *Brand `json:"-" gorm:"constraint:OnDelete:CASCADE"`
+
 	Buyer                string   `json:"buyer"`
 	BuyerType            string   `json:"buyerType"`
-	CreatedDate          DateTime `json:"createdDate"`
+	CreatedDate          DateTime `json:"createdDate" gorm:"index"`
 	FiscalDocumentNumber string   `json:"fiscalDocumentNumber"`
 	FiscalDriveNumber    string   `json:"fiscalDriveNumber"`
 	Key                  string   `json:"key" gorm:"primaryKey"`
 	KktOwner             string   `json:"kktOwner"`
 	KktOwnerInn          string   `json:"kktOwnerInn"`
-	ReceiveDate          DateTime `json:"receiveDate"`
+	ReceiveDate          DateTime `json:"receiveDate" gorm:"index"`
 	TotalSum             string   `json:"totalSum"`
 }
 
-type ProviderData struct {
-	ProviderPhone []string `json:"providerPhone"`
-	ProviderName  string   `json:"providerName"`
-}
-
 type FiscalDataItem struct {
-	ReceiptKey string `json:"-"`
+	ReceiptKey string `json:"-" gorm:"primaryKey"`
+	Position   int    `json:"-" gorm:"primaryKey"`
 
 	Name        string  `json:"name"`
 	Nds         int     `json:"nds"`
 	PaymentType int     `json:"paymentType"`
 	Price       float64 `json:"price"`
 	ProductType int     `json:"productType"`
-	//ProviderData *ProviderData `json:"providerData"`
 	ProviderInn *string `json:"providerInn"`
 	Quantity    float64 `json:"quantity"`
 	Sum         float64 `json:"sum"`
 }
 
 type FiscalData struct {
-	ReceiptKey string `json:"-" gorm:"primaryKey"`
+	ReceiptKey string  `json:"-" gorm:"primaryKey"`
+	Receipt    Receipt `json:"-" gorm:"constraint:OnDelete:CASCADE"`
 
 	BuyerAddress            string           `json:"buyerAddress"`
 	CashTotalSum            float64          `json:"cashTotalSum"`

@@ -26,8 +26,8 @@ func (Driver) SchemaEnum() any {
 }
 
 type Config struct {
-	Driver Driver `yaml:"driver" default:"sqlite"`
-	DSN    string `yaml:"dsn" default:"file::memory:?cache=shared"`
+	Driver Driver `yaml:"driver"`
+	DSN    string `yaml:"dsn" examples:"\"file::memory:?cache=shared\""`
 }
 
 func Open(cfg Config) (*gorm.DB, error) {
