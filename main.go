@@ -4,6 +4,8 @@ import (
 	"context"
 	"os"
 
+	"github.com/jfk9w/hoarder/etl/tinkoff"
+
 	"github.com/AlekSi/pointer"
 
 	"github.com/jfk9w-go/based"
@@ -25,6 +27,11 @@ type Config struct {
 		lkdr.Config `yaml:"-,inline"`
 		Init        string `yaml:"init,omitempty" doc:"Пользователь, для которого нужно провести инициализацию."`
 	} `yaml:"lkdr,omitempty" doc:"Настройка загрузчиков из сервиса ФНС \"Мои чеки онлайн\"."`
+
+	Tinkoff *struct {
+		tinkoff.Config `yaml:"-,inline"`
+		Init           string `yaml:"init,omitempty" doc:"Пользователь, для которого нужно провести инициализацию."`
+	} `yaml:"tinkoff,omitempty" doc:"Настройка загрузчиков из онлайн-банка \"Тинькофф\"."`
 
 	Captcha captcha.Config `yaml:"captcha,omitempty" doc:"Настройки для решения капчи."`
 }
@@ -64,6 +71,15 @@ func main() {
 			}
 
 			return
+		}
+	}
+
+	if cfg := cfg.Tinkoff; cfg != nil {
+		processor := tinkoff.NewProcessor(cfg.Config, clock)
+		if user := cfg.Init; user != "" {
+			if err := processor.Process(ctx, user); err != nil {
+				panic(err)
+			}
 		}
 	}
 }

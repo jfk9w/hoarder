@@ -1,22 +1,21 @@
-package lkdr
+package tinkoff
 
 import (
 	"context"
 
+	"github.com/jfk9w-go/based"
+	"github.com/jfk9w-go/tinkoff-api"
 	"github.com/pkg/errors"
 	"gorm.io/gorm"
-
-	"github.com/jfk9w-go/based"
-	"github.com/jfk9w-go/lkdr-api"
 
 	"github.com/jfk9w/hoarder/util"
 )
 
-type tokenStorage struct {
+type sessionStorage struct {
 	db *based.Lazy[*gorm.DB]
 }
 
-func (s *tokenStorage) LoadTokens(ctx context.Context, phone string) (*lkdr.Tokens, error) {
+func (s *sessionStorage) LoadSession(ctx context.Context, phone string) (*tinkoff.Session, error) {
 	db, err := s.db.Get(ctx)
 	if err != nil {
 		return nil, errors.Wrap(err, "get db handle")
@@ -24,19 +23,19 @@ func (s *tokenStorage) LoadTokens(ctx context.Context, phone string) (*lkdr.Toke
 
 	db = db.WithContext(ctx)
 
-	var entity Tokens
+	var entity Session
 	if err := db.First(&entity, phone).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, nil
 		}
 
-		return nil, errors.Wrap(err, "get tokens record from db")
+		return nil, errors.Wrap(err, "get session record from db")
 	}
 
-	return util.ToViaJSON[*lkdr.Tokens](entity)
+	return util.ToViaJSON[*tinkoff.Session](entity)
 }
 
-func (s *tokenStorage) UpdateTokens(ctx context.Context, phone string, tokens *lkdr.Tokens) error {
+func (s *sessionStorage) UpdateSession(ctx context.Context, phone string, session *tinkoff.Session) error {
 	db, err := s.db.Get(ctx)
 	if err != nil {
 		return errors.Wrap(err, "get db handle")
@@ -44,11 +43,11 @@ func (s *tokenStorage) UpdateTokens(ctx context.Context, phone string, tokens *l
 
 	db = db.WithContext(ctx)
 
-	if tokens == nil {
-		return errors.Wrap(db.Delete(new(Tokens), phone).Error, "delete tokens from db")
+	if session == nil {
+		return errors.Wrap(db.Delete(new(Session), phone).Error, "delete tokens from db")
 	}
 
-	entity, err := util.ToViaJSON[*Tokens](tokens)
+	entity, err := util.ToViaJSON[*Session](session)
 	if err != nil {
 		return err
 	}
@@ -56,7 +55,7 @@ func (s *tokenStorage) UpdateTokens(ctx context.Context, phone string, tokens *l
 	entity.UserPhone = phone
 
 	if err := db.Clauses(util.Upsert("user_phone")).Create(entity).Error; err != nil {
-		return errors.Wrap(err, "upsert token record")
+		return errors.Wrap(err, "upsert session record")
 	}
 
 	return nil

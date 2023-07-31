@@ -1,58 +1,16 @@
 package lkdr
 
 import (
-	"context"
 	"database/sql/driver"
-	"encoding/json"
 	"time"
 
-	"github.com/pkg/errors"
+	"github.com/jfk9w-go/lkdr-api"
 
-	"github.com/jfk9w-go/based"
+	"github.com/pkg/errors"
 )
 
-var dateTimeLocation = &based.Lazy[*time.Location]{
-	Fn: func(ctx context.Context) (*time.Location, error) {
-		return time.LoadLocation("Europe/Moscow")
-	},
-}
-
-type DateTime time.Time
-
-const dateTimeLayout = "2006-01-02T15:04:05"
-
-func (dt DateTime) Time() time.Time {
-	return time.Time(dt)
-}
-
-func (dt DateTime) MarshalJSON() ([]byte, error) {
-	location, err := dateTimeLocation.Get(context.Background())
-	if err != nil {
-		return nil, errors.Wrap(err, "load location")
-	}
-
-	str := time.Time(dt).In(location).Format(dateTimeLayout)
-	return json.Marshal(str)
-}
-
-func (dt *DateTime) UnmarshalJSON(data []byte) error {
-	var str string
-	if err := json.Unmarshal(data, &str); err != nil {
-		return err
-	}
-
-	location, err := dateTimeLocation.Get(context.Background())
-	if err != nil {
-		return errors.Wrap(err, "load location")
-	}
-
-	value, err := time.ParseInLocation(dateTimeLayout, str, location)
-	if err != nil {
-		return err
-	}
-
-	*dt = DateTime(value)
-	return nil
+type DateTime struct {
+	lkdr.DateTime
 }
 
 func (dt DateTime) GormDataType() string {
@@ -60,44 +18,20 @@ func (dt DateTime) GormDataType() string {
 }
 
 func (dt DateTime) Value() (driver.Value, error) {
-	return time.Time(dt), nil
+	return dt.Time(), nil
 }
 
 func (dt *DateTime) Scan(value any) error {
 	if value, ok := value.(time.Time); ok {
-		*dt = DateTime(value)
+		dt.DateTime = lkdr.DateTime(value)
 		return nil
 	}
 
 	return errors.Errorf("expected time.Time, got %T", value)
 }
 
-type DateTimeTZ time.Time
-
-func (dt DateTimeTZ) Time() time.Time {
-	return time.Time(dt)
-}
-
-const dateTimeTZLayout = "2006-01-02T15:04:05.999Z"
-
-func (dt DateTimeTZ) MarshalJSON() ([]byte, error) {
-	str := dt.Time().Format(dateTimeTZLayout)
-	return json.Marshal(str)
-}
-
-func (dt *DateTimeTZ) UnmarshalJSON(data []byte) error {
-	var str string
-	if err := json.Unmarshal(data, &str); err != nil {
-		return err
-	}
-
-	value, err := time.Parse(dateTimeTZLayout, str)
-	if err != nil {
-		return err
-	}
-
-	*dt = DateTimeTZ(value)
-	return nil
+type DateTimeTZ struct {
+	lkdr.DateTimeTZ
 }
 
 func (dt DateTimeTZ) GormDataType() string {
@@ -105,12 +39,12 @@ func (dt DateTimeTZ) GormDataType() string {
 }
 
 func (dt DateTimeTZ) Value() (driver.Value, error) {
-	return time.Time(dt), nil
+	return dt.Time(), nil
 }
 
 func (dt *DateTimeTZ) Scan(value any) error {
 	if value, ok := value.(time.Time); ok {
-		*dt = DateTimeTZ(value)
+		dt.DateTimeTZ = lkdr.DateTimeTZ(value)
 		return nil
 	}
 

@@ -38,9 +38,9 @@ properties:
         properties:
           driver:
             enum:
+              - sqlite
               - postgres
               - mysql
-              - sqlite
             type: string
           dsn:
             examples:
@@ -59,6 +59,7 @@ properties:
         pattern: (\d+h)?(\d+m)?(\d+s)?(\d+ms)?(\d+µs)?(\d+ns)?
         type: string
       userAgent:
+        default: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36
         description: |-
           Используется для авторизации и обновления токена доступа.
           Можно подсмотреть в браузере при попытке авторизации.
@@ -80,7 +81,54 @@ properties:
         type: object
     required:
       - db
-      - userAgent
+      - users
+    type: object
+  tinkoff:
+    additionalProperties: false
+    description: Настройка загрузчиков из онлайн-банка "Тинькофф".
+    properties:
+      db:
+        additionalProperties: false
+        description: Настройки подключения к БД.
+        properties:
+          driver:
+            enum:
+              - postgres
+              - mysql
+              - sqlite
+            type: string
+          dsn:
+            examples:
+              - file::memory:?cache=shared
+            type: string
+        required:
+          - driver
+          - dsn
+        type: object
+      init:
+        description: Пользователь, для которого нужно провести инициализацию.
+        type: string
+      users:
+        additionalProperties:
+          items:
+            additionalProperties: false
+            properties:
+              password:
+                description: Пароль от аккаунта Тинькофф.
+                type: string
+              phone:
+                description: Номер телефона, на который зарегистрирован аккаунт Тинькофф.
+                pattern: \+7\d{10}
+                type: string
+            required:
+              - phone
+              - password
+            type: object
+          type: array
+        description: Пользователи и их авторизационные данные.
+        type: object
+    required:
+      - db
       - users
     type: object
 type: object

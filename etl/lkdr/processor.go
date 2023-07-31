@@ -41,8 +41,8 @@ func NewProcessor(cfg Config, clock based.Clock, captchaTokenProvider captcha.To
 				new(Tokens),
 				new(Brand),
 				new(Receipt),
-				new(FiscalData),
 				new(FiscalDataItem),
+				new(FiscalData),
 			); err != nil {
 				return nil, errors.Wrap(err, "migrate db tables")
 			}
@@ -54,7 +54,6 @@ func NewProcessor(cfg Config, clock based.Clock, captchaTokenProvider captcha.To
 	tokenStorage := &tokenStorage{db: db}
 	clients := make(map[string]map[string]*based.Lazy[Client])
 	for username, credentials := range cfg.Users {
-		username, credentials := username, credentials
 		clients[username] = make(map[string]*based.Lazy[Client])
 		clients := clients[username]
 		for _, credential := range credentials {
