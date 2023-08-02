@@ -1,7 +1,9 @@
 package etl
 
-import "context"
+import (
+	"context"
+)
 
 type Processor interface {
-	Process(ctx context.Context, user string) error
+	Process(ctx context.Context, stats *Stats, username string) error
 }

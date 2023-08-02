@@ -131,6 +131,8 @@ type Account struct {
 	CurrencyCode uint      `json:"-" gorm:"index"`
 	Currency     *Currency `json:"currency,omitempty" gorm:"constraint:OnDelete:CASCADE"`
 
+	Deleted bool `json:"-" gorm:"index"`
+
 	Id                    string            `json:"id" gorm:"primaryKey"`
 	CreditLimit           *MoneyAmount      `json:"creditLimit,omitempty" gorm:"embedded;embeddedPrefix:credit_limit_"`
 	MoneyAmount           *MoneyAmount      `json:"moneyAmount,omitempty" gorm:"embedded;embeddedPrefix:money_amount_"`

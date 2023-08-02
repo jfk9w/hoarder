@@ -2,6 +2,7 @@ package tinkoff
 
 import (
 	"context"
+	"time"
 
 	"github.com/jfk9w-go/tinkoff-api"
 
@@ -14,8 +15,10 @@ type Credential struct {
 }
 
 type Config struct {
-	DB    database.Config         `yaml:"db" doc:"Настройки подключения к БД."`
-	Users map[string][]Credential `yaml:"users" doc:"Пользователи и их авторизационные данные."`
+	DB        database.Config         `yaml:"db" doc:"Настройки подключения к БД."`
+	BatchSize int                     `yaml:"batchSize,omitempty" doc:"Максимальный размер батчей." default:"100"`
+	Overlap   time.Duration           `yaml:"overlap,omitempty" doc:"Продолжительность \"нахлеста\" при обновлении операций." default:"168h"`
+	Users     map[string][]Credential `yaml:"users" doc:"Пользователи и их авторизационные данные."`
 }
 
 type Client interface {

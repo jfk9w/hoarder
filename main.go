@@ -2,7 +2,10 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"os"
+
+	"github.com/jfk9w/hoarder/etl"
 
 	"github.com/jfk9w/hoarder/etl/tinkoff"
 
@@ -66,10 +69,12 @@ func main() {
 		processor := lkdr.NewProcessor(cfg.Config, clock, captchaTokenProvider)
 		if user := cfg.Init; user != "" {
 			ctx := lkdr.Init(ctx)
-			if err := processor.Process(ctx, user); err != nil {
+			stats := new(etl.Stats)
+			if err := processor.Process(ctx, stats, user); err != nil {
 				panic(err)
 			}
 
+			fmt.Println(stats)
 			return
 		}
 	}
@@ -77,9 +82,13 @@ func main() {
 	if cfg := cfg.Tinkoff; cfg != nil {
 		processor := tinkoff.NewProcessor(cfg.Config, clock)
 		if user := cfg.Init; user != "" {
-			if err := processor.Process(ctx, user); err != nil {
+			stats := new(etl.Stats)
+			if err := processor.Process(ctx, stats, user); err != nil {
 				panic(err)
 			}
+
+			fmt.Println(stats)
+			return
 		}
 	}
 }
