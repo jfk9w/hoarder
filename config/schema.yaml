@@ -38,9 +38,9 @@ properties:
         properties:
           driver:
             enum:
-              - sqlite
               - postgres
               - mysql
+              - sqlite
             type: string
           dsn:
             examples:
@@ -50,9 +50,6 @@ properties:
           - driver
           - dsn
         type: object
-      init:
-        description: Пользователь, для которого нужно провести инициализацию.
-        type: string
       timeout:
         default: 5m0s
         description: Таймаут для запросов.
@@ -83,19 +80,26 @@ properties:
       - db
       - users
     type: object
+  run:
+    description: Запуск загрузчиков для пользователя, переданного в параметре.
+    type: string
   tinkoff:
     additionalProperties: false
     description: Настройка загрузчиков из онлайн-банка "Тинькофф".
     properties:
+      batchSize:
+        default: 100
+        description: Максимальный размер батчей.
+        type: integer
       db:
         additionalProperties: false
         description: Настройки подключения к БД.
         properties:
           driver:
             enum:
+              - sqlite
               - postgres
               - mysql
-              - sqlite
             type: string
           dsn:
             examples:
@@ -105,8 +109,10 @@ properties:
           - driver
           - dsn
         type: object
-      init:
-        description: Пользователь, для которого нужно провести инициализацию.
+      overlap:
+        default: 168h0m0s
+        description: Продолжительность "нахлеста" при обновлении операций.
+        pattern: (\d+h)?(\d+m)?(\d+s)?(\d+ms)?(\d+µs)?(\d+ns)?
         type: string
       users:
         additionalProperties:

@@ -5,8 +5,9 @@ import (
 	"database/sql"
 	"time"
 
+	"go.uber.org/multierr"
+
 	"github.com/jfk9w-go/tinkoff-api"
-	"github.com/jfk9w/hoarder/etl"
 	"github.com/jfk9w/hoarder/util"
 	"github.com/pkg/errors"
 	"gorm.io/gorm"
@@ -21,32 +22,27 @@ type updater struct {
 	overlap   time.Duration
 }
 
-func (u *updater) run(ctx context.Context, stats *etl.Stats) error {
-	if err := u.updateAccounts(ctx, stats.Get("Accounts", true)); err != nil {
-		return errors.Wrap(err, "update accounts")
-	}
-
-	var accountIds []string
-	if err := u.db.Model(new(Account)).
-		Select("id").
-		Where("user_phone = ? and not deleted", u.phone).
-		Order("id").
-		Scan(&accountIds).
-		Error; err != nil {
-		return errors.Wrap(err, "select accounts")
+func (u *updater) run(ctx context.Context) (errs error) {
+	accountIds, err := u.updateAccounts(ctx)
+	if err != nil {
+		errs = multierr.Append(errs, errors.Wrap(err, "update accounts"))
 	}
 
 	for _, accountId := range accountIds {
-		if err := u.updateOperations(ctx, stats.Get("Operations", true), accountId); err != nil {
-			return errors.Wrapf(err, "update operations for account %s", accountId)
-		}
-
-		if err := u.updateReceipts(ctx, stats.Get("Receipts", true), accountId); err != nil {
-			return errors.Wrapf(err, "update receipts for account %s", accountId)
+		if err := u.updateOperations(ctx, accountId); err != nil {
+			errs = multierr.Append(errs, errors.Wrapf(err, "update operations for account %s", accountId))
 		}
 	}
 
-	return nil
+	if err := u.updateReceipts(ctx); err != nil {
+		errs = multierr.Append(errs, errors.Wrap(err, "update receipts"))
+	}
+
+	if err := u.updateInvestOperationTypes(ctx); err != nil {
+		errs = multierr.Append(errs, errors.Wrap(err, "update invest operation types"))
+	}
+
+	return
 }
 
 var updatedAccountTypes = map[string]bool{
@@ -55,11 +51,10 @@ var updatedAccountTypes = map[string]bool{
 	"Saving":  true,
 }
 
-func (u *updater) updateAccounts(ctx context.Context, stats *etl.Stats) error {
+func (u *updater) updateAccounts(ctx context.Context) ([]string, error) {
 	accountsOut, err := u.client.AccountsLightIb(ctx)
 	if err != nil {
-		stats.Error(err)
-		return nil
+		return nil, errors.Wrap(err, "get accounts")
 	}
 
 	var (
@@ -76,7 +71,7 @@ func (u *updater) updateAccounts(ctx context.Context, stats *etl.Stats) error {
 
 		account, err := util.ToViaJSON[Account](account)
 		if err != nil {
-			return errors.Wrapf(err, "convert account %s to entity", accountId)
+			return nil, errors.Wrapf(err, "convert account %s to entity", accountId)
 		}
 
 		account.UserPhone = u.phone
@@ -87,27 +82,25 @@ func (u *updater) updateAccounts(ctx context.Context, stats *etl.Stats) error {
 
 	if err := u.db.Transaction(func(tx *gorm.DB) error {
 		if err := tx.Clauses(util.Upsert("id")).Create(accounts).Error; err != nil {
-			return errors.Wrap(err, "upsert accounts")
+			return errors.Wrap(err, "upsert")
 		}
 
 		if err := tx.Model(new(Account)).
 			Where("user_phone = ? and id not in ?", u.phone, accountIds).
 			Update("deleted", true).
 			Error; err != nil {
-			return errors.Wrap(err, "mark deleted accounts")
+			return errors.Wrap(err, "mark deleted")
 		}
 
 		return nil
 	}); err != nil {
-		return errors.Wrap(err, "update accounts in db")
+		return nil, errors.Wrap(err, "update in db")
 	}
 
-	stats.Add(len(accounts))
-
-	return nil
+	return accountIds, nil
 }
 
-func (u *updater) updateOperations(ctx context.Context, stats *etl.Stats, accountId string) error {
+func (u *updater) updateOperations(ctx context.Context, accountId string) error {
 	var latestOperationTime sql.NullTime
 	if err := u.db.Model(new(Operation)).
 		Select("operation_time").
@@ -131,13 +124,12 @@ func (u *updater) updateOperations(ctx context.Context, stats *etl.Stats, accoun
 
 	operationsOut, err := u.client.Operations(ctx, operationsIn)
 	if err != nil {
-		stats.Error(err)
-		return nil
+		return errors.Wrap(err, "get")
 	}
 
 	operations, err := util.ToViaJSON[[]Operation](operationsOut)
 	if err != nil {
-		return errors.Wrap(err, "convert operations to entities")
+		return errors.Wrap(err, "convert to entities")
 	}
 
 	for _, operation := range operations {
@@ -159,23 +151,22 @@ func (u *updater) updateOperations(ctx context.Context, stats *etl.Stats, accoun
 	}
 
 	if err := u.db.Clauses(util.Upsert("id")).CreateInBatches(operations, u.batchSize).Error; err != nil {
-		return errors.Wrap(err, "upsert operations")
+		return errors.Wrap(err, "update in db")
 	}
-
-	stats.Add(len(operations))
 
 	return nil
 }
 
-func (u *updater) updateReceipts(ctx context.Context, stats *etl.Stats, accountId string) error {
+func (u *updater) updateReceipts(ctx context.Context) error {
 	var offset int
 
-	for !stats.IsError() {
+	for {
 		var operationIds []string
 		if err := u.db.Model(new(Operation)).
 			Select("operations.id").
+			Joins("inner join accounts on operations.account_id = accounts.id").
 			Joins("left join receipts on operations.id = receipts.operation_id").
-			Where("operations.account_id = ? and operations.debiting_time is not null and operations.has_shopping_receipt", accountId).
+			Where("accounts.user_phone = ? and operations.debiting_time is not null and operations.has_shopping_receipt", u.phone).
 			Order("operations.debiting_time asc").
 			Offset(offset).
 			Limit(1000).
@@ -196,26 +187,23 @@ func (u *updater) updateReceipts(ctx context.Context, stats *etl.Stats, accountI
 						Where("id = ?", operationId).
 						Update("has_shopping_receipt", false).
 						Error; err != nil {
-						return errors.Wrapf(err, "update operation %s in db", operationId)
+						return errors.Wrapf(err, "mark operation w/o receipt %s in db", operationId)
 					}
 				}
 
-				stats.Error(err)
-				return nil
+				return errors.Wrapf(err, "get for operation %s", operationId)
 			}
 
 			receipt, err := util.ToViaJSON[Receipt](shoppingReceiptOut.Receipt)
 			if err != nil {
-				return errors.Wrapf(err, "convert receipt for operation %s to entity", operationId)
+				return errors.Wrapf(err, "convert for operation %s to entity", operationId)
 			}
 
 			receipt.OperationId = operationId
 
 			if err := u.db.Clauses(util.Upsert("operation_id")).Create(&receipt).Error; err != nil {
-				return errors.Wrapf(err, "create receipt for operation %s in db", operationId)
+				return errors.Wrapf(err, "update for operation %s in db", operationId)
 			}
-
-			stats.Add(1)
 		}
 
 		if len(operationIds) < u.batchSize {
@@ -223,6 +211,42 @@ func (u *updater) updateReceipts(ctx context.Context, stats *etl.Stats, accountI
 		}
 
 		offset += u.batchSize
+	}
+
+	return nil
+}
+
+func (u *updater) updateInvestOperationTypes(ctx context.Context) error {
+	investOperationTypesOut, err := u.client.InvestOperationTypes(ctx)
+	if err != nil {
+		return errors.Wrap(err, "get")
+	}
+
+	investOperationTypes, err := util.ToViaJSON[[]InvestOperationType](investOperationTypesOut.OperationsTypes)
+	if err != nil {
+		return errors.Wrap(err, "convert to entities")
+	}
+
+	var investOperationTypeIds []string
+	for _, investOperationType := range investOperationTypes {
+		investOperationTypeIds = append(investOperationTypeIds, investOperationType.OperationType)
+	}
+
+	if err := u.db.Transaction(func(tx *gorm.DB) error {
+		if err := tx.Clauses(util.Upsert("operation_type")).CreateInBatches(investOperationTypes, u.batchSize).Error; err != nil {
+			return errors.Wrap(err, "upsert")
+		}
+
+		if err := tx.Model(new(InvestOperationType)).
+			Where("operation_type not in ?", investOperationTypeIds).
+			Update("deleted", true).
+			Error; err != nil {
+			return errors.Wrap(err, "mark deleted")
+		}
+
+		return nil
+	}); err != nil {
+		return errors.Wrap(err, "update in db")
 	}
 
 	return nil

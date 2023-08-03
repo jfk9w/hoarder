@@ -7,14 +7,13 @@ import (
 
 	"github.com/AlekSi/pointer"
 	"github.com/jfk9w-go/lkdr-api"
-	"github.com/jfk9w/hoarder/etl"
 	"github.com/jfk9w/hoarder/util"
 	"github.com/pkg/errors"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 )
 
-type updateFunc func(context.Context, *etl.Stats, int) (bool, error)
+type updateFunc func(context.Context, int) (bool, error)
 
 type updater struct {
 	client    Client
@@ -24,7 +23,7 @@ type updater struct {
 	timeout   time.Duration
 }
 
-func (u *updater) run(ctx context.Context, stats *etl.Stats, init bool) error {
+func (u *updater) run(ctx context.Context) error {
 	var latestReceiptDate sql.NullTime
 	if err := u.db.Model(new(Receipt)).
 		Select("receive_date").
@@ -64,13 +63,9 @@ func (u *updater) run(ctx context.Context, stats *etl.Stats, init bool) error {
 		)
 
 		for hasMore {
-			hasMore, err = item.fn(ctx, stats.Get(item.key, true), offset)
+			hasMore, err = item.fn(ctx, offset)
 			if err != nil {
 				return errors.Wrapf(err, "on %s with offset %d", item.key, offset)
-			}
-
-			if init {
-				break
 			}
 
 			offset += u.batchSize
@@ -80,7 +75,7 @@ func (u *updater) run(ctx context.Context, stats *etl.Stats, init bool) error {
 	return nil
 }
 
-func (u *updater) updateFiscalData(ctx context.Context, stats *etl.Stats, offset int) (bool, error) {
+func (u *updater) updateFiscalData(ctx context.Context, offset int) (bool, error) {
 	var receiptKeys []string
 	if err := u.db.Model(new(Receipt)).
 		Select("receipts.key").
@@ -105,7 +100,6 @@ func (u *updater) updateFiscalData(ctx context.Context, stats *etl.Stats, offset
 		})
 
 		if err != nil {
-			stats.Warnf("%s: %s", key, err)
 			continue
 		}
 
@@ -123,15 +117,13 @@ func (u *updater) updateFiscalData(ctx context.Context, stats *etl.Stats, offset
 		if err := u.db.Clauses(util.Upsert("receipt_key")).Create(&fiscalData).Error; err != nil {
 			return false, errors.Wrapf(err, "upsert fiscal data %s", key)
 		}
-
-		stats.Add(1)
 	}
 
 	return len(receiptKeys) == u.batchSize, nil
 }
 
 func (u *updater) updateReceipts(receiptDateFrom *lkdr.Date) updateFunc {
-	return func(ctx context.Context, stats *etl.Stats, offset int) (bool, error) {
+	return func(ctx context.Context, offset int) (bool, error) {
 		receiptIn := &lkdr.ReceiptIn{
 			DateFrom: receiptDateFrom,
 			OrderBy:  "RECEIVE_DATE:ASC",
@@ -149,8 +141,7 @@ func (u *updater) updateReceipts(receiptDateFrom *lkdr.Date) updateFunc {
 		})
 
 		if err != nil {
-			stats.Error(err)
-			return false, nil
+			return false, errors.Wrap(err, "get receipts")
 		}
 
 		brands, err := util.ToViaJSON[[]Brand](receiptOut.Brands)
@@ -175,8 +166,6 @@ func (u *updater) updateReceipts(receiptDateFrom *lkdr.Date) updateFunc {
 		if err := u.db.Clauses(util.Upsert("key")).Create(receipts).Error; err != nil {
 			return false, errors.Wrap(err, "upsert receipts")
 		}
-
-		stats.Add(len(receipts))
 
 		return receiptOut.HasMore, nil
 	}

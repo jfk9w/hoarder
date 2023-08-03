@@ -50,6 +50,48 @@ func (s *Seconds) Scan(value any) error {
 	return errors.Errorf("expected time.Time, got %T", value)
 }
 
+type DateTimeMilliOffset struct {
+	tinkoff.DateTimeMilliOffset
+}
+
+func (dt DateTimeMilliOffset) GormDataType() string {
+	return "time"
+}
+
+func (dt DateTimeMilliOffset) Value() (driver.Value, error) {
+	return dt.Time(), nil
+}
+
+func (dt *DateTimeMilliOffset) Scan(value any) error {
+	if value, ok := value.(time.Time); ok {
+		dt.DateTimeMilliOffset = tinkoff.DateTimeMilliOffset(value)
+		return nil
+	}
+
+	return errors.Errorf("expected time.Time, got %T", value)
+}
+
+type Date struct {
+	tinkoff.Date
+}
+
+func (d Date) GormDataType() string {
+	return "date"
+}
+
+func (d Date) Value() (driver.Value, error) {
+	return d.Time(), nil
+}
+
+func (d *Date) Scan(value any) error {
+	if value, ok := value.(time.Time); ok {
+		d.Date = tinkoff.Date(value)
+		return nil
+	}
+
+	return errors.Errorf("expected time.Time, got %T", value)
+}
+
 type User struct {
 	Phone string `gorm:"primaryKey"`
 	Name  string `gorm:"index"`
@@ -397,4 +439,12 @@ type Receipt struct {
 	FiscalDocumentNumber    uint64        `json:"fiscalDocumentNumber"`
 	User                    *string       `json:"user,omitempty"`
 	FiscalDriveNumberString string        `json:"fiscalDriveNumberString"`
+}
+
+type InvestOperationType struct {
+	Deleted bool `json:"-" gorm:"index"`
+
+	Category      string `json:"category"`
+	OperationName string `json:"operationName"`
+	OperationType string `json:"operationType" gorm:"primaryKey"`
 }

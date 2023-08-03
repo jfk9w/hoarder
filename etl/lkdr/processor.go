@@ -19,14 +19,17 @@ import (
 	"github.com/jfk9w/hoarder/util"
 )
 
+const Name = "Мои чеки онлайн"
+
 type Processor struct {
-	clients   map[string]map[string]*based.Lazy[Client]
-	db        *based.Lazy[*gorm.DB]
-	batchSize int
-	timeout   time.Duration
+	clients       map[string]map[string]*based.Lazy[Client]
+	captchaSolver captcha.TokenProvider
+	db            *based.Lazy[*gorm.DB]
+	batchSize     int
+	timeout       time.Duration
 }
 
-func NewProcessor(cfg Config, clock based.Clock, captchaTokenProvider captcha.TokenProvider) *Processor {
+func NewProcessor(cfg Config, clock based.Clock, captchaSolver captcha.TokenProvider) *Processor {
 	db := &based.Lazy[*gorm.DB]{
 		Fn: func(ctx context.Context) (*gorm.DB, error) {
 			db, err := database.Open(cfg.DB)
@@ -64,13 +67,11 @@ func NewProcessor(cfg Config, clock based.Clock, captchaTokenProvider captcha.To
 					}
 
 					return lkdr.ClientBuilder{
-						Phone:                credential.Phone,
-						Clock:                clock,
-						DeviceID:             deviceID,
-						UserAgent:            cfg.UserAgent,
-						TokenStorage:         tokenStorage,
-						CaptchaTokenProvider: captchaTokenProvider,
-						ConfirmationProvider: stdinConfirmationProvider{},
+						Phone:        credential.Phone,
+						Clock:        clock,
+						DeviceID:     deviceID,
+						UserAgent:    cfg.UserAgent,
+						TokenStorage: tokenStorage,
 					}.Build(ctx)
 				},
 			}
@@ -78,10 +79,11 @@ func NewProcessor(cfg Config, clock based.Clock, captchaTokenProvider captcha.To
 	}
 
 	return &Processor{
-		clients:   clients,
-		db:        db,
-		batchSize: cfg.BatchSize,
-		timeout:   cfg.Timeout,
+		clients:       clients,
+		captchaSolver: captchaSolver,
+		db:            db,
+		batchSize:     cfg.BatchSize,
+		timeout:       cfg.Timeout,
 	}
 }
 
@@ -106,7 +108,11 @@ func generateDeviceID(userAgent, phone string) (string, error) {
 	return string(deviceID), nil
 }
 
-func (p *Processor) Process(ctx context.Context, stats *etl.Stats, username string) error {
+func (p *Processor) Name() string {
+	return Name
+}
+
+func (p *Processor) Process(ctx context.Context, username string) error {
 	clients, ok := p.clients[username]
 	if !ok {
 		return nil
@@ -118,6 +124,13 @@ func (p *Processor) Process(ctx context.Context, stats *etl.Stats, username stri
 	}
 
 	db = db.WithContext(ctx)
+
+	if requestInputFn := etl.GetRequestInputFunc(ctx); p.captchaSolver != nil && requestInputFn != nil {
+		ctx = lkdr.WithAuthorizer(ctx, &authorizer{
+			captchaSolver:  p.captchaSolver,
+			requestInputFn: requestInputFn,
+		})
+	}
 
 	for phone, client := range clients {
 		client, err := client.Get(ctx)
@@ -142,7 +155,7 @@ func (p *Processor) Process(ctx context.Context, stats *etl.Stats, username stri
 			timeout:   p.timeout,
 		}
 
-		if err := u.run(ctx, stats.Get(phone, false), isInit(ctx)); err != nil {
+		if err := u.run(ctx); err != nil {
 			return errors.Wrapf(err, "for phone %s", phone)
 		}
 	}

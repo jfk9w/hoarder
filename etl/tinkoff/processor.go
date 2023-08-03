@@ -4,6 +4,7 @@ import (
 	"context"
 	"time"
 
+	"github.com/jfk9w-go/tinkoff-api"
 	"github.com/jfk9w/hoarder/etl"
 
 	"github.com/jfk9w-go/based"
@@ -13,6 +14,8 @@ import (
 	"github.com/jfk9w/hoarder/database"
 	"github.com/jfk9w/hoarder/util"
 )
+
+const Name = "Тинькофф"
 
 type Processor struct {
 	clients   map[string]map[string]*based.Lazy[Client]
@@ -55,7 +58,7 @@ func NewProcessor(cfg Config, clock based.Clock) *Processor {
 		},
 	}
 
-	//sessionStorage := &sessionStorage{db: db}
+	sessionStorage := &sessionStorage{db: db}
 	clients := make(map[string]map[string]*based.Lazy[Client])
 	for username, credentials := range cfg.Users {
 		clients[username] = make(map[string]*based.Lazy[Client])
@@ -64,15 +67,14 @@ func NewProcessor(cfg Config, clock based.Clock) *Processor {
 			credential := credential
 			clients[credential.Phone] = &based.Lazy[Client]{
 				Fn: func(ctx context.Context) (Client, error) {
-					//return tinkoff.ClientBuilder{
-					//	Clock: clock,
-					//	Credential: tinkoff.Credential{
-					//		Phone:    credential.Phone,
-					//		Password: credential.Password,
-					//	},
-					//	SessionStorage: sessionStorage,
-					//}.Build(ctx)
-					return new(mockClient), nil
+					return tinkoff.ClientBuilder{
+						Clock: clock,
+						Credential: tinkoff.Credential{
+							Phone:    credential.Phone,
+							Password: credential.Password,
+						},
+						SessionStorage: sessionStorage,
+					}.Build(ctx)
 				},
 			}
 		}
@@ -86,7 +88,11 @@ func NewProcessor(cfg Config, clock based.Clock) *Processor {
 	}
 }
 
-func (p *Processor) Process(ctx context.Context, stats *etl.Stats, username string) error {
+func (p *Processor) Name() string {
+	return Name
+}
+
+func (p *Processor) Process(ctx context.Context, username string) error {
 	clients, ok := p.clients[username]
 	if !ok {
 		return nil
@@ -98,6 +104,12 @@ func (p *Processor) Process(ctx context.Context, stats *etl.Stats, username stri
 	}
 
 	db = db.WithContext(ctx)
+
+	if requestInputFn := etl.GetRequestInputFunc(ctx); requestInputFn != nil {
+		ctx = tinkoff.WithAuthorizer(ctx, &authorizer{
+			requestInputFn: requestInputFn,
+		})
+	}
 
 	for phone, client := range clients {
 		client, err := client.Get(ctx)
@@ -122,7 +134,7 @@ func (p *Processor) Process(ctx context.Context, stats *etl.Stats, username stri
 			overlap:   p.overlap,
 		}
 
-		if err := u.run(ctx, stats.Get(phone, false)); err != nil {
+		if err := u.run(ctx); err != nil {
 			return errors.Wrapf(err, "for phone %s", phone)
 		}
 	}

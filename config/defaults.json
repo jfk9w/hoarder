@@ -11,10 +11,12 @@
     "users": {}
   },
   "tinkoff": {
+    "batchSize": 100,
     "db": {
       "driver": "",
       "dsn": ""
     },
+    "overlap": "168h0m0s",
     "users": {}
   }
 }

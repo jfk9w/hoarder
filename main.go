@@ -26,15 +26,10 @@ type Config struct {
 		Values bool `yaml:"values,omitempty" doc:"Вывод значений конфигурации по умолчанию в JSON."`
 	} `yaml:"dump,omitempty" doc:"Вывод параметров конфигурации в стандартный поток вывода.\n\nПредназначены для использования как CLI-параметры."`
 
-	LKDR *struct {
-		lkdr.Config `yaml:"-,inline"`
-		Init        string `yaml:"init,omitempty" doc:"Пользователь, для которого нужно провести инициализацию."`
-	} `yaml:"lkdr,omitempty" doc:"Настройка загрузчиков из сервиса ФНС \"Мои чеки онлайн\"."`
+	Run string `yaml:"run,omitempty" doc:"Запуск загрузчиков для пользователя, переданного в параметре."`
 
-	Tinkoff *struct {
-		tinkoff.Config `yaml:"-,inline"`
-		Init           string `yaml:"init,omitempty" doc:"Пользователь, для которого нужно провести инициализацию."`
-	} `yaml:"tinkoff,omitempty" doc:"Настройка загрузчиков из онлайн-банка \"Тинькофф\"."`
+	LKDR    *lkdr.Config    `yaml:"lkdr,omitempty" doc:"Настройка загрузчиков из сервиса ФНС \"Мои чеки онлайн\"."`
+	Tinkoff *tinkoff.Config `yaml:"tinkoff,omitempty" doc:"Настройка загрузчиков из онлайн-банка \"Тинькофф\"."`
 
 	Captcha captcha.Config `yaml:"captcha,omitempty" doc:"Настройки для решения капчи."`
 }
@@ -65,31 +60,25 @@ func main() {
 		panic(err)
 	}
 
-	if cfg := cfg.LKDR; cfg != nil {
-		processor := lkdr.NewProcessor(cfg.Config, clock, captchaTokenProvider)
-		if user := cfg.Init; user != "" {
-			ctx := lkdr.Init(ctx)
-			stats := new(etl.Stats)
-			if err := processor.Process(ctx, stats, user); err != nil {
-				panic(err)
-			}
+	etlBuilder := new(etl.Builder)
 
-			fmt.Println(stats)
-			return
-		}
+	if cfg := cfg.LKDR; cfg != nil {
+		etlBuilder.Add(lkdr.NewProcessor(*cfg, clock, captchaTokenProvider))
 	}
 
 	if cfg := cfg.Tinkoff; cfg != nil {
-		processor := tinkoff.NewProcessor(cfg.Config, clock)
-		if user := cfg.Init; user != "" {
-			stats := new(etl.Stats)
-			if err := processor.Process(ctx, stats, user); err != nil {
-				panic(err)
-			}
+		etlBuilder.Add(tinkoff.NewProcessor(*cfg, clock))
+	}
 
-			fmt.Println(stats)
-			return
+	processors := etlBuilder.Build()
+	if username := cfg.Run; username != "" {
+		ctx := etl.WithRequestInputFunc(ctx, etl.RequestInputStdin)
+		if err := processors.Process(ctx, username); err != nil {
+			panic(err)
 		}
+
+		fmt.Println("OK")
+		return
 	}
 }
 
