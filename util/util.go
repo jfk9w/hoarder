@@ -21,6 +21,7 @@ func ToViaJSON[T any](source any) (target T, err error) {
 	}
 
 	value = trim(value)
+	index(value)
 
 	data, err = json.Marshal(value)
 	if err != nil {
@@ -64,6 +65,23 @@ func trim(source any) any {
 
 	default:
 		return source
+	}
+}
+
+func index(source any) {
+	switch source := source.(type) {
+	case []any:
+		for i, value := range source {
+			index(value)
+			if values, ok := value.(map[string]any); ok {
+				values["dbIdx"] = i
+			}
+		}
+
+	case map[string]any:
+		for _, value := range source {
+			index(value)
+		}
 	}
 }
 

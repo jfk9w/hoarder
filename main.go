@@ -73,6 +73,7 @@ func main() {
 	processors := etlBuilder.Build()
 	if username := cfg.Run; username != "" {
 		ctx := etl.WithRequestInputFunc(ctx, etl.RequestInputStdin)
+		ctx = etl.WithLimited(ctx)
 		if err := processors.Process(ctx, username); err != nil {
 			panic(err)
 		}

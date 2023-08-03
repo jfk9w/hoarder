@@ -56,6 +56,13 @@ type User struct {
 	Name  string `gorm:"index"`
 }
 
+type Device struct {
+	UserPhone string `gorm:"primaryKey"`
+	User      User   `gorm:"constraint:OnDelete:CASCADE"`
+
+	Id string
+}
+
 type Tokens struct {
 	UserPhone string `json:"-" gorm:"primaryKey"`
 	User      User   `json:"-" gorm:"constraint:OnDelete:CASCADE"`
@@ -94,7 +101,7 @@ type Receipt struct {
 
 type FiscalDataItem struct {
 	ReceiptKey string `json:"-" gorm:"primaryKey"`
-	Position   int    `json:"-" gorm:"primaryKey"`
+	DbIdx      int    `json:"dbIdx" gorm:"primaryKey"`
 
 	Name        string  `json:"name"`
 	Nds         int     `json:"nds"`

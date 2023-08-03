@@ -6,11 +6,13 @@ import (
 	"time"
 
 	"github.com/AlekSi/pointer"
-	"github.com/jfk9w-go/lkdr-api"
-	"github.com/jfk9w/hoarder/util"
 	"github.com/pkg/errors"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
+
+	"github.com/jfk9w-go/lkdr-api"
+	"github.com/jfk9w/hoarder/etl"
+	"github.com/jfk9w/hoarder/util"
 )
 
 type updateFunc func(context.Context, int) (bool, error)
@@ -109,13 +111,13 @@ func (u *updater) updateFiscalData(ctx context.Context, offset int) (bool, error
 		}
 
 		fiscalData.Receipt.Key = key
-		for i := range fiscalData.Items {
-			fiscalData.Items[i].ReceiptKey = key
-			fiscalData.Items[i].Position = i + 1
-		}
 
 		if err := u.db.Clauses(util.Upsert("receipt_key")).Create(&fiscalData).Error; err != nil {
 			return false, errors.Wrapf(err, "upsert fiscal data %s", key)
+		}
+
+		if etl.IsLimited(ctx) {
+			return false, nil
 		}
 	}
 

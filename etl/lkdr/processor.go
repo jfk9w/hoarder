@@ -19,7 +19,7 @@ import (
 	"github.com/jfk9w/hoarder/util"
 )
 
-const Name = "Мои чеки онлайн"
+const Name = "lkdr"
 
 type Processor struct {
 	clients       map[string]map[string]*based.Lazy[Client]
@@ -48,7 +48,7 @@ func NewProcessor(cfg Config, clock based.Clock, captchaSolver captcha.TokenProv
 				return nil, errors.Wrap(err, "migrate db tables")
 			}
 
-			return db.Debug(), nil
+			return db, nil
 		},
 	}
 

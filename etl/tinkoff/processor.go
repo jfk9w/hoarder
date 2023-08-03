@@ -7,17 +7,19 @@ import (
 	"github.com/jfk9w-go/tinkoff-api"
 	"github.com/jfk9w/hoarder/etl"
 
-	"github.com/jfk9w-go/based"
 	"github.com/pkg/errors"
 	"gorm.io/gorm"
+
+	"github.com/jfk9w-go/based"
 
 	"github.com/jfk9w/hoarder/database"
 	"github.com/jfk9w/hoarder/util"
 )
 
-const Name = "Тинькофф"
+const Name = "tinkoff"
 
 type Processor struct {
+	clock     based.Clock
 	clients   map[string]map[string]*based.Lazy[Client]
 	db        *based.Lazy[*gorm.DB]
 	batchSize int
@@ -36,20 +38,25 @@ func NewProcessor(cfg Config, clock based.Clock) *Processor {
 				new(User),
 				new(Session),
 				new(Currency),
-				new(Card),
 				new(Account),
+				new(Card),
 				new(Category),
-				new(Location),
-				new(LoyaltyBonus),
 				new(SpendingCategory),
 				new(Brand),
+				new(Subgroup),
+				new(Operation),
+				new(Location),
+				new(LoyaltyBonus),
 				new(AdditionalInfo),
 				new(LoyaltyPayment),
 				new(Payment),
-				new(Subgroup),
-				new(Operation),
-				new(ReceiptItem),
 				new(Receipt),
+				new(ReceiptItem),
+				new(InvestOperationType),
+				new(InvestAccount),
+				new(InvestOperation),
+				new(Trade),
+				new(InvestChildOperation),
 			); err != nil {
 				return nil, errors.Wrap(err, "migrate db tables")
 			}
@@ -81,6 +88,7 @@ func NewProcessor(cfg Config, clock based.Clock) *Processor {
 	}
 
 	return &Processor{
+		clock:     clock,
 		clients:   clients,
 		db:        db,
 		batchSize: cfg.BatchSize,
@@ -127,6 +135,7 @@ func (p *Processor) Process(ctx context.Context, username string) error {
 		}
 
 		u := &updater{
+			clock:     p.clock,
 			client:    client,
 			db:        db,
 			phone:     phone,

@@ -38,13 +38,14 @@ properties:
         properties:
           driver:
             enum:
-              - postgres
               - mysql
+              - postgres
               - sqlite
             type: string
           dsn:
             examples:
               - file::memory:?cache=shared
+              - host=localhost port=5432 user=postgres password=postgres dbname=postgres
             type: string
         required:
           - driver
@@ -97,13 +98,14 @@ properties:
         properties:
           driver:
             enum:
-              - sqlite
-              - postgres
               - mysql
+              - postgres
+              - sqlite
             type: string
           dsn:
             examples:
               - file::memory:?cache=shared
+              - host=localhost port=5432 user=postgres password=postgres dbname=postgres
             type: string
         required:
           - driver

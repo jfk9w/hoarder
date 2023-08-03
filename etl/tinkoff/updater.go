@@ -5,16 +5,21 @@ import (
 	"database/sql"
 	"time"
 
+	"github.com/AlekSi/pointer"
 	"go.uber.org/multierr"
 
-	"github.com/jfk9w-go/tinkoff-api"
-	"github.com/jfk9w/hoarder/util"
 	"github.com/pkg/errors"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
+
+	"github.com/jfk9w-go/based"
+	"github.com/jfk9w-go/tinkoff-api"
+	"github.com/jfk9w/hoarder/etl"
+	"github.com/jfk9w/hoarder/util"
 )
 
 type updater struct {
+	clock     based.Clock
 	client    Client
 	db        *gorm.DB
 	phone     string
@@ -26,20 +31,35 @@ func (u *updater) run(ctx context.Context) (errs error) {
 	accountIds, err := u.updateAccounts(ctx)
 	if err != nil {
 		errs = multierr.Append(errs, errors.Wrap(err, "update accounts"))
-	}
+	} else {
+		for _, accountId := range accountIds {
+			if err := u.updateOperations(ctx, accountId); err != nil {
+				errs = multierr.Append(errs, errors.Wrapf(err, "update operations for account %s", accountId))
+			}
 
-	for _, accountId := range accountIds {
-		if err := u.updateOperations(ctx, accountId); err != nil {
-			errs = multierr.Append(errs, errors.Wrapf(err, "update operations for account %s", accountId))
+			if etl.IsLimited(ctx) {
+				break
+			}
+		}
+
+		if err := u.updateReceipts(ctx); err != nil {
+			errs = multierr.Append(errs, errors.Wrap(err, "update receipts"))
 		}
 	}
 
-	if err := u.updateReceipts(ctx); err != nil {
-		errs = multierr.Append(errs, errors.Wrap(err, "update receipts"))
-	}
+	//if err := u.updateInvestOperationTypes(ctx); err != nil {
+	//	errs = multierr.Append(errs, errors.Wrap(err, "update invest operation types"))
+	//}
 
-	if err := u.updateInvestOperationTypes(ctx); err != nil {
-		errs = multierr.Append(errs, errors.Wrap(err, "update invest operation types"))
+	investAccountIds, err := u.updateInvestAccounts(ctx)
+	if err != nil {
+		errs = multierr.Append(errs, errors.Wrap(err, "update invest accounts"))
+	} else {
+		for _, investAccountId := range investAccountIds {
+			if err := u.updateInvestOperations(ctx, investAccountId); err != nil {
+				errs = multierr.Append(errs, errors.Wrapf(err, "update operations for invest account %s", investAccountId))
+			}
+		}
 	}
 
 	return
@@ -54,7 +74,7 @@ var updatedAccountTypes = map[string]bool{
 func (u *updater) updateAccounts(ctx context.Context) ([]string, error) {
 	accountsOut, err := u.client.AccountsLightIb(ctx)
 	if err != nil {
-		return nil, errors.Wrap(err, "get accounts")
+		return nil, errors.Wrap(err, "get")
 	}
 
 	var (
@@ -132,24 +152,6 @@ func (u *updater) updateOperations(ctx context.Context, accountId string) error 
 		return errors.Wrap(err, "convert to entities")
 	}
 
-	for _, operation := range operations {
-		for i := range operation.Locations {
-			operation.Locations[i].Position = i + 1
-		}
-
-		for i := range operation.AdditionalInfo {
-			operation.AdditionalInfo[i].Position = i + 1
-		}
-
-		for i := range operation.LoyaltyPayment {
-			operation.LoyaltyPayment[i].Position = i + 1
-		}
-
-		for i := range operation.LoyaltyBonus {
-			operation.LoyaltyBonus[i].Position = i + 1
-		}
-	}
-
 	if err := u.db.Clauses(util.Upsert("id")).CreateInBatches(operations, u.batchSize).Error; err != nil {
 		return errors.Wrap(err, "update in db")
 	}
@@ -204,6 +206,10 @@ func (u *updater) updateReceipts(ctx context.Context) error {
 			if err := u.db.Clauses(util.Upsert("operation_id")).Create(&receipt).Error; err != nil {
 				return errors.Wrapf(err, "update for operation %s in db", operationId)
 			}
+
+			if etl.IsLimited(ctx) {
+				return nil
+			}
 		}
 
 		if len(operationIds) < u.batchSize {
@@ -247,6 +253,95 @@ func (u *updater) updateInvestOperationTypes(ctx context.Context) error {
 		return nil
 	}); err != nil {
 		return errors.Wrap(err, "update in db")
+	}
+
+	return nil
+}
+
+func (u *updater) updateInvestAccounts(ctx context.Context) ([]string, error) {
+	investAccountsOut, err := u.client.InvestAccounts(ctx, &tinkoff.InvestAccountsIn{Currency: "RUB"})
+	if err != nil {
+		return nil, errors.Wrap(err, "get")
+	}
+
+	investAccounts, err := util.ToViaJSON[[]InvestAccount](investAccountsOut.Accounts.List)
+	if err != nil {
+		return nil, errors.Wrap(err, "convert to entities")
+	}
+
+	var investAccountIds []string
+	for i := range investAccounts {
+		investAccount := &investAccounts[i]
+		investAccount.UserPhone = u.phone
+		investAccountIds = append(investAccountIds, investAccount.Id)
+	}
+
+	if err := u.db.Transaction(func(tx *gorm.DB) error {
+		if err := tx.Clauses(util.Upsert("id")).Create(investAccounts).Error; err != nil {
+			return errors.Wrap(err, "upsert")
+		}
+
+		if err := tx.Model(new(InvestAccount)).
+			Where("user_phone = ? and id not in ?", u.phone, investAccountIds).
+			Update("deleted", true).
+			Error; err != nil {
+			return errors.Wrap(err, "mark deleted")
+		}
+
+		return nil
+	}); err != nil {
+		return nil, errors.Wrap(err, "update in db")
+	}
+
+	return investAccountIds, nil
+}
+
+func (u *updater) updateInvestOperations(ctx context.Context, investAccountId string) error {
+	var cursor sql.NullString
+	if err := u.db.Model(new(InvestOperation)).
+		Select("invest_operations.cursor").
+		Joins("inner join invest_accounts on invest_operations.invest_account_id = invest_accounts.id").
+		Where("invest_accounts.user_phone = ? and invest_operations.date <= ?", u.phone, u.clock.Now().Add(-u.overlap)).
+		Order("invest_operations.date desc").
+		Limit(1).
+		Scan(&cursor).
+		Error; err != nil {
+		return errors.Wrap(err, "select cursor")
+	}
+
+	for {
+		investOperationsIn := &tinkoff.InvestOperationsIn{
+			From:               time.Date(2015, 1, 1, 0, 0, 0, 0, time.UTC),
+			To:                 u.clock.Now(),
+			BrokerAccountId:    investAccountId,
+			OvernightsDisabled: pointer.To(false),
+			Limit:              u.batchSize,
+			Cursor:             cursor.String,
+		}
+
+		investOperationsOut, err := u.client.InvestOperations(ctx, investOperationsIn)
+		if err != nil {
+			return errors.Wrapf(err, "get with cursor [%s]", cursor.String)
+		}
+
+		investOperations, err := util.ToViaJSON[[]InvestOperation](investOperationsOut.Items)
+		if err != nil {
+			return errors.Wrap(err, "convert to entities")
+		}
+
+		for i := range investOperations {
+			investOperations[i].InvestAccountId = investAccountId
+		}
+
+		if err := u.db.Clauses(util.Upsert("internal_id")).Create(investOperations).Error; err != nil {
+			return errors.Wrap(err, "update in db")
+		}
+
+		if !investOperationsOut.HasNext || etl.IsLimited(ctx) {
+			break
+		}
+
+		cursor.String = investOperationsOut.NextCursor
 	}
 
 	return nil
