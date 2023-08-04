@@ -81,6 +81,15 @@ properties:
       - db
       - users
     type: object
+  log:
+    additionalProperties: false
+    description: Настройки логирования для библиотеки zerolog
+    properties:
+      level:
+        default: info
+        description: Уровень логирования.
+        type: string
+    type: object
   run:
     description: Запуск загрузчиков для пользователя, переданного в параметре.
     type: string

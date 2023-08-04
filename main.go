@@ -5,17 +5,15 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/jfk9w/hoarder/etl"
-
-	"github.com/jfk9w/hoarder/etl/tinkoff"
-
 	"github.com/AlekSi/pointer"
-
 	"github.com/jfk9w-go/based"
 	"github.com/jfk9w-go/confi"
+	"github.com/rs/zerolog"
 
 	"github.com/jfk9w/hoarder/captcha"
+	"github.com/jfk9w/hoarder/etl"
 	"github.com/jfk9w/hoarder/etl/lkdr"
+	"github.com/jfk9w/hoarder/etl/tinkoff"
 )
 
 type Config struct {
@@ -25,6 +23,10 @@ type Config struct {
 		Schema bool `yaml:"schema,omitempty" doc:"Вывод схемы конфигурации в YAML."`
 		Values bool `yaml:"values,omitempty" doc:"Вывод значений конфигурации по умолчанию в JSON."`
 	} `yaml:"dump,omitempty" doc:"Вывод параметров конфигурации в стандартный поток вывода.\n\nПредназначены для использования как CLI-параметры."`
+
+	Log struct {
+		Level zerolog.Level `yaml:"level,omitempty" default:"1" doc:"Уровень логирования."`
+	} `yaml:"log,omitempty" doc:"Настройки логирования для библиотеки zerolog"`
 
 	Run string `yaml:"run,omitempty" doc:"Запуск загрузчиков для пользователя, переданного в параметре."`
 
