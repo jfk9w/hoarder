@@ -74,7 +74,11 @@ func main() {
 			EncodeTime:  zapcore.TimeEncoderOfLayout("2006-01-02T15:04:05.999"),
 		},
 	}.Build())
-	defer log.Sync()
+	defer func() {
+		if err := log.Sync(); err != nil {
+			panic(err)
+		}
+	}()
 
 	clock := based.StandardClock
 

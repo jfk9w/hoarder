@@ -250,7 +250,7 @@ func (u *updater) investOperationTypes(ctx context.Context, log *zap.Logger) err
 	}
 
 	var (
-		uniqueIds map[string]bool
+		uniqueIds = make(map[string]bool)
 		entities  []InvestOperationType
 		ids       []string
 	)
