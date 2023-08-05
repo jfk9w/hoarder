@@ -6,11 +6,11 @@ import (
 
 	"github.com/jfk9w-go/tinkoff-api"
 
-	"github.com/jfk9w/hoarder/database"
+	"github.com/jfk9w/hoarder/internal/database"
 )
 
 type Credential struct {
-	Phone    string `yaml:"phone" pattern:"\\+7\\d{10}" doc:"Номер телефона, на который зарегистрирован аккаунт Тинькофф."`
+	Phone    string `yaml:"phone" pattern:"7\\d{10}" doc:"Номер телефона, на который зарегистрирован аккаунт Тинькофф."`
 	Password string `yaml:"password" doc:"Пароль от аккаунта Тинькофф."`
 }
 

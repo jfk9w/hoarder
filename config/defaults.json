@@ -11,7 +11,10 @@
     "users": {}
   },
   "log": {
-    "level": "info"
+    "encoding": "console",
+    "outputPaths": [
+      "stderr"
+    ]
   },
   "tinkoff": {
     "batchSize": 100,
@@ -20,6 +23,11 @@
       "dsn": ""
     },
     "overlap": "168h0m0s",
+    "users": {}
+  },
+  "xmpp": {
+    "jid": "",
+    "password": "",
     "users": {}
   }
 }

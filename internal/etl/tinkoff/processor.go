@@ -4,33 +4,46 @@ import (
 	"context"
 	"time"
 
+	"github.com/go-playground/validator"
+	"go.uber.org/multierr"
+	"go.uber.org/zap"
+
 	"github.com/jfk9w-go/tinkoff-api"
 
-	"github.com/jfk9w/hoarder/etl"
+	"github.com/jfk9w/hoarder/internal/database"
+	"github.com/jfk9w/hoarder/internal/etl"
+	"github.com/jfk9w/hoarder/internal/util"
 
 	"github.com/pkg/errors"
 	"gorm.io/gorm"
 
 	"github.com/jfk9w-go/based"
-
-	"github.com/jfk9w/hoarder/database"
-	"github.com/jfk9w/hoarder/util"
 )
 
 const Name = "tinkoff"
 
-type Processor struct {
-	clock     based.Clock
-	clients   map[string]map[string]*based.Lazy[Client]
-	db        *based.Lazy[*gorm.DB]
-	batchSize int
-	overlap   time.Duration
+var validate = &based.Lazy[*validator.Validate]{
+	Fn: func(ctx context.Context) (*validator.Validate, error) {
+		return validator.New(), nil
+	},
 }
 
-func NewProcessor(cfg Config, clock based.Clock) *Processor {
+type Builder struct {
+	Config Config      `validate:"required"`
+	Clock  based.Clock `validate:"required"`
+	Log    *zap.Logger `validate:"required"`
+}
+
+func (b Builder) Build(ctx context.Context) (*Processor, error) {
+	if validate, err := validate.Get(ctx); err != nil {
+		return nil, err
+	} else if err := validate.Struct(b); err != nil {
+		return nil, err
+	}
+
 	db := &based.Lazy[*gorm.DB]{
 		Fn: func(ctx context.Context) (*gorm.DB, error) {
-			db, err := database.Open(cfg.DB)
+			db, err := database.Open(b.Config.DB)
 			if err != nil {
 				return nil, errors.Wrap(err, "open db connection")
 			}
@@ -68,7 +81,7 @@ func NewProcessor(cfg Config, clock based.Clock) *Processor {
 
 	sessionStorage := &sessionStorage{db: db}
 	clients := make(map[string]map[string]*based.Lazy[Client])
-	for username, credentials := range cfg.Users {
+	for username, credentials := range b.Config.Users {
 		clients[username] = make(map[string]*based.Lazy[Client])
 		clients := clients[username]
 		for _, credential := range credentials {
@@ -76,7 +89,7 @@ func NewProcessor(cfg Config, clock based.Clock) *Processor {
 			clients[credential.Phone] = &based.Lazy[Client]{
 				Fn: func(ctx context.Context) (Client, error) {
 					return tinkoff.ClientBuilder{
-						Clock: clock,
+						Clock: b.Clock,
 						Credential: tinkoff.Credential{
 							Phone:    credential.Phone,
 							Password: credential.Password,
@@ -89,27 +102,40 @@ func NewProcessor(cfg Config, clock based.Clock) *Processor {
 	}
 
 	return &Processor{
-		clock:     clock,
+		log:       b.Log,
+		clock:     b.Clock,
 		clients:   clients,
 		db:        db,
-		batchSize: cfg.BatchSize,
-		overlap:   cfg.Overlap,
-	}
+		batchSize: b.Config.BatchSize,
+		overlap:   b.Config.Overlap,
+	}, nil
+}
+
+type Processor struct {
+	log       *zap.Logger
+	clock     based.Clock
+	clients   map[string]map[string]*based.Lazy[Client]
+	db        *based.Lazy[*gorm.DB]
+	batchSize int
+	overlap   time.Duration
 }
 
 func (p *Processor) Name() string {
 	return Name
 }
 
-func (p *Processor) Process(ctx context.Context, username string) error {
+func (p *Processor) Process(ctx context.Context, username string) (errs error) {
 	clients, ok := p.clients[username]
 	if !ok {
 		return nil
 	}
 
+	log := p.log.With(zap.String("username", username))
+
 	db, err := p.db.Get(ctx)
 	if err != nil {
-		return errors.Wrap(err, "get db handle")
+		log.Error("failed to get db handle", zap.Error(err))
+		return errors.New("failed to get db handle")
 	}
 
 	db = db.WithContext(ctx)
@@ -121,9 +147,19 @@ func (p *Processor) Process(ctx context.Context, username string) error {
 	}
 
 	for phone, client := range clients {
+		log := log.With(zap.String("phone", phone))
+		errFn := func(err error, msg string) error {
+			if err == nil {
+				return nil
+			}
+
+			log.Error(msg, zap.Error(err))
+			return errors.Errorf("%s: %s", phone, msg)
+		}
+
 		client, err := client.Get(ctx)
-		if err != nil {
-			return errors.Wrapf(err, "get client for %s", phone)
+		if multierr.AppendInto(&errs, errFn(err, "failed to get client")) {
+			continue
 		}
 
 		user := User{
@@ -131,8 +167,9 @@ func (p *Processor) Process(ctx context.Context, username string) error {
 			Phone: phone,
 		}
 
-		if err := db.Clauses(util.Upsert("phone")).Create(user).Error; err != nil {
-			return errors.Wrapf(err, "create user %s:%s in db", username, phone)
+		err = db.Clauses(util.Upsert("phone")).Create(user).Error
+		if multierr.AppendInto(&errs, errFn(err, "failed to create user in db")) {
+			continue
 		}
 
 		u := &updater{
@@ -144,10 +181,10 @@ func (p *Processor) Process(ctx context.Context, username string) error {
 			overlap:   p.overlap,
 		}
 
-		if err := u.run(ctx); err != nil {
-			return errors.Wrapf(err, "for phone %s", phone)
+		for _, err := range multierr.Errors(u.run(ctx, log)) {
+			errs = multierr.Append(errs, errors.Wrap(err, phone))
 		}
 	}
 
-	return nil
+	return errs
 }

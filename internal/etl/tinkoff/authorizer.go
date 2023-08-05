@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/jfk9w/hoarder/etl"
+	"github.com/jfk9w/hoarder/internal/etl"
 )
 
 type authorizer struct {

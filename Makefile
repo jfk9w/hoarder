@@ -1,4 +1,5 @@
 MODULE := github.com/jfk9w/hoarder
+MAIN := cmd/service/main.go
 
 build:
 	go build -v ./...
@@ -7,10 +8,10 @@ test:
 	go test -v ./...
 
 schema:
-	mkdir -p config && go run main.go --dump.schema > config/schema.yaml
+	mkdir -p config && go run $(MAIN) --dump.schema > config/schema.yaml
 
 defaults:
-	mkdir -p config && go run main.go --dump.values > config/defaults.json
+	mkdir -p config && go run $(MAIN) --dump.values > config/defaults.json
 
 config: schema defaults
 

@@ -6,7 +6,7 @@ import (
 
 	"github.com/jfk9w-go/lkdr-api"
 
-	"github.com/jfk9w/hoarder/database"
+	"github.com/jfk9w/hoarder/internal/database"
 )
 
 type Credential struct {

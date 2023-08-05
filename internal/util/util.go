@@ -6,6 +6,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/pkg/errors"
+	"go.uber.org/zap"
 	"gorm.io/gorm/clause"
 )
 
@@ -74,7 +76,7 @@ func index(source any) {
 		for i, value := range source {
 			index(value)
 			if values, ok := value.(map[string]any); ok {
-				values["dbIdx"] = i
+				values["dbIdx"] = i + 1
 			}
 		}
 
@@ -101,4 +103,9 @@ func WithTimeout(ctx context.Context, timeout time.Duration, fn func(ctx context
 	ctx, cancel := context.WithTimeout(ctx, timeout)
 	defer cancel()
 	fn(ctx)
+}
+
+func LogError(log *zap.Logger, err error, message string) error {
+	log.Error(message, zap.Error(err))
+	return errors.Wrap(err, message)
 }

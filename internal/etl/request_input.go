@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/pkg/errors"
 )
@@ -19,8 +20,15 @@ func WithRequestInputFunc(ctx context.Context, fn RequestInputFunc) context.Cont
 }
 
 func GetRequestInputFunc(ctx context.Context) RequestInputFunc {
-	fn, _ := ctx.Value(requestInputFuncKey{}).(RequestInputFunc)
-	return fn
+	if fn, _ := ctx.Value(requestInputFuncKey{}).(RequestInputFunc); fn != nil {
+		return func(ctx context.Context, text string) (string, error) {
+			ctx, cancel := context.WithTimeout(ctx, time.Minute)
+			defer cancel()
+			return fn(ctx, text)
+		}
+	}
+
+	return nil
 }
 
 var RequestInputStdin RequestInputFunc = func(ctx context.Context, text string) (string, error) {

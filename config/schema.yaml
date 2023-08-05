@@ -83,16 +83,39 @@ properties:
     type: object
   log:
     additionalProperties: false
-    description: Настройки логирования для библиотеки zerolog
+    description: Настройки логирования для библиотеки zap
     properties:
+      encoding:
+        default: console
+        description: Формат логирования.
+        enum:
+          - json
+          - console
+        type: string
       level:
         default: info
         description: Уровень логирования.
+        enum:
+          - debug
+          - info
+          - warn
+          - error
+          - dpanic
+          - panic
+          - fatal
         type: string
+      outputPaths:
+        default:
+          - stderr
+        description: Пути логирования.
+        items:
+          examples:
+            - stdout
+            - stderr
+            - /var/log/hoarder.log
+          type: string
+        type: array
     type: object
-  run:
-    description: Запуск загрузчиков для пользователя, переданного в параметре.
-    type: string
   tinkoff:
     additionalProperties: false
     description: Настройка загрузчиков из онлайн-банка "Тинькофф".
@@ -135,7 +158,7 @@ properties:
                 type: string
               phone:
                 description: Номер телефона, на который зарегистрирован аккаунт Тинькофф.
-                pattern: \+7\d{10}
+                pattern: 7\d{10}
                 type: string
             required:
               - phone
@@ -146,6 +169,26 @@ properties:
         type: object
     required:
       - db
+      - users
+    type: object
+  xmpp:
+    additionalProperties: false
+    description: Настройки XMPP-интерфейса.
+    properties:
+      jid:
+        description: Jabber ID для бота.
+        type: string
+      password:
+        description: Пароль для бота.
+        type: string
+      users:
+        additionalProperties:
+          type: string
+        description: Маппинг JID в имя пользователя, используемое в загрузчиках.
+        type: object
+    required:
+      - jid
+      - password
       - users
     type: object
 type: object

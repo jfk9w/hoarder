@@ -4,9 +4,8 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/jfk9w/hoarder/captcha"
-
-	"github.com/jfk9w/hoarder/etl"
+	"github.com/jfk9w/hoarder/internal/captcha"
+	"github.com/jfk9w/hoarder/internal/etl"
 )
 
 type authorizer struct {
@@ -19,5 +18,5 @@ func (a *authorizer) GetCaptchaToken(ctx context.Context, userAgent, siteKey, pa
 }
 
 func (a *authorizer) GetConfirmationCode(ctx context.Context, phone string) (string, error) {
-	return a.requestInputFn(ctx, fmt.Sprintf("Код подтверждения \"%s\" (%s)", Name, phone))
+	return a.requestInputFn(ctx, fmt.Sprintf(`Код подтверждения для сервиса \"Мои чеки онлайн\" (%s):`, phone))
 }
