@@ -54,8 +54,8 @@ func (b Builder) Build(ctx context.Context) (*Processor, error) {
 				new(Tokens),
 				new(Brand),
 				new(Receipt),
-				new(FiscalDataItem),
 				new(FiscalData),
+				new(FiscalDataItem),
 			); err != nil {
 				return nil, errors.Wrap(err, "migrate db tables")
 			}

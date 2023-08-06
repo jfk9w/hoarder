@@ -16,6 +16,7 @@ import (
 	"github.com/jfk9w/hoarder/internal/etl"
 	"github.com/jfk9w/hoarder/internal/etl/lkdr"
 	"github.com/jfk9w/hoarder/internal/etl/tinkoff"
+	"github.com/jfk9w/hoarder/internal/iface/schedule"
 	"github.com/jfk9w/hoarder/internal/iface/xmpp"
 )
 
@@ -33,7 +34,8 @@ type Config struct {
 		OutputPaths []string      `yaml:"outputPaths,omitempty" default:"[stderr]" doc:"Пути логирования." examples:"stdout,stderr,/var/log/hoarder.log"`
 	} `yaml:"log,omitempty" doc:"Настройки логирования для библиотеки zap"`
 
-	XMPP *xmpp.Config `yaml:"xmpp,omitempty" doc:"Настройки XMPP-интерфейса."`
+	XMPP     *xmpp.Config     `yaml:"xmpp,omitempty" doc:"Настройки XMPP-интерфейса."`
+	Schedule *schedule.Config `yaml:"schedule,omitempty" doc:"Настройки фоновой синхронизации."`
 
 	LKDR    *lkdr.Config    `yaml:"lkdr,omitempty" doc:"Настройка загрузчиков из сервиса ФНС \"Мои чеки онлайн\"."`
 	Tinkoff *tinkoff.Config `yaml:"tinkoff,omitempty" doc:"Настройка загрузчиков из онлайн-банка \"Тинькофф\"."`
@@ -112,7 +114,7 @@ func main() {
 			Log:    log,
 		}.Build(ctx)
 		if err != nil {
-			log.Fatal("start", zap.Error(err))
+			log.Fatal("failed to start", zap.Error(err))
 		}
 
 		processors.Add(processor)
@@ -124,15 +126,29 @@ func main() {
 			Config:    *cfg,
 			Processor: processors,
 			Log:       log,
-		}.Run()
+		}.Run(ctx)
 		if err != nil {
-			log.Error("start", zap.Error(err))
+			log.Error("failed to start", zap.Error(err))
 		} else {
 			defer handler.Stop()
 		}
 	}
 
-	if err := based.AwaitSignal(ctx, syscall.SIGINT, syscall.SIGKILL); err != nil {
+	if cfg := cfg.Schedule; cfg != nil {
+		log := log.With(zap.String("interface", "schedule"))
+		cancel, err := schedule.Builder{
+			Config:    *cfg,
+			Processor: processors,
+			Log:       log,
+		}.Run(ctx)
+		if err != nil {
+			log.Error("failed to start", zap.Error(err))
+		} else {
+			defer cancel()
+		}
+	}
+
+	if err := based.AwaitSignal(ctx, syscall.SIGINT, syscall.SIGTERM); err != nil {
 		log.Fatal("failed to await signal", zap.Error(err))
 	}
 }

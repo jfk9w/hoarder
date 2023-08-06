@@ -8,6 +8,9 @@ import (
 	"sync/atomic"
 	"time"
 
+	"github.com/go-playground/validator"
+	"github.com/jfk9w-go/based"
+
 	"github.com/pkg/errors"
 	"go.uber.org/multierr"
 	"go.uber.org/zap"
@@ -36,7 +39,19 @@ type Builder struct {
 	Log       *zap.Logger `validate:"required"`
 }
 
-func (b Builder) Run() (*Handler, error) {
+var validate = &based.Lazy[*validator.Validate]{
+	Fn: func(ctx context.Context) (*validator.Validate, error) {
+		return validator.New(), nil
+	},
+}
+
+func (b Builder) Run(ctx context.Context) (*Handler, error) {
+	if validate, err := validate.Get(ctx); err != nil {
+		return nil, err
+	} else if err := validate.Struct(b); err != nil {
+		return nil, err
+	}
+
 	config := &xmpp.Config{
 		Jid:        b.Config.Jid,
 		Credential: xmpp.Password(b.Config.Password),
@@ -48,7 +63,7 @@ func (b Builder) Run() (*Handler, error) {
 		return nil, errors.Wrap(err, "create client")
 	}
 
-	ctx, cancel := context.WithCancel(context.Background())
+	ctx, cancel := context.WithCancel(ctx)
 
 	h := &Handler{
 		jid:       b.Config.Jid,
