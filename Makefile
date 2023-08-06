@@ -1,5 +1,5 @@
 MODULE := github.com/jfk9w/hoarder
-MAIN := cmd/service/main.go
+MAIN := cmd/hoarder/main.go
 
 build:
 	go build -v ./...
