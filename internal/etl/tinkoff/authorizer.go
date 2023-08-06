@@ -12,5 +12,5 @@ type authorizer struct {
 }
 
 func (a *authorizer) GetConfirmationCode(ctx context.Context, phone string) (string, error) {
-	return a.requestInputFn(ctx, fmt.Sprintf(`Код подтверждения для "Тинькофф" • %s`, phone))
+	return a.requestInputFn(ctx, fmt.Sprintf(`Код подтверждения для "Тинькофф" • %s:`, phone))
 }
