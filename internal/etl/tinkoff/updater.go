@@ -40,8 +40,10 @@ func (u *updater) run(ctx context.Context, log *zap.Logger) (errs error) {
 		}
 	}
 
-	err = u.receipts(ctx, entityLog("receipts"))
-	errs = multierr.Append(errs, errors.Wrap(err, "receipts"))
+	if !u.disableReceipts {
+		err = u.receipts(ctx, entityLog("receipts"))
+		errs = multierr.Append(errs, errors.Wrap(err, "receipts"))
+	}
 
 	err = u.investOperationTypes(ctx, entityLog("investOperationTypes"))
 	errs = multierr.Append(errs, errors.Wrap(err, "invest operation types"))
