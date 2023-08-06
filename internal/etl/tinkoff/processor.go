@@ -98,22 +98,24 @@ func (b Builder) Build(ctx context.Context) (*Processor, error) {
 	}
 
 	return &Processor{
-		log:       b.Log,
-		clock:     b.Clock,
-		clients:   clients,
-		db:        db,
-		batchSize: b.Config.BatchSize,
-		overlap:   b.Config.Overlap,
+		log:             b.Log,
+		clock:           b.Clock,
+		clients:         clients,
+		db:              db,
+		batchSize:       b.Config.BatchSize,
+		overlap:         b.Config.Overlap,
+		disableReceipts: b.Config.DisableReceipts,
 	}, nil
 }
 
 type Processor struct {
-	log       *zap.Logger
-	clock     based.Clock
-	clients   map[string]map[string]*based.Lazy[Client]
-	db        *based.Lazy[*gorm.DB]
-	batchSize int
-	overlap   time.Duration
+	log             *zap.Logger
+	clock           based.Clock
+	clients         map[string]map[string]*based.Lazy[Client]
+	db              *based.Lazy[*gorm.DB]
+	batchSize       int
+	overlap         time.Duration
+	disableReceipts bool
 }
 
 func (p *Processor) Name() string {
@@ -169,12 +171,13 @@ func (p *Processor) Process(ctx context.Context, username string) (errs error) {
 		}
 
 		u := &updater{
-			clock:     p.clock,
-			client:    client,
-			db:        db,
-			phone:     phone,
-			batchSize: p.batchSize,
-			overlap:   p.overlap,
+			clock:           p.clock,
+			client:          client,
+			db:              db,
+			phone:           phone,
+			batchSize:       p.batchSize,
+			overlap:         p.overlap,
+			disableReceipts: p.disableReceipts,
 		}
 
 		for _, err := range multierr.Errors(u.run(ctx, log)) {

@@ -160,6 +160,9 @@ properties:
           - driver
           - dsn
         type: object
+      disableReceipts:
+        description: Отключить синхронизацию чеков.
+        type: boolean
       overlap:
         default: 168h0m0s
         description: Продолжительность "нахлеста" при обновлении операций.

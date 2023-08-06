@@ -17,12 +17,13 @@ import (
 )
 
 type updater struct {
-	clock     based.Clock
-	client    Client
-	db        *gorm.DB
-	phone     string
-	batchSize int
-	overlap   time.Duration
+	clock           based.Clock
+	client          Client
+	db              *gorm.DB
+	phone           string
+	batchSize       int
+	overlap         time.Duration
+	disableReceipts bool
 }
 
 func (u *updater) run(ctx context.Context, log *zap.Logger) (errs error) {
