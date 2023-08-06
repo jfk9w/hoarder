@@ -180,7 +180,7 @@ func (u *updater) receipts(ctx context.Context, log *zap.Logger) error {
 			Where("accounts.user_phone = ? "+
 				"and operations.debiting_time is not null "+
 				"and operations.has_shopping_receipt "+
-				"and receipt.operation_id is null", u.phone).
+				"and receipts.operation_id is null", u.phone).
 			Order("operations.debiting_time asc").
 			Limit(u.batchSize).
 			Scan(&ids).
