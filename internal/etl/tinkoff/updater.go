@@ -176,8 +176,7 @@ func (u *updater) receipts(ctx context.Context, log *zap.Logger) error {
 			Joins("left join receipts on operations.id = receipts.operation_id").
 			Where("accounts.user_phone = ? and operations.debiting_time is not null and operations.has_shopping_receipt", u.phone).
 			Order("operations.debiting_time asc").
-			Offset(offset).
-			Limit(1000).
+			Limit(u.batchSize).
 			Scan(&ids).
 			Error; err != nil {
 			log.Error("failed to select pending", zap.Error(err))
