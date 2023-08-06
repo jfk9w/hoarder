@@ -7,19 +7,16 @@ import (
 	"time"
 
 	"github.com/go-playground/validator"
-	"go.uber.org/multierr"
-	"go.uber.org/zap"
-
-	"github.com/pkg/errors"
-	"gorm.io/gorm"
-
 	"github.com/jfk9w-go/based"
 	"github.com/jfk9w-go/lkdr-api"
+	"github.com/pkg/errors"
+	"go.uber.org/multierr"
+	"go.uber.org/zap"
+	"gorm.io/gorm"
 
 	"github.com/jfk9w/hoarder/internal/captcha"
 	"github.com/jfk9w/hoarder/internal/database"
 	"github.com/jfk9w/hoarder/internal/etl"
-	"github.com/jfk9w/hoarder/internal/util"
 )
 
 const Name = "lkdr"
@@ -160,7 +157,7 @@ func (p *Processor) Process(ctx context.Context, username string) (errs error) {
 			Phone: phone,
 		}
 
-		err = db.Clauses(util.Upsert("phone")).Create(user).Error
+		err = db.Clauses(etl.Upsert("phone")).Create(user).Error
 		if multierr.AppendInto(&errs, errFn(err, "failed to create user in db")) {
 			continue
 		}
@@ -178,7 +175,11 @@ func (p *Processor) Process(ctx context.Context, username string) (errs error) {
 		}
 	}
 
-	return nil
+	if ctx.Err() != nil {
+		return ctx.Err()
+	}
+
+	return
 }
 
 func generateDeviceID(userAgent, phone string) (string, error) {

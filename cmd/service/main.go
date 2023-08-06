@@ -6,11 +6,11 @@ import (
 	"syscall"
 
 	"github.com/AlekSi/pointer"
-	"go.uber.org/zap"
-	"go.uber.org/zap/zapcore"
-
 	"github.com/jfk9w-go/based"
 	"github.com/jfk9w-go/confi"
+	"github.com/pkg/errors"
+	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
 
 	"github.com/jfk9w/hoarder/internal/captcha"
 	"github.com/jfk9w/hoarder/internal/etl"
@@ -75,7 +75,7 @@ func main() {
 		},
 	}.Build())
 	defer func() {
-		if err := log.Sync(); err != nil {
+		if err := log.Sync(); err != nil && !errors.Is(err, syscall.ENOTTY) {
 			panic(err)
 		}
 	}()
@@ -87,7 +87,7 @@ func main() {
 		panic(err)
 	}
 
-	builder := new(etl.Builder)
+	processors := new(etl.Processors)
 
 	if cfg := cfg.LKDR; cfg != nil {
 		log := log.With(zap.String("processor", lkdr.Name))
@@ -101,7 +101,7 @@ func main() {
 			log.Fatal("failed to start", zap.Error(err))
 		}
 
-		builder.Add(processor)
+		processors.Add(processor)
 	}
 
 	if cfg := cfg.Tinkoff; cfg != nil {
@@ -115,14 +115,12 @@ func main() {
 			log.Fatal("start", zap.Error(err))
 		}
 
-		builder.Add(processor)
+		processors.Add(processor)
 	}
-
-	processors := builder.Build()
 
 	if cfg := cfg.XMPP; cfg != nil {
 		log := log.With(zap.String("interface", "xmpp"))
-		cancel, err := xmpp.Builder{
+		handler, err := xmpp.Builder{
 			Config:    *cfg,
 			Processor: processors,
 			Log:       log,
@@ -130,7 +128,7 @@ func main() {
 		if err != nil {
 			log.Error("start", zap.Error(err))
 		} else {
-			defer cancel()
+			defer handler.Stop()
 		}
 	}
 

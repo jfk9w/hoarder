@@ -6,16 +6,14 @@ import (
 	"time"
 
 	"github.com/AlekSi/pointer"
-	"go.uber.org/multierr"
-	"go.uber.org/zap"
-
-	"github.com/pkg/errors"
-	"gorm.io/gorm"
-
 	"github.com/jfk9w-go/based"
 	"github.com/jfk9w-go/tinkoff-api"
+	"github.com/pkg/errors"
+	"go.uber.org/multierr"
+	"go.uber.org/zap"
+	"gorm.io/gorm"
 
-	"github.com/jfk9w/hoarder/internal/util"
+	"github.com/jfk9w/hoarder/internal/etl"
 )
 
 type updater struct {
@@ -86,7 +84,7 @@ func (u *updater) accounts(ctx context.Context, log *zap.Logger) ([]string, erro
 			continue
 		}
 
-		entity, err := util.ToViaJSON[Account](out)
+		entity, err := etl.ToViaJSON[Account](out)
 		if err != nil {
 			log.Error("conversion failed", zap.Error(err))
 			return nil, errors.Errorf("%s: conversion failed", id)
@@ -99,7 +97,7 @@ func (u *updater) accounts(ctx context.Context, log *zap.Logger) ([]string, erro
 	}
 
 	if err := u.db.Transaction(func(tx *gorm.DB) error {
-		if err := tx.Clauses(util.Upsert("id")).Create(entities).Error; err != nil {
+		if err := tx.Clauses(etl.Upsert("id")).Create(entities).Error; err != nil {
 			log.Error("failed to update in db", zap.Error(err))
 			return errors.New("failed to update in db")
 		}
@@ -147,13 +145,13 @@ func (u *updater) operations(ctx context.Context, log *zap.Logger, accountId str
 		return errors.New("failed to get")
 	}
 
-	entities, err := util.ToViaJSON[[]Operation](out)
+	entities, err := etl.ToViaJSON[[]Operation](out)
 	if err != nil {
 		log.Error("conversion failed", zap.Error(err))
 		return errors.New("conversion failed")
 	}
 
-	if err := u.db.Clauses(util.Upsert("id")).CreateInBatches(entities, u.batchSize).Error; err != nil {
+	if err := u.db.Clauses(etl.Upsert("id")).CreateInBatches(entities, u.batchSize).Error; err != nil {
 		log.Error("failed to update in db", zap.Error(err))
 		return errors.New("failed to update in db")
 	}
@@ -216,14 +214,14 @@ func (u *updater) receipts(ctx context.Context, log *zap.Logger) error {
 				return errFn(err, "get")
 			}
 
-			entity, err := util.ToViaJSON[Receipt](out.Receipt)
+			entity, err := etl.ToViaJSON[Receipt](out.Receipt)
 			if err != nil {
 				return errFn(err, "conversion failed")
 			}
 
 			entity.OperationId = id
 
-			if err := u.db.Clauses(util.Upsert("operation_id")).Create(&entity).Error; err != nil {
+			if err := u.db.Clauses(etl.Upsert("operation_id")).Create(&entity).Error; err != nil {
 				return errFn(err, "failed to update in db")
 			}
 
@@ -264,7 +262,7 @@ func (u *updater) investOperationTypes(ctx context.Context, log *zap.Logger) err
 			continue
 		}
 
-		entity, err := util.ToViaJSON[InvestOperationType](out)
+		entity, err := etl.ToViaJSON[InvestOperationType](out)
 		if err != nil {
 			log.Error("conversion failed", zap.Error(err))
 			return errors.Errorf("%s: conversion failed", id)
@@ -276,7 +274,7 @@ func (u *updater) investOperationTypes(ctx context.Context, log *zap.Logger) err
 	}
 
 	if err := u.db.Transaction(func(tx *gorm.DB) error {
-		if err := tx.Clauses(util.Upsert("operation_type")).
+		if err := tx.Clauses(etl.Upsert("operation_type")).
 			CreateInBatches(entities, u.batchSize).
 			Error; err != nil {
 			log.Error("failed to update in db", zap.Error(err))
@@ -307,7 +305,7 @@ func (u *updater) investAccounts(ctx context.Context, log *zap.Logger) ([]string
 		return nil, errors.New("failed to get")
 	}
 
-	entities, err := util.ToViaJSON[[]InvestAccount](out.Accounts.List)
+	entities, err := etl.ToViaJSON[[]InvestAccount](out.Accounts.List)
 	if err != nil {
 		log.Error("conversion failed", zap.Error(err))
 		return nil, errors.New("conversion failed")
@@ -321,7 +319,7 @@ func (u *updater) investAccounts(ctx context.Context, log *zap.Logger) ([]string
 	}
 
 	if err := u.db.Transaction(func(tx *gorm.DB) error {
-		if err := tx.Clauses(util.Upsert("id")).Create(entities).Error; err != nil {
+		if err := tx.Clauses(etl.Upsert("id")).Create(entities).Error; err != nil {
 			log.Error("failed to update in db", zap.Error(err))
 			return errors.New("failed to update in db")
 		}
@@ -390,7 +388,7 @@ func (u *updater) investOperations(ctx context.Context, log *zap.Logger, investA
 			return errFn(err, "failed to get")
 		}
 
-		entities, err := util.ToViaJSON[[]InvestOperation](out.Items)
+		entities, err := etl.ToViaJSON[[]InvestOperation](out.Items)
 		if err != nil {
 			return errFn(err, "conversion failed")
 		}
@@ -399,7 +397,7 @@ func (u *updater) investOperations(ctx context.Context, log *zap.Logger, investA
 			entities[i].InvestAccountId = investAccountId
 		}
 
-		if err := u.db.Clauses(util.Upsert("internal_id")).Create(entities).Error; err != nil {
+		if err := u.db.Clauses(etl.Upsert("internal_id")).Create(entities).Error; err != nil {
 			return errFn(err, "failed to update in db")
 		}
 

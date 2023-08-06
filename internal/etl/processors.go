@@ -4,10 +4,9 @@ import (
 	"context"
 	"sync"
 
+	"github.com/jfk9w-go/based"
 	"github.com/pkg/errors"
 	"go.uber.org/multierr"
-
-	"github.com/jfk9w-go/based"
 )
 
 type Processor interface {
@@ -15,24 +14,14 @@ type Processor interface {
 	Process(ctx context.Context, username string) error
 }
 
-type Builder struct {
-	processors []Processor
-}
-
-func (b *Builder) Add(processor Processor) {
-	b.processors = append(b.processors, processor)
-}
-
-func (b *Builder) Build() *Processors {
-	return &Processors{
-		processors: b.processors,
-	}
-}
-
 type Processors struct {
 	processors []Processor
 	userMus    map[string]*sync.Mutex
 	mu         based.RWMutex
+}
+
+func (ps *Processors) Add(processor Processor) {
+	ps.processors = append(ps.processors, processor)
 }
 
 func (ps *Processors) Process(ctx context.Context, username string) (errs error) {
@@ -53,7 +42,7 @@ func (ps *Processors) Process(ctx context.Context, username string) (errs error)
 		}
 	}
 
-	return errs
+	return
 }
 
 func (ps *Processors) userMu(ctx context.Context, username string) (*sync.Mutex, error) {

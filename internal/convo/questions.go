@@ -3,9 +3,8 @@ package convo
 import (
 	"context"
 
-	"github.com/pkg/errors"
-
 	"github.com/jfk9w-go/based"
+	"github.com/pkg/errors"
 )
 
 var (

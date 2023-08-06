@@ -2,8 +2,11 @@ package xmpp
 
 import (
 	"context"
+	"fmt"
 	"strings"
 	"sync"
+	"sync/atomic"
+	"time"
 
 	"github.com/pkg/errors"
 	"go.uber.org/multierr"
@@ -33,90 +36,35 @@ type Builder struct {
 	Log       *zap.Logger `validate:"required"`
 }
 
-func (b Builder) Run() (context.CancelFunc, error) {
+func (b Builder) Run() (*Handler, error) {
 	config := &xmpp.Config{
 		Jid:        b.Config.Jid,
 		Credential: xmpp.Password(b.Config.Password),
 	}
 
 	router := xmpp.NewRouter()
-	client, err := xmpp.NewClient(config, router, func(err error) {
-		b.Log.Error("client error", zap.Error(err))
-	})
-
+	client, err := xmpp.NewClient(config, router, func(err error) { b.Log.Error("client error", zap.Error(err)) })
 	if err != nil {
 		return nil, errors.Wrap(err, "create client")
 	}
 
 	ctx, cancel := context.WithCancel(context.Background())
-	questions := convo.NewQuestions[string, string]()
-	var wg sync.WaitGroup
-	router.HandleFunc("message", func(sender xmpp.Sender, packet stanza.Packet) {
-		wg.Add(1)
-		defer wg.Done()
 
-		msg, ok := packet.(stanza.Message)
-		if !ok {
-			return
-		}
+	h := &Handler{
+		jid:       b.Config.Jid,
+		users:     b.Config.Users,
+		questions: convo.NewQuestions[string, string](),
+		processor: b.Processor,
+		log:       b.Log,
+		ctx:       ctx,
+	}
 
-		var username string
-		for prefix, user := range b.Config.Users {
-			if strings.HasPrefix(msg.From, prefix) {
-				username = user
-				break
-			}
-		}
+	router.HandleFunc("message", h.handleMessage)
 
-		if username == "" {
-			return
-		}
-
-		log := b.Log.With(zap.String("username", username))
-		log.Debug("received message", zap.String("text", msg.Body))
-
-		var (
-			ctx, cancel = context.WithCancel(ctx)
-			recipient   = &recipient{
-				sender: sender,
-				from:   b.Config.Jid,
-				to:     msg.From,
-				log:    log,
-			}
-		)
-
-		defer cancel()
-
-		err := questions.Answer(ctx, msg.From, msg.Body)
-		switch err {
-		case nil:
-			return
-
-		case convo.ErrNoQuestions:
-			var (
-				ctx   = etl.WithRequestInputFunc(ctx, requestInputFunc(recipient, msg.From, questions))
-				reply = "✅"
-			)
-
-			if err := b.Processor.Process(ctx, username); err != nil {
-				var b strings.Builder
-				for _, err := range multierr.Errors(err) {
-					b.WriteString("❌ ")
-					b.WriteString(err.Error())
-					b.WriteRune('\n')
-				}
-
-				reply = strings.Trim(b.String(), "\n")
-			}
-
-			_ = recipient.send(reply)
-
-		default:
-			_ = recipient.send(err.Error())
-		}
+	cm := xmpp.NewStreamManager(client, func(sender xmpp.Sender) {
+		b.sendPresence(sender, stanza.PresenceShowChat)
 	})
 
-	cm := xmpp.NewStreamManager(client, nil)
 	go func() {
 		if err := cm.Run(); err != nil {
 			b.Log.Error("finished stream manager", zap.Error(err))
@@ -126,44 +74,157 @@ func (b Builder) Run() (context.CancelFunc, error) {
 		b.Log.Debug("finished stream manager")
 	}()
 
-	b.Log.Debug("started")
-	return func() {
+	h.cancel = func() {
+		b.sendPresence(client, stanza.PresenceShowDND)
 		cancel()
-		wg.Wait()
+		h.work.Wait()
+		b.sendPresence(client, stanza.PresenceShowXA)
 		cm.Stop()
-		b.Log.Debug("stopped")
-	}, nil
+	}
+
+	b.Log.Debug("started")
+
+	return h, nil
 }
 
-type recipient struct {
-	sender   xmpp.Sender
-	from, to string
-	log      *zap.Logger
+func (b Builder) sendPresence(sender xmpp.Sender, show stanza.PresenceShow) {
+	log := b.Log.With(zap.String("show", string(show)))
+	for to := range b.Config.Users {
+		log := log.With(zap.String("to", to))
+		presence := stanza.NewPresence(stanza.Attrs{From: b.Config.Jid, To: to})
+		presence.Show = show
+
+		if err := sender.Send(presence); err != nil {
+			log.Error("failed to send presence", zap.Error(err))
+			continue
+		}
+
+		log.Debug("sent presence")
+	}
 }
 
-func (r *recipient) send(text string) error {
-	log := r.log.With(zap.String("text", text))
+type Handler struct {
+	jid       string
+	users     map[string]string
+	questions convo.Questions[string, string]
+	processor Processor
+	log       *zap.Logger
+	ctx       context.Context
+	cancel    func()
+	stop      atomic.Bool
+	work      sync.WaitGroup
+}
 
-	message := stanza.NewMessage(stanza.Attrs{
-		From: r.from,
-		To:   r.to,
-	})
+func (h *Handler) handleMessage(sender xmpp.Sender, packet stanza.Packet) {
+	if h.stop.Load() {
+		return
+	}
 
+	h.work.Add(1)
+	defer h.work.Done()
+
+	msg, ok := packet.(stanza.Message)
+	if !ok || msg.Body == "" {
+		return
+	}
+
+	var username string
+	for prefix, user := range h.users {
+		if strings.HasPrefix(msg.From, prefix) {
+			username = user
+			break
+		}
+	}
+
+	if username == "" {
+		return
+	}
+
+	log := h.log.With(zap.String("username", username))
+	log.Debug("received message", zap.String("text", msg.Body))
+
+	ctx, cancel := context.WithCancel(h.ctx)
+	defer cancel()
+
+	err := h.questions.Answer(ctx, msg.From, msg.Body)
+	switch err {
+	case nil:
+		return
+
+	case convo.ErrNoQuestions:
+		go func(ctx context.Context) {
+			ticker := time.NewTicker(5 * time.Second)
+			defer ticker.Stop()
+			for {
+				_ = h.sendState(sender, msg.From, stanza.StateComposing{})
+				select {
+				case <-ticker.C:
+				case <-ctx.Done():
+					_ = h.sendState(sender, msg.From, stanza.StateInactive{})
+					return
+				}
+			}
+		}(ctx)
+
+		ctx := etl.WithRequestInputFunc(ctx, h.requestInputFunc(sender, msg.From))
+		reply := "✅"
+
+		if err := h.processor.Process(ctx, username); err != nil {
+			var b strings.Builder
+			for _, err := range multierr.Errors(err) {
+				b.WriteString("❌ ")
+				b.WriteString(err.Error())
+				b.WriteRune('\n')
+			}
+
+			reply = strings.Trim(b.String(), "\n")
+		}
+
+		_ = h.sendMessage(sender, msg.From, reply)
+
+	default:
+		_ = h.sendMessage(sender, msg.From, err.Error())
+	}
+}
+
+func (h *Handler) requestInputFunc(sender xmpp.Sender, to string) etl.RequestInputFunc {
+	return func(ctx context.Context, text string) (string, error) {
+		return h.questions.Ask(ctx, to, func(ctx context.Context, key string) error {
+			return h.sendMessage(sender, to, text)
+		})
+	}
+}
+
+func (h *Handler) sendState(sender xmpp.Sender, to string, state stanza.MsgExtension) error {
+	log := h.log.With(zap.String("to", to), zap.String("state", fmt.Sprintf("%T", state)))
+	message := stanza.NewMessage(stanza.Attrs{From: h.jid, To: to})
+	message.Extensions = append(message.Extensions, state)
+
+	if err := sender.Send(message); err != nil {
+		h.log.Error("failed to send state", zap.Error(err))
+		return errors.New("failed to send state")
+	}
+
+	log.Debug("sent state")
+	return nil
+}
+
+func (h *Handler) sendMessage(sender xmpp.Sender, to string, text string) error {
+	log := h.log.With(zap.String("to", to), zap.String("text", text))
+	message := stanza.NewMessage(stanza.Attrs{From: h.jid, To: to})
 	message.Body = text
 
-	if err := r.sender.Send(message); err != nil {
-		log.Error("send", zap.Error(err))
-		return errors.New("send")
+	if err := sender.Send(message); err != nil {
+		log.Error("failed to send message", zap.Error(err))
+		return errors.New("failed to send message")
 	}
 
 	log.Debug("sent message")
 	return nil
 }
 
-func requestInputFunc(recipient *recipient, to string, asker convo.Asker[string, string]) etl.RequestInputFunc {
-	return func(ctx context.Context, text string) (string, error) {
-		return asker.Ask(ctx, to, func(ctx context.Context, key string) error {
-			return recipient.send(text)
-		})
-	}
+func (h *Handler) Stop() {
+	h.stop.Store(true)
+	h.cancel()
+	h.log.Debug("stopped")
 }

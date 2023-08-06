@@ -5,11 +5,10 @@ import (
 
 	"github.com/jfk9w-go/based"
 	"github.com/jfk9w-go/tinkoff-api"
-
-	"github.com/jfk9w/hoarder/internal/util"
-
 	"github.com/pkg/errors"
 	"gorm.io/gorm"
+
+	"github.com/jfk9w/hoarder/internal/etl"
 )
 
 type sessionStorage struct {
@@ -33,7 +32,7 @@ func (s *sessionStorage) LoadSession(ctx context.Context, phone string) (*tinkof
 		return nil, errors.Wrap(err, "get session record from db")
 	}
 
-	return util.ToViaJSON[*tinkoff.Session](entity)
+	return etl.ToViaJSON[*tinkoff.Session](entity)
 }
 
 func (s *sessionStorage) UpdateSession(ctx context.Context, phone string, session *tinkoff.Session) error {
@@ -48,14 +47,14 @@ func (s *sessionStorage) UpdateSession(ctx context.Context, phone string, sessio
 		return errors.Wrap(db.Delete(new(Session), phone).Error, "delete tokens from db")
 	}
 
-	entity, err := util.ToViaJSON[*Session](session)
+	entity, err := etl.ToViaJSON[*Session](session)
 	if err != nil {
 		return err
 	}
 
 	entity.UserPhone = phone
 
-	if err := db.Clauses(util.Upsert("user_phone")).Create(entity).Error; err != nil {
+	if err := db.Clauses(etl.Upsert("user_phone")).Create(entity).Error; err != nil {
 		return errors.Wrap(err, "upsert session record")
 	}
 

@@ -5,7 +5,6 @@ import (
 	"time"
 
 	"github.com/jfk9w-go/lkdr-api"
-
 	"github.com/pkg/errors"
 )
 

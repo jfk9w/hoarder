@@ -3,10 +3,9 @@ package captcha
 import (
 	"context"
 
-	"github.com/pkg/errors"
-
 	"github.com/jfk9w-go/based"
 	"github.com/jfk9w-go/rucaptcha-api"
+	"github.com/pkg/errors"
 )
 
 type Config struct {

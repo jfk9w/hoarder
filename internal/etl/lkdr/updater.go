@@ -3,19 +3,18 @@ package lkdr
 import (
 	"context"
 	"database/sql"
+	"strings"
 	"time"
 
 	"github.com/AlekSi/pointer"
+	"github.com/jfk9w-go/lkdr-api"
 	"github.com/pkg/errors"
 	"go.uber.org/multierr"
 	"go.uber.org/zap"
-	"go.uber.org/zap/zapcore"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 
-	"github.com/jfk9w-go/lkdr-api"
-
-	"github.com/jfk9w/hoarder/internal/util"
+	"github.com/jfk9w/hoarder/internal/etl"
 )
 
 type updateFunc func(ctx context.Context, log *zap.Logger, offset int) (bool, error)
@@ -69,8 +68,8 @@ func (u *updater) run(ctx context.Context, log *zap.Logger) (errs error) {
 		for hasMore {
 			log := log.With(zap.Int("offset", offset))
 			hasMore, err = item.fn(ctx, log, offset)
-			if err != nil {
-				errs = multierr.Append(errs, err)
+			for _, err := range multierr.Errors(err) {
+				errs = multierr.Append(errs, errors.Wrapf(err, "offset %d", offset))
 			}
 
 			if !hasMore {
@@ -104,12 +103,12 @@ func (u *updater) fiscalData(ctx context.Context, log *zap.Logger, offset int) (
 	for _, key := range keys {
 		var (
 			log   = log.With(zap.String("key", key))
-			errFn = func(err error, level zapcore.Level, msg string) error {
+			errFn = func(err error, msg string) error {
 				if err == nil {
 					return nil
 				}
 
-				log.Log(level, msg, zap.Error(err))
+				log.Error(msg, zap.Error(err))
 				return errors.Errorf("%s: %s", key, msg)
 			}
 
@@ -117,29 +116,37 @@ func (u *updater) fiscalData(ctx context.Context, log *zap.Logger, offset int) (
 			err error
 		)
 
-		util.WithTimeout(ctx, u.timeout, func(ctx context.Context) {
+		etl.WithTimeout(ctx, u.timeout, func(ctx context.Context) {
 			out, err = u.client.FiscalData(ctx, &lkdr.FiscalDataIn{Key: key})
 		})
 
-		if err := errFn(err, zapcore.WarnLevel, "failed to get"); multierr.AppendInto(&errs, err) {
-			continue
+		if err != nil {
+			if strings.Contains(err.Error(), "Внутреняя ошибка. Попробуйте еще раз.") {
+				log.Warn("failed to get", zap.Error(err))
+				continue
+			}
+
+			errs = multierr.Append(errs, errFn(err, "failed to get"))
+			return
 		}
 
-		entity, err := util.ToViaJSON[FiscalData](out)
-		if err := errFn(err, zapcore.ErrorLevel, "conversion failed"); multierr.AppendInto(&errs, err) {
+		entity, err := etl.ToViaJSON[FiscalData](out)
+		if err := errFn(err, "conversion failed"); multierr.AppendInto(&errs, err) {
 			return
 		}
 
 		entity.Receipt.Key = key
 
-		err = u.db.Clauses(util.Upsert("receipt_key")).Create(&entity).Error
-		if err := errFn(err, zapcore.ErrorLevel, "failed to update in db"); multierr.AppendInto(&errs, err) {
+		err = u.db.Clauses(etl.Upsert("receipt_key")).Create(&entity).Error
+		if err := errFn(err, "failed to update in db"); multierr.AppendInto(&errs, err) {
 			return
 		}
+
+		log.Debug("record update completed")
 	}
 
-	log.Debug("partial update completed", zap.Int("count", len(keys)))
-	return len(keys) == u.batchSize, nil
+	hasMore = len(keys) == u.batchSize
+	return
 }
 
 func (u *updater) receipts(receiptDateFrom *lkdr.Date) updateFunc {
@@ -156,37 +163,45 @@ func (u *updater) receipts(receiptDateFrom *lkdr.Date) updateFunc {
 			err error
 		)
 
-		util.WithTimeout(ctx, u.timeout, func(ctx context.Context) { out, err = u.client.Receipt(ctx, in) })
+		etl.WithTimeout(ctx, u.timeout, func(ctx context.Context) { out, err = u.client.Receipt(ctx, in) })
 
 		if err != nil {
 			log.Error("failed to get", zap.Error(err))
 			return false, errors.New("failed to get")
 		}
 
-		brands, err := util.ToViaJSON[[]Brand](out.Brands)
-		if err != nil {
-			log.Error("brands conversion failed", zap.Error(err))
-			return false, errors.New("brand conversion failed")
+		if len(out.Brands) > 0 {
+			brands, err := etl.ToViaJSON[[]Brand](out.Brands)
+			if err != nil {
+				log.Error("brands conversion failed", zap.Error(err))
+				return false, errors.New("brand conversion failed")
+			}
+
+			if err := u.db.Clauses(etl.Upsert("id")).Create(brands).Error; err != nil {
+				log.Error("failed to update brands in db", zap.Error(err))
+				return false, errors.New("failed to update brands in db")
+			}
+
+			log.Debug("partial brands update completed", zap.Int("count", len(brands)))
 		}
 
-		if err := u.db.Clauses(util.Upsert("id")).Create(brands).Error; err != nil {
-			log.Error("failed to update brands in db", zap.Error(err))
-			return false, errors.New("failed to update brands in db")
-		}
+		if len(out.Receipts) > 0 {
+			receipts, err := etl.ToViaJSON[[]Receipt](out.Receipts)
+			if err != nil {
+				log.Error("receipts conversion failed", zap.Error(err))
+				return false, errors.New("receipts conversion failed")
+			}
 
-		receipts, err := util.ToViaJSON[[]Receipt](out.Receipts)
-		if err != nil {
-			log.Error("receipts conversion failed", zap.Error(err))
-			return false, errors.New("receipts conversion failed")
-		}
+			for i := range receipts {
+				receipts[i].UserPhone = u.phone
+			}
 
-		for i := range receipts {
-			receipts[i].UserPhone = u.phone
-		}
+			if err := u.db.Clauses(etl.Upsert("key")).Create(receipts).Error; err != nil {
+				log.Error("failed to update receipts in db", zap.Error(err))
+				return false, errors.New("failed to update receipts in db")
+			}
 
-		if err := u.db.Clauses(util.Upsert("key")).Create(receipts).Error; err != nil {
-			log.Error("failed to update receipts in db", zap.Error(err))
-			return false, errors.New("failed to update receipts in db")
+			log.Debug("partial receipts update completed", zap.Int("count", len(receipts)))
 		}
 
 		return out.HasMore, nil

@@ -1,14 +1,8 @@
-package util
+package etl
 
 import (
-	"context"
 	"encoding/json"
 	"strings"
-	"time"
-
-	"github.com/pkg/errors"
-	"go.uber.org/zap"
-	"gorm.io/gorm/clause"
 )
 
 func ToViaJSON[T any](source any) (target T, err error) {
@@ -85,27 +79,4 @@ func index(source any) {
 			index(value)
 		}
 	}
-}
-
-func Upsert(columns ...string) clause.OnConflict {
-	onConflict := clause.OnConflict{
-		UpdateAll: true,
-	}
-
-	for _, column := range columns {
-		onConflict.Columns = append(onConflict.Columns, clause.Column{Name: column})
-	}
-
-	return onConflict
-}
-
-func WithTimeout(ctx context.Context, timeout time.Duration, fn func(ctx context.Context)) {
-	ctx, cancel := context.WithTimeout(ctx, timeout)
-	defer cancel()
-	fn(ctx)
-}
-
-func LogError(log *zap.Logger, err error, message string) error {
-	log.Error(message, zap.Error(err))
-	return errors.Wrap(err, message)
 }
