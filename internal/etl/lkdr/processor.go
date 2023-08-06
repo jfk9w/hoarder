@@ -4,6 +4,7 @@ import (
 	"context"
 	"hash/fnv"
 	"math/rand"
+	"sync"
 	"time"
 
 	"github.com/go-playground/validator"
@@ -136,47 +137,65 @@ func (p *Processor) Process(ctx context.Context, username string) (errs error) {
 		})
 	}
 
+	var (
+		errc = make(chan error, len(clients))
+		work sync.WaitGroup
+	)
+
 	for phone, client := range clients {
-		log := log.With(zap.String("phone", phone))
-		errFn := func(err error, msg string) error {
-			if err == nil {
-				return nil
+		work.Add(1)
+		go func(phone string, lazyClient *based.Lazy[Client]) {
+			defer work.Done()
+			log := log.With(zap.String("phone", phone))
+			errFn := func(err error, msg string) error {
+				if err == nil {
+					return nil
+				}
+
+				log.Error(msg, zap.Error(err))
+				return errors.Errorf("%s: %s", phone, msg)
 			}
 
-			log.Error(msg, zap.Error(err))
-			return errors.Errorf("%s: %s", phone, msg)
-		}
+			client, err := lazyClient.Get(ctx)
+			if err := errFn(err, "failed to get client"); err != nil {
+				errc <- err
+				return
+			}
 
-		client, err := client.Get(ctx)
-		if multierr.AppendInto(&errs, errFn(err, "failed to get client")) {
-			continue
-		}
+			user := User{
+				Name:  username,
+				Phone: phone,
+			}
 
-		user := User{
-			Name:  username,
-			Phone: phone,
-		}
+			err = db.Clauses(etl.Upsert("phone")).Create(user).Error
+			if err := errFn(err, "failed to create user in db"); err != nil {
+				errc <- err
+				return
+			}
 
-		err = db.Clauses(etl.Upsert("phone")).Create(user).Error
-		if multierr.AppendInto(&errs, errFn(err, "failed to create user in db")) {
-			continue
-		}
+			u := &updater{
+				client:    client,
+				db:        db,
+				phone:     phone,
+				batchSize: p.batchSize,
+				timeout:   p.timeout,
+			}
 
-		u := &updater{
-			client:    client,
-			db:        db,
-			phone:     phone,
-			batchSize: p.batchSize,
-			timeout:   p.timeout,
-		}
-
-		for _, err := range multierr.Errors(u.run(ctx, log)) {
-			errs = multierr.Append(errs, errors.Wrap(err, phone))
-		}
+			for _, err := range multierr.Errors(u.run(ctx, log)) {
+				errc <- errors.Wrap(err, phone)
+			}
+		}(phone, client)
 	}
+
+	work.Wait()
+	close(errc)
 
 	if ctx.Err() != nil {
 		return ctx.Err()
+	}
+
+	for _, err := range multierr.Errors(err) {
+		errs = multierr.Append(errs, err)
 	}
 
 	return

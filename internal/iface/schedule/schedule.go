@@ -2,6 +2,7 @@ package schedule
 
 import (
 	"context"
+	"sync"
 	"time"
 
 	"go.uber.org/multierr"
@@ -43,12 +44,18 @@ func (b Builder) Run(ctx context.Context) (context.CancelFunc, error) {
 		ticker := time.NewTicker(b.Config.Interval)
 		defer ticker.Stop()
 		for {
+			var work sync.WaitGroup
 			for _, username := range b.Config.Users {
-				if err := b.Processor.Process(ctx, username); err != nil {
-					b.Log.Error("process failed", zap.Errors("errors", multierr.Errors(err)))
-				} else {
-					b.Log.Info("process completed")
-				}
+				go func(username string) {
+					defer work.Done()
+					if err := b.Processor.Process(ctx, username); err != nil {
+						b.Log.Error("process failed", zap.Errors("errors", multierr.Errors(err)))
+					} else {
+						b.Log.Info("process completed")
+					}
+				}(username)
+
+				work.Wait()
 
 				select {
 				case <-ticker.C:

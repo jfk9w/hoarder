@@ -65,9 +65,17 @@ func (b Builder) Run(ctx context.Context) (*Handler, error) {
 
 	ctx, cancel := context.WithCancel(ctx)
 
+	users := make(map[string]user, len(b.Config.Users))
+	for jid, name := range b.Config.Users {
+		users[jid] = user{
+			name: name,
+			mu:   new(based.RWMutex),
+		}
+	}
+
 	h := &Handler{
 		jid:       b.Config.Jid,
-		users:     b.Config.Users,
+		users:     users,
 		questions: convo.NewQuestions[string, string](),
 		processor: b.Processor,
 		log:       b.Log,
@@ -118,9 +126,14 @@ func (b Builder) sendPresence(sender xmpp.Sender, show stanza.PresenceShow) {
 	}
 }
 
+type user struct {
+	name string
+	mu   *based.RWMutex
+}
+
 type Handler struct {
 	jid       string
-	users     map[string]string
+	users     map[string]user
 	questions convo.Questions[string, string]
 	processor Processor
 	log       *zap.Logger
@@ -143,19 +156,19 @@ func (h *Handler) handleMessage(sender xmpp.Sender, packet stanza.Packet) {
 		return
 	}
 
-	var username string
-	for prefix, user := range h.users {
-		if strings.HasPrefix(msg.From, prefix) {
-			username = user
+	var user *user
+	for jid, entry := range h.users {
+		if strings.HasPrefix(msg.From, jid) {
+			user = &entry
 			break
 		}
 	}
 
-	if username == "" {
+	if user == nil {
 		return
 	}
 
-	log := h.log.With(zap.String("username", username))
+	log := h.log.With(zap.String("username", user.name))
 	log.Debug("received message", zap.String("text", msg.Body))
 
 	ctx, cancel := context.WithCancel(h.ctx)
@@ -181,10 +194,10 @@ func (h *Handler) handleMessage(sender xmpp.Sender, packet stanza.Packet) {
 			}
 		}(ctx)
 
-		ctx := etl.WithRequestInputFunc(ctx, h.requestInputFunc(sender, msg.From))
+		ctx := etl.WithRequestInputFunc(ctx, h.requestInputFunc(sender, msg.From, user.mu))
 		reply := "✅"
 
-		if err := h.processor.Process(ctx, username); err != nil {
+		if err := h.processor.Process(ctx, user.name); err != nil {
 			var b strings.Builder
 			for _, err := range multierr.Errors(err) {
 				b.WriteString("❌ ")
@@ -202,8 +215,14 @@ func (h *Handler) handleMessage(sender xmpp.Sender, packet stanza.Packet) {
 	}
 }
 
-func (h *Handler) requestInputFunc(sender xmpp.Sender, to string) etl.RequestInputFunc {
+func (h *Handler) requestInputFunc(sender xmpp.Sender, to string, mu *based.RWMutex) etl.RequestInputFunc {
 	return func(ctx context.Context, text string) (string, error) {
+		ctx, cancel := mu.Lock(ctx)
+		defer cancel()
+		if ctx.Err() != nil {
+			return "", ctx.Err()
+		}
+
 		return h.questions.Ask(ctx, to, func(ctx context.Context, key string) error {
 			return h.sendMessage(sender, to, text)
 		})

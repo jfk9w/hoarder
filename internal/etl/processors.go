@@ -36,10 +36,26 @@ func (ps *Processors) Process(ctx context.Context, username string) (errs error)
 
 	defer mu.Unlock()
 
+	var (
+		errc = make(chan error, len(ps.processors))
+		work sync.WaitGroup
+	)
+
 	for _, p := range ps.processors {
-		for _, err := range multierr.Errors(p.Process(ctx, username)) {
-			errs = multierr.Append(errs, errors.Wrap(err, p.Name()))
-		}
+		work.Add(1)
+		go func(p Processor) {
+			defer work.Done()
+			for _, err := range multierr.Errors(p.Process(ctx, username)) {
+				errc <- errors.Wrap(err, p.Name())
+			}
+		}(p)
+	}
+
+	work.Wait()
+	close(errc)
+
+	for err := range errc {
+		errs = multierr.Append(errs, err)
 	}
 
 	return
