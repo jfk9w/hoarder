@@ -16,6 +16,10 @@
       "stderr"
     ]
   },
+  "schedule": {
+    "interval": "30m0s",
+    "users": []
+  },
   "tinkoff": {
     "batchSize": 100,
     "db": {
