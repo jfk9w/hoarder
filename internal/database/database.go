@@ -41,8 +41,7 @@ func Open(clock based.Clock, cfg Config) (*gorm.DB, error) {
 	}
 
 	return gorm.Open(driver(cfg.DSN), &gorm.Config{
-		NowFunc:              clock.Now,
-		FullSaveAssociations: true,
-		Logger:               noopLogger{},
+		NowFunc: clock.Now,
+		Logger:  noopLogger{},
 	})
 }
