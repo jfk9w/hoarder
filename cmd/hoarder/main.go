@@ -77,7 +77,7 @@ func main() {
 		},
 	}.Build())
 	defer func() {
-		if err := log.Sync(); err != nil && !errors.Is(err, syscall.ENOTTY) {
+		if err := log.Sync(); err != nil && !errors.Is(err, syscall.ENOTTY) && !errors.Is(err, syscall.EINVAL) {
 			panic(err)
 		}
 	}()

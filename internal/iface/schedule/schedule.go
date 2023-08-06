@@ -54,15 +54,15 @@ func (b Builder) Run(ctx context.Context) (context.CancelFunc, error) {
 						b.Log.Info("process completed")
 					}
 				}(username)
+			}
 
-				work.Wait()
+			work.Wait()
 
-				select {
-				case <-ticker.C:
-					continue
-				case <-ctx.Done():
-					return
-				}
+			select {
+			case <-ticker.C:
+				continue
+			case <-ctx.Done():
+				return
 			}
 		}
 	})
