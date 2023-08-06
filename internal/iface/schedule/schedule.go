@@ -46,6 +46,7 @@ func (b Builder) Run(ctx context.Context) (context.CancelFunc, error) {
 		for {
 			var work sync.WaitGroup
 			for _, username := range b.Config.Users {
+				work.Add(1)
 				go func(username string) {
 					defer work.Done()
 					if err := b.Processor.Process(ctx, username); err != nil {
