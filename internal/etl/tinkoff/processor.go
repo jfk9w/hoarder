@@ -40,7 +40,7 @@ func (b Builder) Build(ctx context.Context) (*Processor, error) {
 
 	db := &based.Lazy[*gorm.DB]{
 		Fn: func(ctx context.Context) (*gorm.DB, error) {
-			db, err := database.Open(b.Config.DB)
+			db, err := database.Open(b.Clock, b.Config.DB)
 			if err != nil {
 				return nil, errors.Wrap(err, "open db connection")
 			}
