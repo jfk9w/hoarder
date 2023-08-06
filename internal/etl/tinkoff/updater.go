@@ -177,7 +177,10 @@ func (u *updater) receipts(ctx context.Context, log *zap.Logger) error {
 			Select("operations.id").
 			Joins("inner join accounts on operations.account_id = accounts.id").
 			Joins("left join receipts on operations.id = receipts.operation_id").
-			Where("accounts.user_phone = ? and operations.debiting_time is not null and operations.has_shopping_receipt", u.phone).
+			Where("accounts.user_phone = ? "+
+				"and operations.debiting_time is not null "+
+				"and operations.has_shopping_receipt "+
+				"and receipt.operation_id is null", u.phone).
 			Order("operations.debiting_time asc").
 			Limit(u.batchSize).
 			Scan(&ids).
