@@ -138,7 +138,7 @@ func (p *Processor) Process(ctx context.Context, username string) (errs error) {
 	}
 
 	var (
-		errc = make(chan error, len(clients))
+		errc = make(chan error)
 		work sync.WaitGroup
 	)
 
@@ -187,8 +187,10 @@ func (p *Processor) Process(ctx context.Context, username string) (errs error) {
 		}(phone, client)
 	}
 
-	work.Wait()
-	close(errc)
+	go func() {
+		work.Wait()
+		close(errc)
+	}()
 
 	if ctx.Err() != nil {
 		return ctx.Err()

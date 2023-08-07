@@ -37,7 +37,7 @@ func (ps *Processors) Process(ctx context.Context, username string) (errs error)
 	defer mu.Unlock()
 
 	var (
-		errc = make(chan error, len(ps.processors))
+		errc = make(chan error)
 		work sync.WaitGroup
 	)
 
@@ -51,8 +51,10 @@ func (ps *Processors) Process(ctx context.Context, username string) (errs error)
 		}(p)
 	}
 
-	work.Wait()
-	close(errc)
+	go func() {
+		work.Wait()
+		close(errc)
+	}()
 
 	for err := range errc {
 		errs = multierr.Append(errs, err)
