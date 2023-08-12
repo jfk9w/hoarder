@@ -4,7 +4,7 @@ go 1.21
 
 require (
 	github.com/AlekSi/pointer v1.2.0
-	github.com/go-playground/validator v9.31.0+incompatible
+	github.com/go-playground/validator/v10 v10.2.0
 	github.com/jfk9w-go/based v0.0.0-20230805223938-9244097d63ce
 	github.com/jfk9w-go/confi v0.0.0-20230812134603-b16b75e1211b
 	github.com/jfk9w-go/lkdr-api v0.0.0-20230803081442-05f2ab18d7de
@@ -22,6 +22,7 @@ require (
 require (
 	github.com/go-playground/locales v0.14.1 // indirect
 	github.com/go-playground/universal-translator v0.18.1 // indirect
+	github.com/go-playground/validator v9.31.0+incompatible // indirect
 	github.com/go-sql-driver/mysql v1.7.1 // indirect
 	github.com/google/go-cmp v0.5.9 // indirect
 	github.com/google/go-querystring v1.1.0 // indirect
