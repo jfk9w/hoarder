@@ -35,7 +35,7 @@ func (u *receipts) run(ctx context.Context, log *etl.Logger, client Client, db *
 		Order("receive_date desc").
 		Limit(1).
 		Scan(&from).
-		Error; log.Error(&errs, err, "failed to select latest receipt date") {
+		Error; log.Error(&errs, err, "failed to select latest date") {
 		return
 	}
 
@@ -59,7 +59,7 @@ func (u *receipts) run(ctx context.Context, log *etl.Logger, client Client, db *
 		}
 
 		out, err := client.Receipt(ctx, in)
-		if log.Error(&errs, err, "failed to get receipts from api") {
+		if log.Error(&errs, err, "failed to get data from api") {
 			return
 		}
 
@@ -151,7 +151,7 @@ func (u *fiscalData) run(ctx context.Context, log *etl.Logger, client Client, db
 			log := log.WithDesc("key", key)
 			out, err := client.FiscalData(ctx, &lkdr.FiscalDataIn{Key: key})
 			if err != nil {
-				msg := "failed to get fiscal data from api"
+				msg := "failed to get data from api"
 				if strings.Contains(err.Error(), "Внутреняя ошибка. Попробуйте еще раз.") {
 					log.Warn(msg, util.Error(err))
 					continue
@@ -170,11 +170,11 @@ func (u *fiscalData) run(ctx context.Context, log *etl.Logger, client Client, db
 
 			if err := db.Clauses(etl.Upsert("receipt_key")).
 				Create(&entity).
-				Error; log.Error(&errs, err, "failed to update fiscal data in db") {
+				Error; log.Error(&errs, err, "failed to update entities in db") {
 				return
 			}
 
-			log.Debug("updated record in db")
+			log.Debug("updated entity in db")
 			count += 1
 		}
 

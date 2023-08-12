@@ -132,7 +132,7 @@ type Currency struct {
 }
 
 type MoneyAmount struct {
-	CurrencyCode string   `json:"-" gorm:"index"`
+	CurrencyCode uint     `json:"-" gorm:"index"`
 	Currency     Currency `json:"currency" gorm:"constraint:OnDelete:CASCADE"`
 
 	Value float64 `json:"value"`
