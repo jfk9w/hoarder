@@ -165,15 +165,15 @@ func (p *pipeline) Run(ctx context.Context, log *etl.Logger, username string) (e
 
 				entity := update.entity()
 				log := log.With(slog.String("entity", entity))
-				errPrefix := ""
-				for _, desc := range update.parent() {
-					log = log.With(slog.String(desc.key, desc.value))
-					errPrefix = fmt.Sprintf("%s %s: %s", desc.key, desc.value, errPrefix)
+				updateDesc := entity
+				for _, parentDesc := range update.parent() {
+					log = log.With(slog.String(parentDesc.key, parentDesc.value))
+					updateDesc = fmt.Sprintf("%s: %s %s", updateDesc, parentDesc.key, parentDesc.value)
 				}
 
 				children, err := update.run(ctx, log, client, db)
 				for _, err := range multierr.Errors(err) {
-					_ = multierr.AppendInto(&errs, errors.Wrap(err, errPrefix+entity))
+					_ = multierr.AppendInto(&errs, errors.Wrap(err, updateDesc))
 				}
 
 				stack.Push(children...)
