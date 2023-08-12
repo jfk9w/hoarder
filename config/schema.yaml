@@ -122,6 +122,9 @@ properties:
     required:
       - users
     type: object
+  stdin:
+    description: Включение интерактивной командной строки.
+    type: boolean
   tinkoff:
     additionalProperties: false
     description: Настройка загрузчиков из онлайн-банка "Тинькофф".

@@ -9,7 +9,7 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/go-playground/validator"
+	"github.com/go-playground/validator/v10"
 	"github.com/jfk9w-go/based"
 	"github.com/pkg/errors"
 	"go.uber.org/multierr"

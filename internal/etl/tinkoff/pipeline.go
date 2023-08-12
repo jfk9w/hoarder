@@ -6,7 +6,7 @@ import (
 	"log/slog"
 	"time"
 
-	"github.com/go-playground/validator"
+	"github.com/go-playground/validator/v10"
 	"github.com/jfk9w-go/based"
 	"github.com/jfk9w-go/tinkoff-api"
 	"github.com/pkg/errors"

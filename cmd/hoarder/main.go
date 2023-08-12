@@ -15,6 +15,7 @@ import (
 	"github.com/jfk9w/hoarder/internal/etl/lkdr"
 	"github.com/jfk9w/hoarder/internal/etl/tinkoff"
 	"github.com/jfk9w/hoarder/internal/iface/schedule"
+	"github.com/jfk9w/hoarder/internal/iface/stdin"
 	"github.com/jfk9w/hoarder/internal/iface/xmpp"
 	"github.com/jfk9w/hoarder/internal/log"
 )
@@ -31,6 +32,7 @@ type Config struct {
 
 	XMPP     *xmpp.Config     `yaml:"xmpp,omitempty" doc:"Настройки XMPP-интерфейса."`
 	Schedule *schedule.Config `yaml:"schedule,omitempty" doc:"Настройки фоновой синхронизации."`
+	Stdin    bool             `yaml:"stdin,omitempty" doc:"Включение интерактивной командной строки."`
 
 	LKDR    *lkdr.Config    `yaml:"lkdr,omitempty" doc:"Настройка загрузчиков из сервиса ФНС \"Мои чеки онлайн\"."`
 	Tinkoff *tinkoff.Config `yaml:"tinkoff,omitempty" doc:"Настройка загрузчиков из онлайн-банка \"Тинькофф\"."`
@@ -107,6 +109,15 @@ func main() {
 		}
 
 		defer must(builder.Run(ctx))()
+	}
+
+	if cfg.Stdin {
+		builder := stdin.Builder{
+			Pipelines: registry,
+			Log:       log.With(slog.String("interface", "stdin")),
+		}
+
+		defer must(builder.Run(ctx))
 	}
 
 	if err := based.AwaitSignal(ctx, syscall.SIGINT, syscall.SIGTERM); err != nil {

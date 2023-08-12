@@ -1,34 +1,6 @@
 {
   "$schema": "https://raw.githubusercontent.com/jfk9w/hoarder/master/config/schema.yaml",
-  "lkdr": {
-    "batchSize": 1000,
-    "db": {
-      "driver": "",
-      "dsn": ""
-    },
-    "timeout": "5m0s",
-    "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36",
-    "users": {}
-  },
   "log": {
     "encoding": "text"
-  },
-  "schedule": {
-    "interval": "30m0s",
-    "users": []
-  },
-  "tinkoff": {
-    "batchSize": 100,
-    "db": {
-      "driver": "",
-      "dsn": ""
-    },
-    "overlap": "168h0m0s",
-    "users": {}
-  },
-  "xmpp": {
-    "jid": "",
-    "password": "",
-    "users": {}
   }
 }

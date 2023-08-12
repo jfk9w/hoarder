@@ -6,7 +6,7 @@ require (
 	github.com/AlekSi/pointer v1.2.0
 	github.com/go-playground/validator v9.31.0+incompatible
 	github.com/jfk9w-go/based v0.0.0-20230805223938-9244097d63ce
-	github.com/jfk9w-go/confi v0.0.0-20230803172055-5e03fb0895ff
+	github.com/jfk9w-go/confi v0.0.0-20230812134603-b16b75e1211b
 	github.com/jfk9w-go/lkdr-api v0.0.0-20230803081442-05f2ab18d7de
 	github.com/jfk9w-go/rucaptcha-api v0.0.0-20230727070445-50e652b28bd7
 	github.com/jfk9w-go/tinkoff-api v0.0.0-20230812093024-ce7b3cf75060
