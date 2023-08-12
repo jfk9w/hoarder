@@ -448,9 +448,8 @@ func (u *investOperations) parent() []parentDesc {
 }
 
 func (u *investOperations) run(ctx context.Context, log *etl.Logger, client Client, db *gorm.DB) (_ []update, errs error) {
-	var cursor sql.NullString
+	var latestDate sql.NullTime
 	if errs = db.Transaction(func(tx *gorm.DB) (errs error) {
-		var latestDate sql.NullTime
 		if err := db.Model(new(InvestOperation)).
 			Select("date").
 			Where("invest_account_id = ?", u.accountId).
@@ -461,33 +460,25 @@ func (u *investOperations) run(ctx context.Context, log *etl.Logger, client Clie
 			return
 		}
 
-		if latestDate.Valid {
-			if err := db.Model(new(InvestOperation)).
-				Select("cursor").
-				Where("invest_account_id = ? and date < ?", u.accountId, latestDate.Time.Add(-u.overlap)).
-				Order("date desc").
-				Limit(1).
-				Scan(&cursor).
-				Error; log.Error(&errs, err, "failed to select cursor") {
-				return
-			}
-		}
-
 		return
 	}); errs != nil {
 		return
+	}
+
+	dateFrom := time.Date(2015, 1, 1, 0, 0, 0, 0, time.UTC)
+	if latestDate.Valid {
+		dateFrom = latestDate.Time.Add(-u.overlap)
 	}
 
 	it := etl.BatchIterator[string]{
 		BatchSize: u.batchSize,
 		Log:       log,
 		Key:       "cursor",
-		Value:     cursor.String,
 	}
 
 	return nil, it.Run(func(log *etl.Logger, cursor string, batchSize int) (nextCursor *string, errs error) {
 		in := &tinkoff.InvestOperationsIn{
-			From:               time.Date(2015, 1, 1, 0, 0, 0, 0, time.UTC),
+			From:               dateFrom,
 			To:                 u.clock.Now(),
 			BrokerAccountId:    u.accountId,
 			OvernightsDisabled: pointer.To(false),
