@@ -1,10 +1,10 @@
 FROM golang:alpine AS builder
 WORKDIR /src
 ADD . .
-RUN apk add --no-cache git
-RUN go build -o /app /src/cmd/hoarder
+RUN apk add --no-cache make
+RUN make build
 
 FROM alpine:latest
-COPY --from=builder /app /usr/bin/app
+COPY --from=builder /src/bin/hoarder /usr/bin/hoarder
 RUN apk add --no-cache tzdata
-ENTRYPOINT ["app"]
+ENTRYPOINT ["hoarder"]
