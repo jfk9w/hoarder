@@ -145,14 +145,14 @@ func (p *pipeline) Run(ctx context.Context, log *etl.Logger, username string) (e
 				return
 			}
 
-			for _, process := range []update{
+			for _, update := range []update{
 				&receipts{phone: phone, batchSize: p.batchSize},
 				&fiscalData{phone: phone, batchSize: p.batchSize},
 			} {
-				entity := process.entity()
+				entity := update.entity()
 				log := log.With(slog.String("entity", entity))
 				log.Debug("update started")
-				if err := process.run(ctx, log, client, db); err != nil {
+				if err := update.run(ctx, log, client, db); err != nil {
 					for _, err := range multierr.Errors(err) {
 						_ = multierr.AppendInto(&errs, errors.Wrap(err, entity))
 					}
