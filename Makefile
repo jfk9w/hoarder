@@ -1,8 +1,10 @@
 MODULE := github.com/jfk9w/hoarder
-MAIN := cmd/hoarder/main.go
+MAIN := ./cmd/hoarder
+
+export GOEXPERIMENT := loopvar
 
 build:
-	go build -v ./...
+	go build -o bin/ -v $(MAIN)
 
 test:
 	go test -v ./...

@@ -2,18 +2,17 @@ package schedule
 
 import (
 	"context"
-	"sync"
+	"log/slog"
 	"time"
 
-	"go.uber.org/multierr"
+	"github.com/jfk9w/hoarder/internal/util/executors"
 
 	"github.com/go-playground/validator"
 	"github.com/jfk9w-go/based"
-	"go.uber.org/zap"
 )
 
-type Processor interface {
-	Process(ctx context.Context, username string) error
+type Pipelines interface {
+	Run(ctx context.Context, log *slog.Logger, username string) error
 }
 
 type Config struct {
@@ -22,9 +21,9 @@ type Config struct {
 }
 
 type Builder struct {
-	Config    Config      `validate:"required"`
-	Processor Processor   `validate:"required"`
-	Log       *zap.Logger `validate:"required"`
+	Config    Config       `validate:"required"`
+	Pipelines Pipelines    `validate:"required"`
+	Log       *slog.Logger `validate:"required"`
 }
 
 var validate = &based.Lazy[*validator.Validate]{
@@ -43,21 +42,23 @@ func (b Builder) Run(ctx context.Context) (context.CancelFunc, error) {
 	cancel := based.GoWithFeedback(ctx, context.WithCancel, func(ctx context.Context) {
 		ticker := time.NewTicker(b.Config.Interval)
 		defer ticker.Stop()
+
 		for {
-			var work sync.WaitGroup
+			executor := executors.Parallel(b.Log, "username")
 			for _, username := range b.Config.Users {
-				work.Add(1)
-				go func(username string) {
-					defer work.Done()
-					if err := b.Processor.Process(ctx, username); err != nil {
-						b.Log.Error("process failed", zap.Errors("errors", multierr.Errors(err)))
-					} else {
-						b.Log.Info("process completed")
+				executor.Run(username, func(log *slog.Logger) error {
+					log.Debug("pipelines started")
+					if err := b.Pipelines.Run(ctx, log, username); err != nil {
+						log.Error("pipelines failed")
+						return err
 					}
-				}(username)
+
+					log.Info("pipelines completed")
+					return nil
+				})
 			}
 
-			work.Wait()
+			_ = executor.Wait()
 
 			select {
 			case <-ticker.C:

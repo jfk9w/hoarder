@@ -2,15 +2,13 @@ package main
 
 import (
 	"context"
+	"log/slog"
 	"os"
 	"syscall"
 
 	"github.com/AlekSi/pointer"
 	"github.com/jfk9w-go/based"
 	"github.com/jfk9w-go/confi"
-	"github.com/pkg/errors"
-	"go.uber.org/zap"
-	"go.uber.org/zap/zapcore"
 
 	"github.com/jfk9w/hoarder/internal/captcha"
 	"github.com/jfk9w/hoarder/internal/etl"
@@ -18,6 +16,7 @@ import (
 	"github.com/jfk9w/hoarder/internal/etl/tinkoff"
 	"github.com/jfk9w/hoarder/internal/iface/schedule"
 	"github.com/jfk9w/hoarder/internal/iface/xmpp"
+	"github.com/jfk9w/hoarder/internal/log"
 )
 
 type Config struct {
@@ -28,11 +27,7 @@ type Config struct {
 		Values bool `yaml:"values,omitempty" doc:"Вывод значений конфигурации по умолчанию в JSON."`
 	} `yaml:"dump,omitempty" doc:"Вывод параметров конфигурации в стандартный поток вывода.\n\nПредназначены для использования как CLI-параметры."`
 
-	Log struct {
-		Level       zapcore.Level `yaml:"level,omitempty" default:"info" doc:"Уровень логирования." enum:"debug,info,warn,error,dpanic,panic,fatal"`
-		Encoding    string        `yaml:"encoding,omitempty" default:"console" doc:"Формат логирования." enum:"json,console"`
-		OutputPaths []string      `yaml:"outputPaths,omitempty" default:"[stderr]" doc:"Пути логирования." examples:"stdout,stderr,/var/log/hoarder.log"`
-	} `yaml:"log,omitempty" doc:"Настройки логирования для библиотеки zap"`
+	Log log.Config `yaml:"log,omitempty" doc:"Настройки логирования для библиотеки slog."`
 
 	XMPP     *xmpp.Config     `yaml:"xmpp,omitempty" doc:"Настройки XMPP-интерфейса."`
 	Schedule *schedule.Config `yaml:"schedule,omitempty" doc:"Настройки фоновой синхронизации."`
@@ -63,25 +58,7 @@ func main() {
 		return
 	}
 
-	logLevel := zap.NewAtomicLevelAt(cfg.Log.Level)
-	log := zap.Must(zap.Config{
-		Level:       logLevel,
-		Encoding:    cfg.Log.Encoding,
-		OutputPaths: cfg.Log.OutputPaths,
-		EncoderConfig: zapcore.EncoderConfig{
-			MessageKey:  "message",
-			LevelKey:    "level",
-			TimeKey:     "time",
-			EncodeLevel: zapcore.LowercaseLevelEncoder,
-			EncodeTime:  zapcore.TimeEncoderOfLayout("2006-01-02T15:04:05.999"),
-		},
-	}.Build())
-	defer func() {
-		if err := log.Sync(); err != nil && !errors.Is(err, syscall.ENOTTY) && !errors.Is(err, syscall.EINVAL) {
-			panic(err)
-		}
-	}()
-
+	log := log.Get(cfg.Log)
 	clock := based.StandardClock
 
 	captchaSolver, err := captcha.NewTokenProvider(ctx, cfg.Captcha, clock)
@@ -89,68 +66,60 @@ func main() {
 		panic(err)
 	}
 
-	processors := new(etl.Processors)
+	registry := new(etl.Registry)
 
 	if cfg := cfg.LKDR; cfg != nil {
-		log := log.With(zap.String("processor", lkdr.Name))
-		processor, err := lkdr.Builder{
+		builder := lkdr.Builder{
 			Config:        *cfg,
 			Clock:         clock,
-			Log:           log,
 			CaptchaSolver: captchaSolver,
-		}.Build(ctx)
-		if err != nil {
-			log.Fatal("failed to start", zap.Error(err))
 		}
 
-		processors.Add(processor)
+		pipeline := must(builder.Build(ctx))
+		registry.Register("lkdr", pipeline)
 	}
 
 	if cfg := cfg.Tinkoff; cfg != nil {
-		log := log.With(zap.String("processor", tinkoff.Name))
-		processor, err := tinkoff.Builder{
+		builder := tinkoff.Builder{
 			Config: *cfg,
 			Clock:  clock,
-			Log:    log,
-		}.Build(ctx)
-		if err != nil {
-			log.Fatal("failed to start", zap.Error(err))
 		}
 
-		processors.Add(processor)
+		pipeline := must(builder.Build(ctx))
+		registry.Register("tinkoff", pipeline)
 	}
 
 	if cfg := cfg.XMPP; cfg != nil {
-		log := log.With(zap.String("interface", "xmpp"))
-		handler, err := xmpp.Builder{
+		builder := xmpp.Builder{
 			Config:    *cfg,
-			Processor: processors,
-			Log:       log,
-		}.Run(ctx)
-		if err != nil {
-			log.Error("failed to start", zap.Error(err))
-		} else {
-			defer handler.Stop()
+			Processor: registry,
+			Log:       log.With(slog.String("interface", "xmpp")),
 		}
+
+		defer must(builder.Run(ctx)).Stop()
 	}
 
 	if cfg := cfg.Schedule; cfg != nil {
-		log := log.With(zap.String("interface", "schedule"))
-		cancel, err := schedule.Builder{
+		builder := schedule.Builder{
 			Config:    *cfg,
-			Processor: processors,
-			Log:       log,
-		}.Run(ctx)
-		if err != nil {
-			log.Error("failed to start", zap.Error(err))
-		} else {
-			defer cancel()
+			Pipelines: registry,
+			Log:       log.With(slog.String("interface", "schedule")),
 		}
+
+		defer must(builder.Run(ctx))()
 	}
 
 	if err := based.AwaitSignal(ctx, syscall.SIGINT, syscall.SIGTERM); err != nil {
-		log.Fatal("failed to await signal", zap.Error(err))
+		panic(err)
 	}
+}
+
+func must[R any](result R, err error) R {
+	if err != nil {
+		panic(err)
+	}
+
+	return result
 }
 
 func dump(value any, codec confi.Codec) {

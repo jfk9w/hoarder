@@ -3,24 +3,22 @@ package lkdr
 import (
 	"context"
 	"hash/fnv"
+	"log/slog"
 	"math/rand"
-	"sync"
-	"time"
+
+	"github.com/jfk9w/hoarder/internal/util/executors"
 
 	"github.com/go-playground/validator"
 	"github.com/jfk9w-go/based"
 	"github.com/jfk9w-go/lkdr-api"
 	"github.com/pkg/errors"
 	"go.uber.org/multierr"
-	"go.uber.org/zap"
 	"gorm.io/gorm"
 
 	"github.com/jfk9w/hoarder/internal/captcha"
 	"github.com/jfk9w/hoarder/internal/database"
 	"github.com/jfk9w/hoarder/internal/etl"
 )
-
-const Name = "lkdr"
 
 var validate = &based.Lazy[*validator.Validate]{
 	Fn: func(ctx context.Context) (*validator.Validate, error) {
@@ -31,12 +29,11 @@ var validate = &based.Lazy[*validator.Validate]{
 type Builder struct {
 	Config Config      `validate:"required"`
 	Clock  based.Clock `validate:"required"`
-	Log    *zap.Logger `validate:"required"`
 
 	CaptchaSolver captcha.TokenProvider
 }
 
-func (b Builder) Build(ctx context.Context) (*Processor, error) {
+func (b Builder) Build(ctx context.Context) (*pipeline, error) {
 	if validate, err := validate.Get(ctx); err != nil {
 		return nil, err
 	} else if err := validate.Struct(b); err != nil {
@@ -79,53 +76,50 @@ func (b Builder) Build(ctx context.Context) (*Processor, error) {
 						return nil, errors.Wrap(err, "generate device ID")
 					}
 
-					return lkdr.ClientBuilder{
+					client, err := lkdr.ClientBuilder{
 						Phone:        credential.Phone,
 						Clock:        b.Clock,
 						DeviceID:     deviceID,
 						UserAgent:    b.Config.UserAgent,
 						TokenStorage: tokenStorage,
 					}.Build(ctx)
+					if err != nil {
+						return nil, errors.Wrap(err, "create client")
+					}
+
+					return &boundClient{
+						client:  client,
+						timeout: b.Config.Timeout,
+					}, nil
 				},
 			}
 		}
 	}
 
-	return &Processor{
-		log:           b.Log,
+	return &pipeline{
 		clients:       clients,
 		captchaSolver: b.CaptchaSolver,
 		db:            db,
 		batchSize:     b.Config.BatchSize,
-		timeout:       b.Config.Timeout,
 	}, nil
 }
 
-type Processor struct {
-	log           *zap.Logger
+type pipeline struct {
 	clients       map[string]map[string]*based.Lazy[Client]
 	captchaSolver captcha.TokenProvider
 	db            *based.Lazy[*gorm.DB]
 	batchSize     int
-	timeout       time.Duration
 }
 
-func (p *Processor) Name() string {
-	return Name
-}
-
-func (p *Processor) Process(ctx context.Context, username string) (errs error) {
+func (p *pipeline) Run(ctx context.Context, log *etl.Logger, username string) (errs error) {
 	clients, ok := p.clients[username]
 	if !ok {
 		return nil
 	}
 
-	log := p.log.With(zap.String("username", username))
-
 	db, err := p.db.Get(ctx)
-	if err != nil {
-		log.Error("failed to get db handle", zap.Error(err))
-		return errors.New("failed to get db handle")
+	if log.Error(&errs, err, "failed to get db handle") {
+		return
 	}
 
 	db = db.WithContext(ctx)
@@ -137,70 +131,44 @@ func (p *Processor) Process(ctx context.Context, username string) (errs error) {
 		})
 	}
 
-	var (
-		errc = make(chan error)
-		work sync.WaitGroup
-	)
-
+	executor := executors.Parallel(log, "phone")
 	for phone, client := range clients {
-		work.Add(1)
-		go func(phone string, lazyClient *based.Lazy[Client]) {
-			defer work.Done()
-			log := log.With(zap.String("phone", phone))
-			errFn := func(err error, msg string) error {
-				if err == nil {
-					return nil
+		executor.Run(phone, func(log *etl.Logger) (errs error) {
+			if err := db.Clauses(etl.Upsert("phone")).
+				Create(&User{Name: username, Phone: phone}).
+				Error; log.Error(&errs, err, "failed to create user in db") {
+				return
+			}
+
+			client, err := client.Get(ctx)
+			if log.Error(&errs, err, "failed to get client for api") {
+				return
+			}
+
+			for _, process := range []update{
+				&receipts{phone: phone, batchSize: p.batchSize},
+				&fiscalData{phone: phone, batchSize: p.batchSize},
+			} {
+				entity := process.entity()
+				log := log.With(slog.String("entity", entity))
+				log.Debug("update started")
+				if err := process.run(ctx, log, client, db); err != nil {
+					for _, err := range multierr.Errors(err) {
+						_ = multierr.AppendInto(&errs, errors.Wrap(err, entity))
+					}
+
+					log.Warn("update failed")
+					return
 				}
 
-				log.Error(msg, zap.Error(err))
-				return errors.Errorf("%s: %s", phone, msg)
+				log.Debug("update completed")
 			}
 
-			client, err := lazyClient.Get(ctx)
-			if err := errFn(err, "failed to get client"); err != nil {
-				errc <- err
-				return
-			}
-
-			user := User{
-				Name:  username,
-				Phone: phone,
-			}
-
-			err = db.Clauses(etl.Upsert("phone")).Create(user).Error
-			if err := errFn(err, "failed to create user in db"); err != nil {
-				errc <- err
-				return
-			}
-
-			u := &updater{
-				client:    client,
-				db:        db,
-				phone:     phone,
-				batchSize: p.batchSize,
-				timeout:   p.timeout,
-			}
-
-			for _, err := range multierr.Errors(u.run(ctx, log)) {
-				errc <- errors.Wrap(err, phone)
-			}
-		}(phone, client)
+			return
+		})
 	}
 
-	go func() {
-		work.Wait()
-		close(errc)
-	}()
-
-	if ctx.Err() != nil {
-		return ctx.Err()
-	}
-
-	for _, err := range multierr.Errors(err) {
-		errs = multierr.Append(errs, err)
-	}
-
-	return
+	return executor.Wait()
 }
 
 func generateDeviceID(userAgent, phone string) (string, error) {

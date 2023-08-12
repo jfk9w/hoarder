@@ -1,6 +1,6 @@
 module github.com/jfk9w/hoarder
 
-go 1.20
+go 1.21
 
 require (
 	github.com/AlekSi/pointer v1.2.0
@@ -9,10 +9,9 @@ require (
 	github.com/jfk9w-go/confi v0.0.0-20230803172055-5e03fb0895ff
 	github.com/jfk9w-go/lkdr-api v0.0.0-20230803081442-05f2ab18d7de
 	github.com/jfk9w-go/rucaptcha-api v0.0.0-20230727070445-50e652b28bd7
-	github.com/jfk9w-go/tinkoff-api v0.0.0-20230803163523-9aadc28a0e5f
+	github.com/jfk9w-go/tinkoff-api v0.0.0-20230812093024-ce7b3cf75060
 	github.com/pkg/errors v0.9.1
 	go.uber.org/multierr v1.11.0
-	go.uber.org/zap v1.25.0
 	gorm.io/driver/mysql v1.5.1
 	gorm.io/driver/postgres v1.5.2
 	gorm.io/driver/sqlite v1.5.2
@@ -33,6 +32,7 @@ require (
 	github.com/jinzhu/inflection v1.0.0 // indirect
 	github.com/jinzhu/now v1.1.5 // indirect
 	github.com/klauspost/compress v1.16.7 // indirect
+	github.com/kr/text v0.2.0 // indirect
 	github.com/leodido/go-urn v1.2.4 // indirect
 	github.com/mattn/go-sqlite3 v1.14.17 // indirect
 	github.com/rogpeppe/go-internal v1.11.0 // indirect

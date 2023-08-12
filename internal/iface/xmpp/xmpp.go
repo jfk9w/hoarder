@@ -3,6 +3,7 @@ package xmpp
 import (
 	"context"
 	"fmt"
+	"log/slog"
 	"strings"
 	"sync"
 	"sync/atomic"
@@ -10,19 +11,18 @@ import (
 
 	"github.com/go-playground/validator"
 	"github.com/jfk9w-go/based"
-
 	"github.com/pkg/errors"
 	"go.uber.org/multierr"
-	"go.uber.org/zap"
 	"gosrc.io/xmpp"
 	"gosrc.io/xmpp/stanza"
 
 	"github.com/jfk9w/hoarder/internal/convo"
 	"github.com/jfk9w/hoarder/internal/etl"
+	"github.com/jfk9w/hoarder/internal/util"
 )
 
-type Processor interface {
-	Process(ctx context.Context, username string) error
+type Pipelines interface {
+	Run(ctx context.Context, log *slog.Logger, username string) error
 }
 
 type Config struct {
@@ -34,9 +34,9 @@ type Config struct {
 type Asker = convo.Asker[string, string]
 
 type Builder struct {
-	Config    Config      `validate:"required"`
-	Processor Processor   `validate:"required"`
-	Log       *zap.Logger `validate:"required"`
+	Config    Config       `validate:"required"`
+	Processor Pipelines    `validate:"required"`
+	Log       *slog.Logger `validate:"required"`
 }
 
 var validate = &based.Lazy[*validator.Validate]{
@@ -58,7 +58,7 @@ func (b Builder) Run(ctx context.Context) (*Handler, error) {
 	}
 
 	router := xmpp.NewRouter()
-	client, err := xmpp.NewClient(config, router, func(err error) { b.Log.Error("client error", zap.Error(err)) })
+	client, err := xmpp.NewClient(config, router, func(err error) { b.Log.Error("client error", util.Error(err)) })
 	if err != nil {
 		return nil, errors.Wrap(err, "create client")
 	}
@@ -90,7 +90,7 @@ func (b Builder) Run(ctx context.Context) (*Handler, error) {
 
 	go func() {
 		if err := cm.Run(); err != nil {
-			b.Log.Error("finished stream manager", zap.Error(err))
+			b.Log.Error("finished stream manager", util.Error(err))
 			return
 		}
 
@@ -111,14 +111,14 @@ func (b Builder) Run(ctx context.Context) (*Handler, error) {
 }
 
 func (b Builder) sendPresence(sender xmpp.Sender, show stanza.PresenceShow) {
-	log := b.Log.With(zap.String("show", string(show)))
+	log := b.Log.With(slog.String("show", string(show)))
 	for to := range b.Config.Users {
-		log := log.With(zap.String("to", to))
+		log := log.With(slog.String("to", to))
 		presence := stanza.NewPresence(stanza.Attrs{From: b.Config.Jid, To: to})
 		presence.Show = show
 
 		if err := sender.Send(presence); err != nil {
-			log.Error("failed to send presence", zap.Error(err))
+			log.Error("failed to send presence", util.Error(err))
 			continue
 		}
 
@@ -135,8 +135,8 @@ type Handler struct {
 	jid       string
 	users     map[string]user
 	questions convo.Questions[string, string]
-	processor Processor
-	log       *zap.Logger
+	processor Pipelines
+	log       *slog.Logger
 	ctx       context.Context
 	cancel    func()
 	stop      atomic.Bool
@@ -168,8 +168,8 @@ func (h *Handler) handleMessage(sender xmpp.Sender, packet stanza.Packet) {
 		return
 	}
 
-	log := h.log.With(zap.String("username", user.name))
-	log.Debug("received message", zap.String("text", msg.Body))
+	log := h.log.With(slog.String("username", user.name))
+	log.Debug("received message", slog.String("text", msg.Body))
 
 	ctx, cancel := context.WithCancel(h.ctx)
 	defer cancel()
@@ -197,7 +197,7 @@ func (h *Handler) handleMessage(sender xmpp.Sender, packet stanza.Packet) {
 		ctx := etl.WithRequestInputFunc(ctx, h.requestInputFunc(sender, msg.From, user.mu))
 		reply := "✅"
 
-		if err := h.processor.Process(ctx, user.name); err != nil {
+		if err := h.processor.Run(ctx, log, user.name); err != nil {
 			var b strings.Builder
 			for _, err := range multierr.Errors(err) {
 				b.WriteString("❌ ")
@@ -230,12 +230,12 @@ func (h *Handler) requestInputFunc(sender xmpp.Sender, to string, mu *based.RWMu
 }
 
 func (h *Handler) sendState(sender xmpp.Sender, to string, state stanza.MsgExtension) error {
-	log := h.log.With(zap.String("to", to), zap.String("state", fmt.Sprintf("%T", state)))
+	log := h.log.With(slog.String("to", to), slog.String("state", fmt.Sprintf("%T", state)))
 	message := stanza.NewMessage(stanza.Attrs{From: h.jid, To: to})
 	message.Extensions = append(message.Extensions, state)
 
 	if err := sender.Send(message); err != nil {
-		h.log.Error("failed to send state", zap.Error(err))
+		h.log.Error("failed to send state", util.Error(err))
 		return errors.New("failed to send state")
 	}
 
@@ -244,12 +244,12 @@ func (h *Handler) sendState(sender xmpp.Sender, to string, state stanza.MsgExten
 }
 
 func (h *Handler) sendMessage(sender xmpp.Sender, to string, text string) error {
-	log := h.log.With(zap.String("to", to), zap.String("text", text))
+	log := h.log.With(slog.String("to", to), slog.String("text", text))
 	message := stanza.NewMessage(stanza.Attrs{From: h.jid, To: to})
 	message.Body = text
 
 	if err := sender.Send(message); err != nil {
-		log.Error("failed to send message", zap.Error(err))
+		log.Error("failed to send message", util.Error(err))
 		return errors.New("failed to send message")
 	}
 

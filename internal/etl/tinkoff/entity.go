@@ -462,6 +462,45 @@ type Receipt struct {
 	FiscalDriveNumberString string        `json:"fiscalDriveNumberString"`
 }
 
+type StatementPeriod struct {
+	Start Milliseconds `json:"start"`
+	End   Milliseconds `json:"end"`
+}
+
+type Statement struct {
+	AccountId string  `json:"-" gorm:"index"`
+	Account   Account `json:"-" gorm:"constraint:OnDelete:CASCADE"`
+
+	OverdraftFee           MoneyAmount     `json:"overdraftFee" gorm:"embedded;embeddedPrefix:overdraft_fee_"`
+	Expense                MoneyAmount     `json:"expense" gorm:"embedded;embeddedPrefix:expense_"`
+	OverLimitDebt          MoneyAmount     `json:"overLimitDebt" gorm:"embedded;embeddedPrefix:over_limit_debt_"`
+	PeriodEndBalance       MoneyAmount     `json:"periodEndBalance" gorm:"embedded;embeddedPrefix:period_end_balance_"`
+	ArrestAmount           MoneyAmount     `json:"arrestAmount" gorm:"embedded;embeddedPrefix:arrest_amount_"`
+	OtherBonus             MoneyAmount     `json:"otherBonus" gorm:"embedded;embeddedPrefix:other_bonus_"`
+	CreditLimit            MoneyAmount     `json:"creditLimit" gorm:"embedded;embeddedPrefix:credit_limit_"`
+	TranchesMonthlyPayment *MoneyAmount    `json:"tranchesMonthlyPayment,omitempty" gorm:"embedded;embeddedPrefix:tranches_monthly_payment_"`
+	BilledDebt             MoneyAmount     `json:"billedDebt" gorm:"embedded;embeddedPrefix:billed_debt_"`
+	Cashback               MoneyAmount     `json:"cashback" gorm:"embedded;embeddedPrefix:cashback_"`
+	Balance                MoneyAmount     `json:"balance" gorm:"embedded;embeddedPrefix:balance_"`
+	HighCashback           MoneyAmount     `json:"highCashback" gorm:"embedded;embeddedPrefix:high_cashback_"`
+	PeriodStartBalance     MoneyAmount     `json:"periodStartBalance" gorm:"embedded;embeddedPrefix:period_start_balance_"`
+	LowCashback            MoneyAmount     `json:"lowCashback" gorm:"embedded;embeddedPrefix:low_cashback_"`
+	AvailableLimit         MoneyAmount     `json:"availableLimit" gorm:"embedded;embeddedPrefix:available_limit_"`
+	Id                     string          `json:"id" gorm:"primaryKey"`
+	InterestBonus          MoneyAmount     `json:"interestBonus" gorm:"embedded;embeddedPrefix:interest_bonus_"`
+	Interest               MoneyAmount     `json:"interest" gorm:"embedded;embeddedPrefix:interest_"`
+	Date                   Milliseconds    `json:"date" gorm:"index"`
+	Income                 MoneyAmount     `json:"income" gorm:"embedded;embeddedPrefix:income_"`
+	CreditBonus            MoneyAmount     `json:"creditBonus" gorm:"embedded;embeddedPrefix:credit_bonus_"`
+	LastPaymentDate        *Milliseconds   `json:"lastPaymentDate,omitempty"`
+	OtherCashback          MoneyAmount     `json:"otherCashback" gorm:"embedded;embeddedPrefix:other_cashback_"`
+	MinimalPaymentAmount   *MoneyAmount    `json:"minimalPaymentAmount,omitempty" gorm:"embedded;embeddedPrefix:minimal_payment_amount_"`
+	PastDueDebt            *MoneyAmount    `json:"pastDueDebt,omitempty" gorm:"embedded;embeddedPrefix:past_due_debt_"`
+	Period                 StatementPeriod `json:"period" gorm:"embedded;embeddedPrefix:period_"`
+	NoOverdue              *bool           `json:"noOverdue,omitempty"`
+	Repaid                 *string         `json:"repaid,omitempty"`
+}
+
 type InvestOperationType struct {
 	Deleted bool `json:"-" gorm:"index"`
 

@@ -11,10 +11,7 @@
     "users": {}
   },
   "log": {
-    "encoding": "console",
-    "outputPaths": [
-      "stderr"
-    ]
+    "encoding": "text"
   },
   "schedule": {
     "interval": "30m0s",

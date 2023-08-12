@@ -83,38 +83,27 @@ properties:
     type: object
   log:
     additionalProperties: false
-    description: Настройки логирования для библиотеки zap
+    description: Настройки логирования для библиотеки slog.
     properties:
+      addSource:
+        description: Добавлять ли номера строк в логи.
+        type: boolean
       encoding:
-        default: console
+        default: text
         description: Формат логирования.
         enum:
+          - text
           - json
-          - console
         type: string
       level:
-        default: info
+        default: INFO
         description: Уровень логирования.
         enum:
-          - debug
-          - info
-          - warn
-          - error
-          - dpanic
-          - panic
-          - fatal
+          - DEBUG
+          - INFO
+          - WARN
+          - ERROR
         type: string
-      outputPaths:
-        default:
-          - stderr
-        description: Пути логирования.
-        items:
-          examples:
-            - stdout
-            - stderr
-            - /var/log/hoarder.log
-          type: string
-        type: array
     type: object
   schedule:
     additionalProperties: false

@@ -24,6 +24,7 @@ type Config struct {
 
 type Client interface {
 	AccountsLightIb(ctx context.Context) (tinkoff.AccountsLightIbOut, error)
+	Statements(ctx context.Context, in *tinkoff.StatementsIn) (tinkoff.StatementsOut, error)
 	Operations(ctx context.Context, in *tinkoff.OperationsIn) (tinkoff.OperationsOut, error)
 	ShoppingReceipt(ctx context.Context, in *tinkoff.ShoppingReceiptIn) (*tinkoff.ShoppingReceiptOut, error)
 	InvestOperationTypes(ctx context.Context) (*tinkoff.InvestOperationTypesOut, error)

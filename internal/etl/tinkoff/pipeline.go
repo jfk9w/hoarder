@@ -2,7 +2,8 @@ package tinkoff
 
 import (
 	"context"
-	"sync"
+	"fmt"
+	"log/slog"
 	"time"
 
 	"github.com/go-playground/validator"
@@ -10,14 +11,13 @@ import (
 	"github.com/jfk9w-go/tinkoff-api"
 	"github.com/pkg/errors"
 	"go.uber.org/multierr"
-	"go.uber.org/zap"
 	"gorm.io/gorm"
 
 	"github.com/jfk9w/hoarder/internal/database"
 	"github.com/jfk9w/hoarder/internal/etl"
+	"github.com/jfk9w/hoarder/internal/util"
+	"github.com/jfk9w/hoarder/internal/util/executors"
 )
-
-const Name = "tinkoff"
 
 var validate = &based.Lazy[*validator.Validate]{
 	Fn: func(ctx context.Context) (*validator.Validate, error) {
@@ -28,10 +28,9 @@ var validate = &based.Lazy[*validator.Validate]{
 type Builder struct {
 	Config Config      `validate:"required"`
 	Clock  based.Clock `validate:"required"`
-	Log    *zap.Logger `validate:"required"`
 }
 
-func (b Builder) Build(ctx context.Context) (*Processor, error) {
+func (b Builder) Build(ctx context.Context) (*pipeline, error) {
 	if validate, err := validate.Get(ctx); err != nil {
 		return nil, err
 	} else if err := validate.Struct(b); err != nil {
@@ -51,6 +50,7 @@ func (b Builder) Build(ctx context.Context) (*Processor, error) {
 				new(Currency),
 				new(Account),
 				new(Card),
+				new(Statement),
 				new(Category),
 				new(SpendingCategory),
 				new(Brand),
@@ -98,8 +98,7 @@ func (b Builder) Build(ctx context.Context) (*Processor, error) {
 		}
 	}
 
-	return &Processor{
-		log:             b.Log,
+	return &pipeline{
 		clock:           b.Clock,
 		clients:         clients,
 		db:              db,
@@ -109,8 +108,7 @@ func (b Builder) Build(ctx context.Context) (*Processor, error) {
 	}, nil
 }
 
-type Processor struct {
-	log             *zap.Logger
+type pipeline struct {
 	clock           based.Clock
 	clients         map[string]map[string]*based.Lazy[Client]
 	db              *based.Lazy[*gorm.DB]
@@ -119,22 +117,15 @@ type Processor struct {
 	disableReceipts bool
 }
 
-func (p *Processor) Name() string {
-	return Name
-}
-
-func (p *Processor) Process(ctx context.Context, username string) (errs error) {
+func (p *pipeline) Run(ctx context.Context, log *etl.Logger, username string) (errs error) {
 	clients, ok := p.clients[username]
 	if !ok {
 		return nil
 	}
 
-	log := p.log.With(zap.String("username", username))
-
 	db, err := p.db.Get(ctx)
-	if err != nil {
-		log.Error("failed to get db handle", zap.Error(err))
-		return errors.New("failed to get db handle")
+	if log.Error(&errs, err, "failed to get db handle") {
+		return
 	}
 
 	db = db.WithContext(ctx)
@@ -145,70 +136,52 @@ func (p *Processor) Process(ctx context.Context, username string) (errs error) {
 		})
 	}
 
-	var (
-		errc = make(chan error)
-		work sync.WaitGroup
-	)
-
+	executor := executors.Parallel(log, "phone")
 	for phone, client := range clients {
-		work.Add(1)
-		go func(phone string, lazyClient *based.Lazy[Client]) {
-			defer work.Done()
-			log := log.With(zap.String("phone", phone))
-			errFn := func(err error, msg string) error {
-				if err == nil {
-					return nil
+		executor.Run(phone, func(log *etl.Logger) (errs error) {
+			if err := db.Clauses(etl.Upsert("phone")).
+				Create(&User{Name: username, Phone: phone}).
+				Error; log.Error(&errs, err, "failed to create user in db") {
+				return
+			}
+
+			client, err := client.Get(ctx)
+			if log.Error(&errs, err, "failed to get client for api") {
+				return
+			}
+
+			var stack util.Stack[update]
+			stack.Push(
+				&accounts{batchSize: p.batchSize, overlap: p.overlap, phone: phone},
+				&investOperationTypes{batchSize: p.batchSize},
+				&investAccounts{clock: p.clock, batchSize: p.batchSize, overlap: p.overlap, phone: phone},
+			)
+
+			for {
+				update, ok := stack.Pop()
+				if !ok {
+					break
 				}
 
-				log.Error(msg, zap.Error(err))
-				return errors.Errorf("%s: %s", phone, msg)
+				entity := update.entity()
+				log := log.With(slog.String("entity", entity))
+				errPrefix := ""
+				for _, desc := range update.parent() {
+					log = log.With(slog.String(desc.key, desc.value))
+					errPrefix = fmt.Sprintf("%s %s: %s", desc.key, desc.value, errPrefix)
+				}
+
+				children, err := update.run(ctx, log, client, db)
+				for _, err := range multierr.Errors(err) {
+					_ = multierr.AppendInto(&errs, errors.Wrap(err, errPrefix+entity))
+				}
+
+				stack.Push(children...)
 			}
 
-			client, err := lazyClient.Get(ctx)
-			if err := errFn(err, "failed to get client"); err != nil {
-				errc <- err
-				return
-			}
-
-			user := User{
-				Name:  username,
-				Phone: phone,
-			}
-
-			err = db.Clauses(etl.Upsert("phone")).Create(user).Error
-			if err := errFn(err, "failed to create user in db"); err != nil {
-				errc <- err
-				return
-			}
-
-			u := &updater{
-				clock:           p.clock,
-				client:          client,
-				db:              db,
-				phone:           phone,
-				batchSize:       p.batchSize,
-				overlap:         p.overlap,
-				disableReceipts: p.disableReceipts,
-			}
-
-			for _, err := range multierr.Errors(u.run(ctx, log)) {
-				errc <- errors.Wrap(err, phone)
-			}
-		}(phone, client)
+			return
+		})
 	}
 
-	go func() {
-		work.Wait()
-		close(errc)
-	}()
-
-	if ctx.Err() != nil {
-		return ctx.Err()
-	}
-
-	for err := range errc {
-		errs = multierr.Append(errs, err)
-	}
-
-	return
+	return executor.Wait()
 }
