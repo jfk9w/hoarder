@@ -82,7 +82,6 @@ func (b Builder) Build(ctx context.Context) (*pipeline, error) {
 		clients[username] = make(map[string]*based.Lazy[Client])
 		clients := clients[username]
 		for _, credential := range credentials {
-			credential := credential
 			clients[credential.Phone] = &based.Lazy[Client]{
 				Fn: func(ctx context.Context) (Client, error) {
 					return tinkoff.ClientBuilder{
