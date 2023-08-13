@@ -34,8 +34,8 @@ type Config struct {
 	Schedule *schedule.Config `yaml:"schedule,omitempty" doc:"Настройки фоновой синхронизации."`
 	Stdin    bool             `yaml:"stdin,omitempty" doc:"Включение интерактивной командной строки."`
 
-	LKDR    *lkdr.Config    `yaml:"lkdr,omitempty" doc:"Настройка загрузчиков из сервиса ФНС \"Мои чеки онлайн\"."`
-	Tinkoff *tinkoff.Config `yaml:"tinkoff,omitempty" doc:"Настройка загрузчиков из онлайн-банка \"Тинькофф\"."`
+	LKDR    *lkdr.Config    `yaml:"lkdr,omitempty" doc:"Настройка пайплана для сервиса ФНС \"Мои чеки онлайн\"."`
+	Tinkoff *tinkoff.Config `yaml:"tinkoff,omitempty" doc:"Настройка пайплайна для онлайн-банка \"Тинькофф\"."`
 
 	Captcha captcha.Config `yaml:"captcha,omitempty" doc:"Настройки для решения капчи."`
 }

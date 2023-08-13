@@ -26,7 +26,7 @@ properties:
     type: object
   lkdr:
     additionalProperties: false
-    description: Настройка загрузчиков из сервиса ФНС "Мои чеки онлайн".
+    description: Настройка пайплана для сервиса ФНС "Мои чеки онлайн".
     properties:
       batchSize:
         default: 1000
@@ -127,7 +127,7 @@ properties:
     type: boolean
   tinkoff:
     additionalProperties: false
-    description: Настройка загрузчиков из онлайн-банка "Тинькофф".
+    description: Настройка пайплайна для онлайн-банка "Тинькофф".
     properties:
       batchSize:
         default: 100
@@ -196,7 +196,7 @@ properties:
       users:
         additionalProperties:
           type: string
-        description: Маппинг JID в имя пользователя, используемое в загрузчиках.
+        description: Маппинг JID в имя пользователя, используемое в пайплайнах.
         type: object
     required:
       - jid

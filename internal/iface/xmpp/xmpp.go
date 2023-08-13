@@ -28,7 +28,7 @@ type Pipelines interface {
 type Config struct {
 	Jid      string            `yaml:"jid" doc:"Jabber ID для бота."`
 	Password string            `yaml:"password" doc:"Пароль для бота."`
-	Users    map[string]string `yaml:"users" doc:"Маппинг JID в имя пользователя, используемое в загрузчиках."`
+	Users    map[string]string `yaml:"users" doc:"Маппинг JID в имя пользователя, используемое в пайплайнах."`
 }
 
 type Asker = convo.Asker[string, string]
