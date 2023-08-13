@@ -56,20 +56,27 @@ properties:
         description: Таймаут для запросов.
         pattern: (\d+h)?(\d+m)?(\d+s)?(\d+ms)?(\d+µs)?(\d+ns)?
         type: string
-      userAgent:
-        default: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36
-        description: |-
-          Используется для авторизации и обновления токена доступа.
-          Можно подсмотреть в браузере при попытке авторизации.
-        type: string
       users:
         additionalProperties:
           items:
             additionalProperties: false
             properties:
+              deviceId:
+                description: |-
+                  Используется для авторизации и обновления токена доступа.
+                  При отсутствии генерируется автоматически из userAgent и номера телефона.
+                  Можно подсмотреть в браузере при попытке авторизации.
+                  Обратите внимание, что токены доступа привязаны к deviceId. При смене deviceId потребуется авторизоваться заново.
+                type: string
               phone:
                 description: Номер телефона пользователя.
                 pattern: 7\d{10}
+                type: string
+              userAgent:
+                default: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36
+                description: |-
+                  Используется для авторизации и обновления токена доступа.
+                  Можно подсмотреть в браузере при попытке авторизации.
                 type: string
             required:
               - phone

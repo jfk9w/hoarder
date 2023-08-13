@@ -70,16 +70,20 @@ func (b Builder) Build(ctx context.Context) (*pipeline, error) {
 		for _, credential := range credentials {
 			clients[credential.Phone] = &based.Lazy[Client]{
 				Fn: func(ctx context.Context) (Client, error) {
-					deviceID, err := generateDeviceID(b.Config.UserAgent, credential.Phone)
-					if err != nil {
-						return nil, errors.Wrap(err, "generate device ID")
+					deviceID := credential.DeviceID
+					if deviceID == "" {
+						var err error
+						deviceID, err = generateDeviceID(credential.UserAgent, credential.Phone)
+						if err != nil {
+							return nil, errors.Wrap(err, "generate device ID")
+						}
 					}
 
 					client, err := lkdr.ClientBuilder{
 						Phone:        credential.Phone,
 						Clock:        b.Clock,
 						DeviceID:     deviceID,
-						UserAgent:    b.Config.UserAgent,
+						UserAgent:    credential.UserAgent,
 						TokenStorage: tokenStorage,
 					}.Build(ctx)
 					if err != nil {
