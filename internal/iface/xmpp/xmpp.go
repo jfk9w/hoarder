@@ -129,8 +129,8 @@ func (h *Handler) start() error {
 }
 
 func (h *Handler) onConnect(sender xmpp.Sender) {
+	h.work.Add(1)
 	go func() {
-		h.work.Add(1)
 		defer h.work.Done()
 		ticker := time.NewTicker(presenceInterval)
 		defer ticker.Stop()
@@ -212,8 +212,8 @@ func (h *Handler) handleMessage(sender xmpp.Sender, packet stanza.Packet) {
 }
 
 func (h *Handler) displayComposing(ctx context.Context, sender xmpp.Sender, to string) {
+	h.work.Add(1)
 	go func() {
-		h.work.Add(1)
 		defer h.work.Done()
 		ticker := time.NewTicker(stateInterval)
 		defer ticker.Stop()
