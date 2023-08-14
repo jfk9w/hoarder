@@ -37,6 +37,6 @@ func (l *Logger) With(args ...any) *Logger {
 func (l *Logger) WithDesc(key, value string) *Logger {
 	return &Logger{
 		Logger: l.Logger.With(slog.String(key, value)),
-		desc:   value,
+		desc:   fmt.Sprintf("%s %s", key, value),
 	}
 }

@@ -94,7 +94,7 @@ func main() {
 	if cfg := cfg.XMPP; cfg != nil {
 		builder := xmpp.Builder{
 			Config:    *cfg,
-			Processor: registry,
+			Pipelines: registry,
 			Log:       log.With(slog.String("interface", "xmpp")),
 		}
 

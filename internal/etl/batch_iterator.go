@@ -21,7 +21,7 @@ func (it *BatchIterator[V]) Run(fn func(log *Logger, value V, batchSize int) (*V
 		nextValue, err := fn(log, value, it.BatchSize)
 		if err != nil {
 			for _, err := range multierr.Errors(err) {
-				_ = multierr.AppendInto(&errs, errors.Wrapf(err, "%v", value))
+				_ = multierr.AppendInto(&errs, errors.Wrapf(err, "%s %v", it.Key, value))
 			}
 
 			return

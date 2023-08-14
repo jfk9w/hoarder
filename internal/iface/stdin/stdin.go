@@ -38,36 +38,53 @@ func (b Builder) Run(ctx context.Context) (context.CancelFunc, error) {
 		return nil, err
 	}
 
-	cancel := based.GoWithFeedback(ctx, context.WithCancel, func(ctx context.Context) {
-		for {
-			fmt.Printf("Enter username: ")
-			username, ok := scan()
-			if !ok {
-				return
-			}
+	h := &handler{
+		pipelines: b.Pipelines,
+		log:       b.Log,
+	}
 
-			log := b.Log.With(slog.String("username", username))
-			ctx := etl.WithRequestInputFunc(ctx, requestInput)
-			reply := "✔ OK"
-			if err := b.Pipelines.Run(ctx, log, username); err != nil {
-				var b strings.Builder
-				for _, err := range multierr.Errors(err) {
-					b.WriteString("✘ ")
-					b.WriteString(err.Error())
-					b.WriteRune('\n')
-				}
-
-				reply = strings.Trim(b.String(), "\n")
-			}
-
-			fmt.Println(reply)
-		}
-	})
-
-	return cancel, nil
+	return based.GoWithFeedback(ctx, context.WithCancel, h.startLoop), nil
 }
 
-func requestInput(ctx context.Context, text string) (string, error) {
+type handler struct {
+	pipelines Pipelines
+	log       *slog.Logger
+	mu        based.RWMutex
+}
+
+func (h *handler) startLoop(ctx context.Context) {
+	for {
+		fmt.Printf("Enter username: ")
+		username, ok := scan()
+		if !ok {
+			return
+		}
+
+		log := h.log.With(slog.String("username", username))
+		ctx := etl.WithRequestInputFunc(ctx, h.requestInput)
+		reply := "✔ OK"
+		if err := h.pipelines.Run(ctx, log, username); err != nil {
+			var b strings.Builder
+			for _, err := range multierr.Errors(err) {
+				b.WriteString("✘ ")
+				b.WriteString(err.Error())
+				b.WriteRune('\n')
+			}
+
+			reply = strings.Trim(b.String(), "\n")
+		}
+
+		fmt.Println(reply)
+	}
+}
+
+func (h *handler) requestInput(ctx context.Context, text string) (string, error) {
+	ctx, cancel := h.mu.Lock(ctx)
+	defer cancel()
+	if err := ctx.Err(); err != nil {
+		return "", err
+	}
+
 	fmt.Printf("%s ", text)
 	reply, ok := scan()
 	if !ok {
