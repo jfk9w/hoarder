@@ -31,7 +31,7 @@ func (Driver) SchemaEnum() any {
 
 type Config struct {
 	Driver Driver `yaml:"driver"`
-	DSN    string `yaml:"dsn" examples:"\"file::memory:?cache=shared\", \"host=localhost port=5432 user=postgres password=postgres dbname=postgres\""`
+	DSN    string `yaml:"dsn" examples:"\"file::memory:?cache=shared\", \"host=localhost port=5432 user=postgres password=postgres dbname=postgres search_path=public\""`
 }
 
 func Open(clock based.Clock, cfg Config) (*gorm.DB, error) {

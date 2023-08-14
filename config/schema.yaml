@@ -45,7 +45,7 @@ properties:
           dsn:
             examples:
               - file::memory:?cache=shared
-              - host=localhost port=5432 user=postgres password=postgres dbname=postgres
+              - host=localhost port=5432 user=postgres password=postgres dbname=postgres search_path=public
             type: string
         required:
           - driver
@@ -153,7 +153,7 @@ properties:
           dsn:
             examples:
               - file::memory:?cache=shared
-              - host=localhost port=5432 user=postgres password=postgres dbname=postgres
+              - host=localhost port=5432 user=postgres password=postgres dbname=postgres search_path=public
             type: string
         required:
           - driver

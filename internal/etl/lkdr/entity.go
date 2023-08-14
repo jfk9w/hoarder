@@ -74,7 +74,7 @@ type Tokens struct {
 
 type Brand struct {
 	Description string  `json:"description"`
-	Id          int64   `json:"id" gorm:"primaryKey"`
+	Id          int64   `json:"id" gorm:"primaryKey;autoIncrement:false"`
 	Image       *string `json:"image"`
 	Name        string  `json:"name"`
 }
