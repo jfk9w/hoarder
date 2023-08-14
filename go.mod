@@ -4,7 +4,7 @@ go 1.21
 
 require (
 	github.com/AlekSi/pointer v1.2.0
-	github.com/go-playground/validator/v10 v10.2.0
+	github.com/go-playground/validator/v10 v10.15.0
 	github.com/jfk9w-go/based v0.0.0-20230805223938-9244097d63ce
 	github.com/jfk9w-go/confi v0.0.0-20230812134603-b16b75e1211b
 	github.com/jfk9w-go/lkdr-api v0.0.0-20230803081442-05f2ab18d7de
@@ -20,6 +20,7 @@ require (
 )
 
 require (
+	github.com/gabriel-vasile/mimetype v1.4.2 // indirect
 	github.com/go-playground/locales v0.14.1 // indirect
 	github.com/go-playground/universal-translator v0.18.1 // indirect
 	github.com/go-playground/validator v9.31.0+incompatible // indirect
@@ -38,6 +39,8 @@ require (
 	github.com/mattn/go-sqlite3 v1.14.17 // indirect
 	github.com/rogpeppe/go-internal v1.11.0 // indirect
 	golang.org/x/crypto v0.12.0 // indirect
+	golang.org/x/net v0.10.0 // indirect
+	golang.org/x/sys v0.11.0 // indirect
 	golang.org/x/text v0.12.0 // indirect
 	golang.org/x/xerrors v0.0.0-20220907171357-04be3eba64a2 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
