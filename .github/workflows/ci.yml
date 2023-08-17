@@ -35,7 +35,7 @@ jobs:
     name: Publish Docker image
     runs-on: ubuntu-latest
     needs: [ test ]
-    if: ${{ github.event_name != 'pull_request' && !github.ref.startsWith('dependabot/') }}
+    if: ${{ github.event_name != 'pull_request' && startsWith(github.ref, 'dependabot/') != true }}
     steps:
       - uses: actions/checkout@v3
       - name: Login to GitHub Container Registry
