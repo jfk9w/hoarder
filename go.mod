@@ -4,7 +4,7 @@ go 1.21
 
 require (
 	github.com/AlekSi/pointer v1.2.0
-	github.com/go-playground/validator/v10 v10.15.0
+	github.com/go-playground/validator/v10 v10.15.1
 	github.com/jfk9w-go/based v0.0.0-20230814155124-5395e1391762
 	github.com/jfk9w-go/confi v0.0.0-20230814155242-3426bdfa36d7
 	github.com/jfk9w-go/lkdr-api v0.0.0-20230814155349-c84ff30d9561
