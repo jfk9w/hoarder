@@ -63,7 +63,7 @@ func main() {
 	log := log.Get(cfg.Log)
 	clock := based.StandardClock
 
-	captchaSolver, err := captcha.NewTokenProvider(ctx, cfg.Captcha, clock)
+	captchaSolver, err := captcha.NewTokenProvider(cfg.Captcha, clock)
 	if err != nil {
 		panic(err)
 	}
@@ -77,7 +77,7 @@ func main() {
 			CaptchaSolver: captchaSolver,
 		}
 
-		pipeline := must(builder.Build(ctx))
+		pipeline := must(builder.Build())
 		registry.Register("lkdr", pipeline)
 	}
 
@@ -87,7 +87,7 @@ func main() {
 			Clock:  clock,
 		}
 
-		pipeline := must(builder.Build(ctx))
+		pipeline := must(builder.Build())
 		registry.Register("tinkoff", pipeline)
 	}
 
@@ -108,7 +108,12 @@ func main() {
 			Log:       log.With(slog.String("interface", "schedule")),
 		}
 
-		defer must(builder.Run(ctx))()
+		handler, err := builder.Run(ctx)
+		if err != nil {
+			panic(err)
+		}
+
+		defer handler.Stop()
 	}
 
 	if cfg.Stdin {

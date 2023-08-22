@@ -12,11 +12,11 @@ import (
 )
 
 type tokenStorage struct {
-	db *based.Lazy[*gorm.DB]
+	db based.Ref[*gorm.DB]
 }
 
 func (s *tokenStorage) LoadTokens(ctx context.Context, phone string) (*lkdr.Tokens, error) {
-	db, err := s.db.Get(ctx)
+	db, err := s.db(ctx)
 	if err != nil {
 		return nil, errors.Wrap(err, "get db handle")
 	}
@@ -36,7 +36,7 @@ func (s *tokenStorage) LoadTokens(ctx context.Context, phone string) (*lkdr.Toke
 }
 
 func (s *tokenStorage) UpdateTokens(ctx context.Context, phone string, tokens *lkdr.Tokens) error {
-	db, err := s.db.Get(ctx)
+	db, err := s.db(ctx)
 	if err != nil {
 		return errors.Wrap(err, "get db handle")
 	}

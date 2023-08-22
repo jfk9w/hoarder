@@ -8,7 +8,6 @@ import (
 	"os"
 	"strings"
 
-	"github.com/go-playground/validator/v10"
 	"github.com/jfk9w-go/based"
 	"github.com/pkg/errors"
 	"go.uber.org/multierr"
@@ -25,16 +24,8 @@ type Builder struct {
 	Log       *slog.Logger `validate:"required"`
 }
 
-var validate = &based.Lazy[*validator.Validate]{
-	Fn: func(ctx context.Context) (*validator.Validate, error) {
-		return validator.New(), nil
-	},
-}
-
-func (b Builder) Run(ctx context.Context) (context.CancelFunc, error) {
-	if validate, err := validate.Get(ctx); err != nil {
-		return nil, err
-	} else if err := validate.Struct(b); err != nil {
+func (b Builder) Run(ctx context.Context) (*handler, error) {
+	if err := based.Validate.Struct(b); err != nil {
 		return nil, err
 	}
 
@@ -43,16 +34,19 @@ func (b Builder) Run(ctx context.Context) (context.CancelFunc, error) {
 		log:       b.Log,
 	}
 
-	return based.GoWithFeedback(ctx, context.WithCancel, h.startLoop), nil
+	h.looper = based.Go(ctx, h.loop)
+
+	return h, nil
 }
 
 type handler struct {
 	pipelines Pipelines
 	log       *slog.Logger
 	mu        based.RWMutex
+	looper    based.Goroutine
 }
 
-func (h *handler) startLoop(ctx context.Context) {
+func (h *handler) loop(ctx context.Context) {
 	for {
 		fmt.Printf("Enter username: ")
 		username, ok := scan()
@@ -92,6 +86,11 @@ func (h *handler) requestInput(ctx context.Context, text string) (string, error)
 	}
 
 	return reply, nil
+}
+
+func (h *handler) Stop() {
+	h.looper.Cancel()
+	_ = h.looper.Join(context.Background())
 }
 
 func scan() (string, bool) {

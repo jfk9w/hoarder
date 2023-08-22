@@ -4,18 +4,17 @@ go 1.21
 
 require (
 	github.com/AlekSi/pointer v1.2.0
-	github.com/go-playground/validator/v10 v10.15.1
-	github.com/jfk9w-go/based v0.0.0-20230814155124-5395e1391762
-	github.com/jfk9w-go/confi v0.0.0-20230814155242-3426bdfa36d7
-	github.com/jfk9w-go/lkdr-api v0.0.0-20230814155349-c84ff30d9561
-	github.com/jfk9w-go/rucaptcha-api v0.0.0-20230814155443-2c02f56ab7df
-	github.com/jfk9w-go/tinkoff-api v0.0.0-20230814155535-b598f8643dac
+	github.com/jfk9w-go/based v0.0.5
+	github.com/jfk9w-go/confi v0.0.1
+	github.com/jfk9w-go/lkdr-api v0.0.1
+	github.com/jfk9w-go/rucaptcha-api v0.0.1
+	github.com/jfk9w-go/tinkoff-api v0.0.1
 	github.com/pkg/errors v0.9.1
 	go.uber.org/multierr v1.11.0
 	gorm.io/driver/mysql v1.5.1
 	gorm.io/driver/postgres v1.5.2
 	gorm.io/driver/sqlite v1.5.3
-	gorm.io/gorm v1.25.3
+	gorm.io/gorm v1.25.4
 	gosrc.io/xmpp v0.5.1
 )
 
@@ -23,10 +22,11 @@ require (
 	github.com/gabriel-vasile/mimetype v1.4.2 // indirect
 	github.com/go-playground/locales v0.14.1 // indirect
 	github.com/go-playground/universal-translator v0.18.1 // indirect
+	github.com/go-playground/validator/v10 v10.15.1 // indirect
 	github.com/go-sql-driver/mysql v1.7.1 // indirect
 	github.com/google/go-cmp v0.5.9 // indirect
 	github.com/google/go-querystring v1.1.0 // indirect
-	github.com/google/uuid v1.3.0 // indirect
+	github.com/google/uuid v1.3.1 // indirect
 	github.com/jackc/pgpassfile v1.0.0 // indirect
 	github.com/jackc/pgservicefile v0.0.0-20221227161230-091c0ba34f0a // indirect
 	github.com/jackc/pgx/v5 v5.4.3 // indirect

@@ -8,7 +8,6 @@ import (
 	"net/http"
 	"net/url"
 
-	"github.com/go-playground/validator/v10"
 	"github.com/google/go-querystring/query"
 	"github.com/jfk9w-go/based"
 	"github.com/pkg/errors"
@@ -22,12 +21,6 @@ type Config struct {
 	SoftID   int    `url:"soft_id,omitempty"`
 }
 
-var validate = based.Lazy[*validator.Validate]{
-	Fn: func(ctx context.Context) (*validator.Validate, error) {
-		return validator.New(), nil
-	},
-}
-
 type ClientBuilder struct {
 	Config Config      `validate:"required"`
 	Clock  based.Clock `validate:"required_with=Config.Pingback"`
@@ -35,10 +28,8 @@ type ClientBuilder struct {
 	Transport http.RoundTripper
 }
 
-func (b ClientBuilder) Build(ctx context.Context) (*Client, error) {
-	if validate, err := validate.Get(ctx); err != nil {
-		return nil, err
-	} else if err := validate.Struct(b); err != nil {
+func (b ClientBuilder) Build() (*Client, error) {
+	if err := based.Validate.Struct(b); err != nil {
 		return nil, err
 	}
 
@@ -80,9 +71,7 @@ func (c *Client) HTTPHandler() http.Handler {
 }
 
 func (c *Client) Solve(ctx context.Context, in SolveIn) (*SolveOut, error) {
-	if validate, err := validate.Get(ctx); err != nil {
-		return nil, err
-	} else if err := validate.Struct(in); err != nil {
+	if err := based.Validate.Struct(in); err != nil {
 		return nil, err
 	}
 

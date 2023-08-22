@@ -25,7 +25,7 @@ github.com/go-sql-driver/mysql
 # github.com/google/go-querystring v1.1.0
 ## explicit; go 1.10
 github.com/google/go-querystring/query
-# github.com/google/uuid v1.3.0
+# github.com/google/uuid v1.3.1
 ## explicit
 github.com/google/uuid
 # github.com/jackc/pgpassfile v1.0.0
@@ -48,20 +48,20 @@ github.com/jackc/pgx/v5/pgconn/internal/ctxwatch
 github.com/jackc/pgx/v5/pgproto3
 github.com/jackc/pgx/v5/pgtype
 github.com/jackc/pgx/v5/stdlib
-# github.com/jfk9w-go/based v0.0.0-20230814155124-5395e1391762
-## explicit; go 1.20
+# github.com/jfk9w-go/based v0.0.5
+## explicit; go 1.21
 github.com/jfk9w-go/based
-# github.com/jfk9w-go/confi v0.0.0-20230814155242-3426bdfa36d7
-## explicit; go 1.20
+# github.com/jfk9w-go/confi v0.0.1
+## explicit; go 1.21
 github.com/jfk9w-go/confi
-# github.com/jfk9w-go/lkdr-api v0.0.0-20230814155349-c84ff30d9561
-## explicit; go 1.20
+# github.com/jfk9w-go/lkdr-api v0.0.1
+## explicit; go 1.21
 github.com/jfk9w-go/lkdr-api
-# github.com/jfk9w-go/rucaptcha-api v0.0.0-20230814155443-2c02f56ab7df
-## explicit; go 1.20
+# github.com/jfk9w-go/rucaptcha-api v0.0.1
+## explicit; go 1.21
 github.com/jfk9w-go/rucaptcha-api
-# github.com/jfk9w-go/tinkoff-api v0.0.0-20230814155535-b598f8643dac
-## explicit; go 1.20
+# github.com/jfk9w-go/tinkoff-api v0.0.1
+## explicit; go 1.21
 github.com/jfk9w-go/tinkoff-api
 # github.com/jinzhu/inflection v1.0.0
 ## explicit
@@ -130,7 +130,7 @@ gorm.io/driver/postgres
 # gorm.io/driver/sqlite v1.5.3
 ## explicit; go 1.20
 gorm.io/driver/sqlite
-# gorm.io/gorm v1.25.3
+# gorm.io/gorm v1.25.4
 ## explicit; go 1.16
 gorm.io/gorm
 gorm.io/gorm/callbacks

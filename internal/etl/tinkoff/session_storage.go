@@ -12,11 +12,11 @@ import (
 )
 
 type sessionStorage struct {
-	db *based.Lazy[*gorm.DB]
+	db based.Ref[*gorm.DB]
 }
 
 func (s *sessionStorage) LoadSession(ctx context.Context, phone string) (*tinkoff.Session, error) {
-	db, err := s.db.Get(ctx)
+	db, err := s.db(ctx)
 	if err != nil {
 		return nil, errors.Wrap(err, "get db handle")
 	}
@@ -36,7 +36,7 @@ func (s *sessionStorage) LoadSession(ctx context.Context, phone string) (*tinkof
 }
 
 func (s *sessionStorage) UpdateSession(ctx context.Context, phone string, session *tinkoff.Session) error {
-	db, err := s.db.Get(ctx)
+	db, err := s.db(ctx)
 	if err != nil {
 		return errors.Wrap(err, "get db handle")
 	}

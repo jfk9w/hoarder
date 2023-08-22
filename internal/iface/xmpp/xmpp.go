@@ -8,7 +8,6 @@ import (
 	"sync"
 	"time"
 
-	"github.com/go-playground/validator/v10"
 	"github.com/jfk9w-go/based"
 	"github.com/pkg/errors"
 	"go.uber.org/multierr"
@@ -43,16 +42,8 @@ type Builder struct {
 	Log       *slog.Logger `validate:"required"`
 }
 
-var validate = &based.Lazy[*validator.Validate]{
-	Fn: func(ctx context.Context) (*validator.Validate, error) {
-		return validator.New(), nil
-	},
-}
-
 func (b Builder) Run(ctx context.Context) (*Handler, error) {
-	if validate, err := validate.Get(ctx); err != nil {
-		return nil, err
-	} else if err := validate.Struct(b); err != nil {
+	if err := based.Validate.Struct(b); err != nil {
 		return nil, err
 	}
 

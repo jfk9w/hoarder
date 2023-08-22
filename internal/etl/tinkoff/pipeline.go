@@ -6,7 +6,6 @@ import (
 	"log/slog"
 	"time"
 
-	"github.com/go-playground/validator/v10"
 	"github.com/jfk9w-go/based"
 	"github.com/jfk9w-go/tinkoff-api"
 	"github.com/pkg/errors"
@@ -19,26 +18,18 @@ import (
 	"github.com/jfk9w/hoarder/internal/util/executors"
 )
 
-var validate = &based.Lazy[*validator.Validate]{
-	Fn: func(ctx context.Context) (*validator.Validate, error) {
-		return validator.New(), nil
-	},
-}
-
 type Builder struct {
 	Config Config      `validate:"required"`
 	Clock  based.Clock `validate:"required"`
 }
 
-func (b Builder) Build(ctx context.Context) (*pipeline, error) {
-	if validate, err := validate.Get(ctx); err != nil {
-		return nil, err
-	} else if err := validate.Struct(b); err != nil {
+func (b Builder) Build() (*pipeline, error) {
+	if err := based.Validate.Struct(b); err != nil {
 		return nil, err
 	}
 
-	db := &based.Lazy[*gorm.DB]{
-		Fn: func(ctx context.Context) (*gorm.DB, error) {
+	db := based.Lazy[*gorm.DB](
+		func(ctx context.Context) (*gorm.DB, error) {
 			db, err := database.Open(b.Clock, b.Config.DB)
 			if err != nil {
 				return nil, errors.Wrap(err, "open db connection")
@@ -74,16 +65,16 @@ func (b Builder) Build(ctx context.Context) (*pipeline, error) {
 
 			return db, nil
 		},
-	}
+	)
 
 	sessionStorage := &sessionStorage{db: db}
-	clients := make(map[string]map[string]*based.Lazy[Client])
+	clients := make(map[string]map[string]based.Ref[Client])
 	for username, credentials := range b.Config.Users {
-		clients[username] = make(map[string]*based.Lazy[Client])
+		clients[username] = make(map[string]based.Ref[Client])
 		clients := clients[username]
 		for _, credential := range credentials {
-			clients[credential.Phone] = &based.Lazy[Client]{
-				Fn: func(ctx context.Context) (Client, error) {
+			clients[credential.Phone] = based.Lazy[Client](
+				func(ctx context.Context) (Client, error) {
 					return tinkoff.ClientBuilder{
 						Clock: b.Clock,
 						Credential: tinkoff.Credential{
@@ -93,7 +84,7 @@ func (b Builder) Build(ctx context.Context) (*pipeline, error) {
 						SessionStorage: sessionStorage,
 					}.Build(ctx)
 				},
-			}
+			)
 		}
 	}
 
@@ -109,8 +100,8 @@ func (b Builder) Build(ctx context.Context) (*pipeline, error) {
 
 type pipeline struct {
 	clock           based.Clock
-	clients         map[string]map[string]*based.Lazy[Client]
-	db              *based.Lazy[*gorm.DB]
+	clients         map[string]map[string]based.Ref[Client]
+	db              based.Ref[*gorm.DB]
 	batchSize       int
 	overlap         time.Duration
 	disableReceipts bool
@@ -122,7 +113,7 @@ func (p *pipeline) Run(ctx context.Context, log *etl.Logger, username string) (e
 		return nil
 	}
 
-	db, err := p.db.Get(ctx)
+	db, err := p.db(ctx)
 	if log.Error(&errs, err, "failed to get db handle") {
 		return
 	}
@@ -144,7 +135,7 @@ func (p *pipeline) Run(ctx context.Context, log *etl.Logger, username string) (e
 				return
 			}
 
-			client, err := client.Get(ctx)
+			client, err := client(ctx)
 			if log.Error(&errs, err, "failed to get client for api") {
 				return
 			}

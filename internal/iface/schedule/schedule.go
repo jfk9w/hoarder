@@ -5,10 +5,8 @@ import (
 	"log/slog"
 	"time"
 
-	"github.com/jfk9w/hoarder/internal/util/executors"
-
-	"github.com/go-playground/validator/v10"
 	"github.com/jfk9w-go/based"
+	"github.com/jfk9w/hoarder/internal/util/executors"
 )
 
 type Pipelines interface {
@@ -26,48 +24,62 @@ type Builder struct {
 	Log       *slog.Logger `validate:"required"`
 }
 
-var validate = &based.Lazy[*validator.Validate]{
-	Fn: func(ctx context.Context) (*validator.Validate, error) {
-		return validator.New(), nil
-	},
-}
-
-func (b Builder) Run(ctx context.Context) (context.CancelFunc, error) {
-	if validate, err := validate.Get(ctx); err != nil {
-		return nil, err
-	} else if err := validate.Struct(b); err != nil {
+func (b Builder) Run(ctx context.Context) (*handler, error) {
+	if err := based.Validate.Struct(b); err != nil {
 		return nil, err
 	}
 
-	cancel := based.GoWithFeedback(ctx, context.WithCancel, func(ctx context.Context) {
-		ticker := time.NewTicker(b.Config.Interval)
-		defer ticker.Stop()
+	h := &handler{
+		interval:  b.Config.Interval,
+		users:     b.Config.Users,
+		pipelines: b.Pipelines,
+		log:       b.Log,
+	}
 
-		for {
-			executor := executors.Parallel(b.Log, "username")
-			for _, username := range b.Config.Users {
-				executor.Run(username, func(log *slog.Logger) error {
-					log.Debug("pipelines started")
-					if err := b.Pipelines.Run(ctx, log, username); err != nil {
-						log.Error("pipelines failed")
-						return err
-					}
+	h.looper = based.Go(ctx, h.loop)
 
-					log.Info("pipelines completed")
-					return nil
-				})
-			}
+	return h, nil
+}
 
-			_ = executor.Wait()
+type handler struct {
+	interval  time.Duration
+	users     []string
+	pipelines Pipelines
+	log       *slog.Logger
+	looper    based.Goroutine
+}
 
-			select {
-			case <-ticker.C:
-				continue
-			case <-ctx.Done():
-				return
-			}
+func (h *handler) loop(ctx context.Context) {
+	ticker := time.NewTicker(h.interval)
+	defer ticker.Stop()
+
+	for {
+		executor := executors.Parallel(h.log, "username")
+		for _, username := range h.users {
+			executor.Run(username, func(log *slog.Logger) error {
+				log.Debug("pipelines started")
+				if err := h.pipelines.Run(ctx, log, username); err != nil {
+					log.Error("pipelines failed")
+					return err
+				}
+
+				log.Info("pipelines completed")
+				return nil
+			})
 		}
-	})
 
-	return cancel, nil
+		_ = executor.Wait()
+
+		select {
+		case <-ticker.C:
+			continue
+		case <-ctx.Done():
+			return
+		}
+	}
+}
+
+func (h *handler) Stop() {
+	h.looper.Cancel()
+	_ = h.looper.Join(context.Background())
 }

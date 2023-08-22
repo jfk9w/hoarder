@@ -11,7 +11,7 @@ jobs:
         uses: dependabot/fetch-metadata@v1
         with:
           github-token: "${{ secrets.GITHUB_TOKEN }}"
-      - name: Approve and auto-merge
+      - name: Approve and auto-merge PR
         if: ${{ steps.metadata.outputs.update-type != 'version-update:semver-major' }}
         run: |
           gh pr review --approve "$PR_URL"
