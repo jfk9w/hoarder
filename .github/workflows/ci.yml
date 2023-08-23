@@ -34,8 +34,6 @@ jobs:
     needs: [ test ]
     runs-on: ubuntu-latest
     if: github.event_name == 'push' && github.ref_type == 'branch' && github.ref_name == 'master'
-    env:
-      DIST: dist
     steps:
       - uses: actions/checkout@v3
       - name: Set up Go
@@ -50,23 +48,14 @@ jobs:
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
       - name: Package
-        run: |
-          mkdir -p $DIST
-          for GOOS in windows linux darwin; do
-            for GOARCH in amd64 arm64; do
-              BUILD="${DIST}/${NAME}-${VERSION}.${GOOS}.${GOARCH}"
-              make build
-              tar -zvcf ${BUILD}.tar.gz -c $DIST $BUILD
-              rm -rf $BUILD
-            done
-          done
+        run: build/dist.sh
         env:
           NAME: ${{ github.event.repository.name }}
-          VERSION: ${{ needs.release.outputs.tag.new_tag }}
+          VERSION: ${{ steps.tag.outputs.new_tag }}
       - name: Release
         uses: ncipollo/release-action@v1
         with:
           tag: ${{ steps.tag.outputs.new_tag }}
           name: ${{ steps.tag.outputs.new_tag }}
           body: ${{ steps.tag.outputs.changelog }}
-          artifacts: "$DIST/*"
+          artifacts: "dist/*"

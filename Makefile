@@ -1,34 +1,30 @@
 MODULE := $(shell head -1 go.mod | cut -d ' ' -f2)
-CMD := ./cmd
-
-ifndef BUILD
-BUILD := bin
-endif
+NAME := $(shell head -1 go.mod | cut -d '/' -f3)
+GOIMPORTS := $(shell go env GOPATH)/bin/goimports
 
 export GOEXPERIMENT := loopvar
 
-$(BUILD)/%:
-	mkdir -p $(BUILD) && go build -o $@ -v $(subst $(BUILD),$(CMD),$@)
+$(GOIMPORTS):
+	go install golang.org/x/tools/cmd/goimports@latest
 
-build: $(subst $(CMD),$(BUILD),$(wildcard $(CMD)/*))
-	echo $^
+fmt: $(GOIMPORTS)
+	$(GOIMPORTS) -local $(MODULE) -l -w $(shell find . -type f -name '*.go' -not -path "./vendor/*")
 
 test:
 	go test -v ./...
 
-schema: $(BUILD)/hoarder
-	mkdir -p config && ./$^ --dump.schema > config/schema.yaml
+bin/%:
+	go build -o $@ -v ./$(subst bin,cmd,$@)
 
-defaults: $(BUILD)/hoarder
-	mkdir -p config && ./$^ --dump.values > config/defaults.json
+bin: $(subst cmd,bin,$(wildcard ./cmd/*))
 
-config: schema defaults
+config/schema.yaml: bin/hoarder
+	mkdir -p $(shell dirname $@) && ./$^ --dump.schema > config/schema.yaml
 
-tools:
-	go install golang.org/x/tools/cmd/goimports@latest
+config/defaults.json: bin/hoarder
+	mkdir -p $(shell dirname $@) && ./$^ --dump.values > config/defaults.json
 
-fmt: tools
-	goimports -local $(MODULE) -l -w $(shell find . -type f -name '*.go' -not -path "./vendor/*")
+config: config/schema.yaml config/defaults.json
 
 clean:
-	rm -rf $(BUILD)/*
+	rm -rf bin/*
