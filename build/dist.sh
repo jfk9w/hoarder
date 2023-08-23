@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 
-VERSION=$(git symbolic-ref -q --short HEAD || git describe --tags --exact-match || echo unknown)
+[[ -z "$NAME" ]] && NAME=$(head -1 go.mod | cut -d ' ' -f2 | cut -d '/' -f3)
+[[ -z "$VERSION" ]] && VERSION=$(git symbolic-ref -q --short HEAD || git describe --tags --exact-match || echo unknown)
+
 DIR=dist
 
 rm -rf $DIR/*
