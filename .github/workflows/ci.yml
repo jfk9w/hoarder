@@ -73,6 +73,8 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
       - name: Build
-        run: docker buildx build --platform=linux/amd64,linux/arm64 -t ghcr.io/$GITHUB_REPOSITORY:${GITHUB_REF##*/} .
+        run: |
+          docker buildx create --use
+          docker buildx build --platform=linux/amd64,linux/arm64 -t ghcr.io/$GITHUB_REPOSITORY:${GITHUB_REF##*/} .
       - name: Publish
         run: docker push ghcr.io/$GITHUB_REPOSITORY:${GITHUB_REF##*/}
