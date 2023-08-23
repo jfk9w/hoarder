@@ -26,5 +26,11 @@ config/defaults.json: bin/hoarder
 
 config: config/schema.yaml config/defaults.json
 
+install: bin
+	cp bin/* /usr/local/bin/
+
+uninstall:
+	rm $(subst ./cmd,/usr/local/bin,$(wildcard ./cmd/*))
+
 clean:
 	rm -rf bin/*

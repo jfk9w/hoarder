@@ -59,3 +59,20 @@ jobs:
           name: ${{ steps.tag.outputs.new_tag }}
           body: ${{ steps.tag.outputs.changelog }}
           artifacts: "dist/*"
+  image:
+    name: Image
+    runs-on: ubuntu-latest
+    needs: [ test ]
+    if: github.event_name != 'pull_request_target'
+    steps:
+      - uses: actions/checkout@v3
+      - name: Login
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Build
+        run: docker buildx build --platform=linux/amd64,linux/arm64 -t ghcr.io/$GITHUB_REPOSITORY:${GITHUB_REF##*/} .
+      - name: Publish
+        run: docker push ghcr.io/$GITHUB_REPOSITORY:${GITHUB_REF##*/}
