@@ -13,16 +13,16 @@ fmt: $(GOIMPORTS)
 test:
 	go test -v ./...
 
-bin/%:
+bin/%: $(wildcard ./internal/**/*) $(wildcard ./cmd$@/**/*)
 	go build -o $@ -v ./$(subst bin,cmd,$@)
 
-bin: $(subst cmd,bin,$(wildcard ./cmd/*))
+bin: $(subst ./cmd,bin,$(wildcard ./cmd/*))
 
-config/schema.yaml: bin/hoarder
-	mkdir -p $(shell dirname $@) && ./$^ --dump.schema > config/schema.yaml
+%/schema.yaml: bin/hoarder
+	mkdir -p $(dir $@) && ./$^ --dump.schema > $@
 
-config/defaults.json: bin/hoarder
-	mkdir -p $(shell dirname $@) && ./$^ --dump.values > config/defaults.json
+%/defaults.json: bin/hoarder
+	mkdir -p $(dir $@) && ./$^ --dump.values > $@
 
 config: config/schema.yaml config/defaults.json
 
@@ -30,7 +30,7 @@ install: bin
 	cp bin/* /usr/local/bin/
 
 uninstall:
-	rm $(subst ./cmd,/usr/local/bin,$(wildcard ./cmd/*))
+	rm -f $(subst ./cmd,/usr/local/bin,$(wildcard ./cmd/*))
 
 clean:
 	rm -rf bin/*

@@ -99,4 +99,4 @@ jobs:
 
           docker buildx build . $IMAGE_TAGS --platform=linux/amd64,linux/arm64 --push
         env:
-          NEW_TAG: ${{ needs.release.outputs.new_tag }}
+          NEW_TAG: ${{ needs.tag.outputs.new_tag }}
