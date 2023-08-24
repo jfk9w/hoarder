@@ -1,5 +1,4 @@
 MODULE := $(shell head -1 go.mod | cut -d ' ' -f2)
-NAME := $(shell head -1 go.mod | cut -d '/' -f3)
 GOIMPORTS := $(shell go env GOPATH)/bin/goimports
 
 export GOEXPERIMENT := loopvar
