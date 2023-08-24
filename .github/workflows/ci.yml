@@ -18,7 +18,7 @@ jobs:
           args: --verbose
           version: latest
       - name: Build
-        run: make build
+        run: make bin
       - name: Test
         run: make test
       - name: Check config schema & defaults
@@ -97,6 +97,6 @@ jobs:
             fi
           fi
 
-          docker buildx build . $TAGS --platform=linux/amd64,linux/arm64 --push
+          docker buildx build . $IMAGE_TAGS --platform=linux/amd64,linux/arm64 --push
         env:
           NEW_TAG: ${{ needs.release.outputs.new_tag }}
