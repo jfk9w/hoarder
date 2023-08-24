@@ -100,3 +100,4 @@ jobs:
           docker buildx build . $IMAGE_TAGS --platform=linux/amd64,linux/arm64 --push
         env:
           NEW_TAG: ${{ needs.tag.outputs.new_tag }}
+          BUILDX_NO_DEFAULT_ATTESTATIONS: 1
