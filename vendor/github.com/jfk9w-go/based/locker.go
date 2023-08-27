@@ -37,10 +37,6 @@ func (fn LockerFunc) Lock(ctx context.Context) (context.Context, context.CancelF
 type Lockers []Locker
 
 func (ls Lockers) Lock(ctx context.Context) (context.Context, context.CancelFunc) {
-	return ReentrantLock(ctx, ls, 1, ls.doLock)
-}
-
-func (ls Lockers) doLock(ctx context.Context) (context.Context, context.CancelFunc) {
 	var (
 		cancels []context.CancelFunc
 		cancel  context.CancelFunc
