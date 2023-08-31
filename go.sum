@@ -80,8 +80,8 @@ github.com/jfk9w-go/lkdr-api v0.0.1 h1:8MBXweoj2S5IxngNp+Z1603nFo1L3mtUaBwqip/t9
 github.com/jfk9w-go/lkdr-api v0.0.1/go.mod h1:SXTYJ+WXX16MPiyZcdnHfDWqqqGyO7O5btMJIQiZccU=
 github.com/jfk9w-go/rucaptcha-api v0.0.1 h1:135POAkrsi2KUtzwzU6G6M6FyuMcpEU3XmjSga2WMwA=
 github.com/jfk9w-go/rucaptcha-api v0.0.1/go.mod h1:MxEDR/IhChBWSSM/AM4UZzUlifs8gWHaO95/x1xioHk=
-github.com/jfk9w-go/tinkoff-api v0.0.5 h1:bK0kH5iAXvIN4XcSBpVPo+wlKyGUnjln76U894IfZao=
-github.com/jfk9w-go/tinkoff-api v0.0.5/go.mod h1:/i6HSRsyWhDVhK+wnkW5JF/Gs/pngHHjZV6gFKCZV78=
+github.com/jfk9w-go/tinkoff-api v0.1.1 h1:swIlrm5zE08ZOr+DCsXtgxxULiaGe7c42JcOMBCgUNM=
+github.com/jfk9w-go/tinkoff-api v0.1.1/go.mod h1:/i6HSRsyWhDVhK+wnkW5JF/Gs/pngHHjZV6gFKCZV78=
 github.com/jinzhu/inflection v1.0.0 h1:K317FqzuhWc8YvSVlFMCCUb36O/S9MCKRDI7QkRKD/E=
 github.com/jinzhu/inflection v1.0.0/go.mod h1:h+uFLlag+Qp1Va5pdKtLDYj+kHp5pxUVkryuEj+Srlc=
 github.com/jinzhu/now v1.1.5 h1:/o9tlHleP7gOFmsnYNz3RGnqzefHA47wQpKrrdTIwXQ=

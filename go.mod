@@ -8,7 +8,7 @@ require (
 	github.com/jfk9w-go/confi v0.0.1
 	github.com/jfk9w-go/lkdr-api v0.0.1
 	github.com/jfk9w-go/rucaptcha-api v0.0.1
-	github.com/jfk9w-go/tinkoff-api v0.0.5
+	github.com/jfk9w-go/tinkoff-api v0.1.1
 	github.com/pkg/errors v0.9.1
 	go.uber.org/multierr v1.11.0
 	gorm.io/driver/mysql v1.5.1

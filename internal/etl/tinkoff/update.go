@@ -45,7 +45,7 @@ func (u *accounts) parent() []parentDesc {
 	return nil
 }
 
-func (u *accounts) run(ctx context.Context, log *etl.Logger, client Client, db *gorm.DB) (processes []update, errs error) {
+func (u *accounts) run(ctx context.Context, log *etl.Logger, client Client, db *gorm.DB) (updates []update, errs error) {
 	out, err := client.AccountsLightIb(ctx)
 	if log.Error(&errs, err, "failed to get data from api") {
 		return
@@ -97,21 +97,26 @@ func (u *accounts) run(ctx context.Context, log *etl.Logger, client Client, db *
 
 	log.Info("updated entities in db", slog.Int("count", len(ids)))
 
-	processes = make([]update, len(ids)*2)
+	updates = make([]update, len(ids)*2)
 	for i, id := range ids {
-		processes[2*i] = &statements{
+		updates[2*i] = &statements{
 			batchSize: u.batchSize,
 			accountId: id,
 		}
 
-		processes[2*i+1] = &operations{
+		updates[2*i+1] = &operations{
 			batchSize: u.batchSize,
 			overlap:   u.overlap,
 			accountId: id,
 		}
 	}
 
-	processes = append(processes, &receipts{
+	updates = append(updates, &clientOfferEssences{
+		batchSize: u.batchSize,
+		phone:     u.phone,
+	})
+
+	updates = append(updates, &receipts{
 		batchSize: u.batchSize,
 		phone:     u.phone,
 	})
@@ -363,6 +368,63 @@ func (u *investOperationTypes) run(ctx context.Context, log *etl.Logger, client 
 	return
 }
 
+type clientOfferEssences struct {
+	batchSize int
+	phone     string
+}
+
+func (u *clientOfferEssences) entity() string {
+	return "clientOfferEssences"
+}
+
+func (u *clientOfferEssences) parent() []parentDesc {
+	return nil
+}
+
+func (u *clientOfferEssences) run(ctx context.Context, log *etl.Logger, client Client, db *gorm.DB) (_ []update, errs error) {
+	out, err := client.ClientOfferEssences(ctx)
+	if log.Error(&errs, err, "failed to get data from api") {
+		return
+	}
+
+	entities, err := etl.ToViaJSON[[]ClientOffer](out)
+	if log.Error(&errs, err, "entity conversion failed") {
+		return
+	}
+
+	for i := range out {
+		entity := &entities[i]
+		entity.UserPhone = u.phone
+		for _, accountId := range out[i].AccountIds {
+			entity.Accounts = append(entity.Accounts, Account{Id: accountId})
+			for j := range out[i].Essences {
+				entity := &entity.Essences[j]
+				switch entity.ExternalCode {
+				case "CATEGORY":
+					entity.SpendingCategoryId = pointer.To(entity.ExternalId)
+				case "BRAND":
+					entity.BrandId = pointer.To(entity.ExternalId)
+				}
+
+				for _, mccCode := range out[i].Essences[j].MccCodes {
+					entity.MccCodes = append(entity.MccCodes, ClientOfferEssenceMccCode{
+						MccCode: mccCode,
+					})
+				}
+			}
+		}
+	}
+
+	if err := db.Clauses(etl.Upsert("id")).
+		CreateInBatches(entities, u.batchSize).
+		Error; log.Error(&errs, err, "failed to update entities in db") {
+		return
+	}
+
+	log.Info("updated entities in db", slog.Int("count", len(entities)))
+	return
+}
+
 type investAccounts struct {
 	clock     based.Clock
 	batchSize int
@@ -378,7 +440,7 @@ func (u *investAccounts) parent() []parentDesc {
 	return nil
 }
 
-func (u *investAccounts) run(ctx context.Context, log *etl.Logger, client Client, db *gorm.DB) (processes []update, errs error) {
+func (u *investAccounts) run(ctx context.Context, log *etl.Logger, client Client, db *gorm.DB) (updates []update, errs error) {
 	out, err := client.InvestAccounts(ctx, &tinkoff.InvestAccountsIn{Currency: "RUB"})
 	if log.Error(&errs, err, "failed to get data from api") {
 		return
@@ -417,9 +479,9 @@ func (u *investAccounts) run(ctx context.Context, log *etl.Logger, client Client
 
 	log.Info("updated entities in db", slog.Int("count", len(ids)))
 
-	processes = make([]update, len(ids))
+	updates = make([]update, len(ids))
 	for i, id := range ids {
-		processes[i] = &investOperations{
+		updates[i] = &investOperations{
 			clock:     u.clock,
 			batchSize: u.batchSize,
 			overlap:   u.overlap,

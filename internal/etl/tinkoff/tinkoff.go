@@ -27,6 +27,7 @@ type Client interface {
 	Statements(ctx context.Context, in *tinkoff.StatementsIn) (tinkoff.StatementsOut, error)
 	Operations(ctx context.Context, in *tinkoff.OperationsIn) (tinkoff.OperationsOut, error)
 	ShoppingReceipt(ctx context.Context, in *tinkoff.ShoppingReceiptIn) (*tinkoff.ShoppingReceiptOut, error)
+	ClientOfferEssences(ctx context.Context) (tinkoff.ClientOfferEssencesOut, error)
 	InvestOperationTypes(ctx context.Context) (*tinkoff.InvestOperationTypesOut, error)
 	InvestAccounts(ctx context.Context, in *tinkoff.InvestAccountsIn) (*tinkoff.InvestAccountsOut, error)
 	InvestOperations(ctx context.Context, in *tinkoff.InvestOperationsIn) (*tinkoff.InvestOperationsOut, error)
