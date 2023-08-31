@@ -396,7 +396,7 @@ func (u *clientOfferEssences) run(ctx context.Context, log *etl.Logger, client C
 		entity := &entities[i]
 		entity.UserPhone = u.phone
 		for _, accountId := range out[i].AccountIds {
-			entity.Accounts = append(entity.Accounts, Account{Id: accountId})
+			entity.Accounts = append(entity.Accounts, ClientOfferAccount{AccountId: accountId})
 			for j := range out[i].Essences {
 				entity := &entity.Essences[j]
 				switch entity.ExternalCode {

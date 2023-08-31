@@ -531,11 +531,18 @@ type ClientOfferAttributes struct {
 	NotificationFlag bool `json:"notificationFlag"`
 }
 
+type ClientOfferAccount struct {
+	ClientOfferId string `json:"-" gorm:"index"`
+
+	AccountId string  `json:"-" gorm:"index"`
+	Account   Account `json:"-" gorm:"constraint:OnDelete:CASCADE"`
+}
+
 type ClientOffer struct {
 	UserPhone string `json:"-" gorm:"index"`
 	User      User   `json:"-" gorm:"constraint:OnDelete:CASCADE"`
 
-	Accounts []Account `json:"-" gorm:"many2many:client_offer_accounts;"`
+	Accounts []ClientOfferAccount `json:"-" gorm:"constraint:OnDelete:CASCADE;foreignKey:ClientOfferId"`
 
 	TypeCode              string                `json:"typeCode"`
 	AvailableEssenceCount uint                  `json:"availableEssenceCount"`
