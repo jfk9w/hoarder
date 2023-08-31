@@ -509,11 +509,8 @@ type ClientOfferEssenceMccCode struct {
 type ClientOfferEssence struct {
 	ClientOfferId string `json:"-" gorm:"index"`
 
-	SpendingCategoryId *string   `json:"-" gorm:"index"`
-	SpendingCategory   *Category `json:"-" gorm:"constraint:OnDelete:CASCADE"`
-
-	BrandId *string `json:"-" gorm:"index"`
-	Brand   *Brand  `json:"-" gorm:"constraint:OnDelete:CASCADE"`
+	SpendingCategoryId *string `json:"-" gorm:"index"`
+	BrandId            *string `json:"-" gorm:"index"`
 
 	MccCodes []ClientOfferEssenceMccCode `json:"-" gorm:"constraint:OnDelete:CASCADE;foreignKey:ClientOfferEssenceId"`
 
