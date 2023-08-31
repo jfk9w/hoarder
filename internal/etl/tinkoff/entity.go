@@ -533,9 +533,7 @@ type ClientOfferAttributes struct {
 
 type ClientOfferAccount struct {
 	ClientOfferId string `json:"-" gorm:"primaryKey"`
-
-	AccountId string  `json:"-" gorm:"primaryKey"`
-	Account   Account `json:"-" gorm:"constraint:OnDelete:CASCADE"`
+	AccountId     string `json:"-" gorm:"primaryKey"`
 }
 
 type ClientOffer struct {
