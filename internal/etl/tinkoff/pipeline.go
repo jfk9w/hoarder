@@ -59,9 +59,9 @@ func (b Builder) Build() (*pipeline, error) {
 				new(InvestOperation),
 				new(Trade),
 				new(InvestChildOperation),
-				new(ClientOfferEssenceMccCode),
-				new(ClientOfferEssence),
 				new(ClientOffer),
+				new(ClientOfferEssence),
+				new(ClientOfferEssenceMccCode),
 			); err != nil {
 				return nil, errors.Wrap(err, "migrate db tables")
 			}
