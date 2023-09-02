@@ -51,7 +51,7 @@ github.com/jackc/pgx/v5/stdlib
 # github.com/jfk9w-go/based v0.0.6
 ## explicit; go 1.21
 github.com/jfk9w-go/based
-# github.com/jfk9w-go/confi v0.0.1
+# github.com/jfk9w-go/confi v0.0.3
 ## explicit; go 1.21
 github.com/jfk9w-go/confi
 # github.com/jfk9w-go/lkdr-api v0.0.1
