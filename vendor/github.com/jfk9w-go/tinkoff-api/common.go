@@ -589,3 +589,43 @@ type ShoppingReceiptOut struct {
 	OperationId       string       `json:"operationId"`
 	Receipt           Receipt      `json:"receipt"`
 }
+
+type clientOfferEssencesIn struct{}
+
+func (clientOfferEssencesIn) auth() auth                      { return force }
+func (clientOfferEssencesIn) path() string                    { return "/common/v1/client_offer_essences" }
+func (clientOfferEssencesIn) out() (_ ClientOfferEssencesOut) { return }
+func (clientOfferEssencesIn) exprc() string                   { return "OK" }
+
+type ClientOfferEssence struct {
+	Name         string   `json:"name"`
+	Description  string   `json:"description"`
+	BusinessType uint     `json:"businessType"`
+	IsActive     bool     `json:"isActive"`
+	BaseColor    string   `json:"baseColor"`
+	MccCodes     []string `json:"mccCodes,omitempty"`
+	Logo         string   `json:"logo"`
+	ExternalCode string   `json:"externalCode"`
+	ExternalId   string   `json:"externalId"`
+	Id           string   `json:"id"`
+	Percent      uint     `json:"percent"`
+}
+
+type ClientOfferEssencesAttributes struct {
+	NotificationFlag bool `json:"notificationFlag"`
+}
+
+type ClientOfferEssences struct {
+	TypeCode              string                        `json:"typeCode"`
+	AvailableEssenceCount uint                          `json:"availableEssenceCount"`
+	ActiveTo              Milliseconds                  `json:"activeTo"`
+	Attributes            ClientOfferEssencesAttributes `json:"attributes"`
+	ActiveFrom            Milliseconds                  `json:"activeFrom"`
+	Essences              []ClientOfferEssence          `json:"essences"`
+	DisplayTo             Milliseconds                  `json:"displayTo"`
+	AccountIds            []string                      `json:"accountIds"`
+	DisplayFrom           Milliseconds                  `json:"displayFrom"`
+	Id                    string                        `json:"id"`
+}
+
+type ClientOfferEssencesOut = []ClientOfferEssences
