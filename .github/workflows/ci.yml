@@ -1,6 +1,6 @@
 name: CI
 
-on: [ push, pull_request_target, workflow_dispatch ]
+on: [ push, workflow_dispatch ]
 
 jobs:
   test:
@@ -76,7 +76,7 @@ jobs:
     name: Docker
     runs-on: ubuntu-latest
     needs: [ test, tag ]
-    if: github.event_name != 'pull_request_target' && always() && !cancelled() && !contains(needs.*.result, 'failure')
+    if: always() && !cancelled() && !contains(needs.*.result, 'failure')
     steps:
       - uses: actions/checkout@v3
       - name: Login
@@ -87,17 +87,20 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
       - name: Build & push
         run: |
-          docker buildx create --use
+          PLATFORM="linux/amd64"
           if [[ "$NEW_TAG" != "" ]]; then
             IMAGE_TAGS="-t ghcr.io/$GITHUB_REPOSITORY:$NEW_TAG -t ghcr.io/$GITHUB_REPOSITORY:latest"
+            PLATFORM="$PLATFORM,linux/arm64"
           else
             IMAGE_TAGS="-t ghcr.io/$GITHUB_REPOSITORY:${GITHUB_REF_NAME##*/}"
             if [[ "$GITHUB_REF_TYPE" == "tag" ]]; then
               IMAGE_TAGS="$IMAGE_TAGS -t ghcr.io/$GITHUB_REPOSITORY:latest"
+              PLATFORM="$PLATFORM,linux/arm64"
             fi
           fi
 
-          docker buildx build . $IMAGE_TAGS --platform=linux/amd64,linux/arm64 --push
+          docker buildx create --use
+          docker buildx build . $IMAGE_TAGS --platform=$PLATFORM --push
         env:
           NEW_TAG: ${{ needs.tag.outputs.new_tag }}
           BUILDX_NO_DEFAULT_ATTESTATIONS: 1
