@@ -1,8 +1,10 @@
-FROM golang:alpine AS builder
+FROM --platform=$BUILDPLATFORM golang:alpine AS builder
+ARG TARGETOS
+ARG TARGETARCH
 WORKDIR /src
 ADD . .
 RUN apk add --no-cache make
-RUN make bin
+RUN GOOS=$TARGETOS GOARCH=$TARGETARCH make bin
 
 FROM alpine:latest
 COPY --from=builder /src/bin/* /usr/local/bin/
