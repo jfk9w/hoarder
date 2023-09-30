@@ -181,20 +181,32 @@ func (u *operations) parent() []parentDesc {
 }
 
 func (u *operations) run(ctx context.Context, log *etl.Logger, client Client, db *gorm.DB) (_ []update, errs error) {
-	var since sql.NullTime
+	var since []struct {
+		Debited bool
+		MinTime time.Time
+		MaxTime time.Time
+	}
+
 	if err := db.Model(new(Operation)).
-		Select("operation_time").
-		Where("account_id = ? and status = ? and debiting_time is null", u.accountId, "OK").
-		Order("operation_time").
-		Limit(1).
+		Select("debiting_time is not null as debited, min(operation_time) as min_time, max(operation_time) as max_time").
+		Where("account_id = ? and status = ?", u.accountId, "OK").
+		Group("debited").
+		Order("debited").
 		Scan(&since).
 		Error; log.Error(&errs, err, "failed to select latest") {
 		return
 	}
 
 	start := time.Date(2010, 1, 1, 0, 0, 0, 0, time.UTC)
-	if since.Valid {
-		start = since.Time.Add(-u.overlap)
+	for _, row := range since {
+		if row.Debited {
+			start = row.MaxTime
+		} else {
+			start = row.MinTime
+		}
+
+		start = start.Add(-u.overlap)
+		break //nolint:all
 	}
 
 	log = log.With(slog.Time("since", start))
@@ -210,13 +222,14 @@ func (u *operations) run(ctx context.Context, log *etl.Logger, client Client, db
 	}
 
 	if errs = db.Transaction(func(tx *gorm.DB) (errs error) {
-		if err := tx.Delete(new(Operation),
-			"account_id = ? and status = ? and debiting_time is null and operation_time >= ?", u.accountId, "OK", start).
+		if err := tx.
+			Where("account_id = ? and status = ? and debiting_time is null and operation_time >= ?", u.accountId, "OK", start).
+			Delete(new(Operation)).
 			Error; log.Error(&errs, err, "failed to delete non-debited operations") {
 			return
 		}
 
-		if err := db.Clauses(etl.Upsert("id")).
+		if err := tx.Clauses(etl.Upsert("id")).
 			CreateInBatches(entities, u.batchSize).
 			Error; log.Error(&errs, err, "failed to update entities in db") {
 			return
