@@ -401,7 +401,7 @@ type Operation struct {
 	TypeSerno              *uint                `json:"typeSerno"`
 	Payment                *Payment             `json:"payment,omitempty" gorm:"constraint:OnDelete:CASCADE;foreignKey:OperationId"`
 	OperationPaymentType   *string              `json:"operationPaymentType,omitempty"`
-	DebitingTime           *Milliseconds        `json:"debitingTime,omitempty"`
+	DebitingTime           *Milliseconds        `json:"debitingTime,omitempty" gorm:"index"`
 	PosId                  *string              `json:"posId,omitempty"`
 	Subcategory            *string              `json:"subcategory,omitempty" gorm:"index"`
 	SenderAgreement        *string              `json:"senderAgreement,omitempty"`
