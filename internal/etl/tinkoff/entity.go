@@ -131,13 +131,6 @@ type Currency struct {
 	StrCode string `json:"strCode"`
 }
 
-type MoneyAmount struct {
-	CurrencyCode uint     `json:"-" gorm:"index"`
-	Currency     Currency `json:"currency" gorm:"constraint:OnDelete:CASCADE"`
-
-	Value float64 `json:"value"`
-}
-
 type MultiCardCluster struct {
 	Id string `json:"id"`
 }
@@ -187,44 +180,86 @@ type AccountShared struct {
 	SharStatus string       `json:"sharStatus"`
 }
 
+type AccountCreditLimit struct {
+	CreditLimitCurrencyCode uint     `json:"-" gorm:"index"`
+	CreditLimitCurrency     Currency `json:"currency" gorm:"constraint:OnDelete:CASCADE"`
+
+	CreditLimitValue float64 `json:"value"`
+}
+
+type AccountMoneyAmount struct {
+	MoneyAmountCurrencyCode uint     `json:"-" gorm:"index"`
+	MoneyAmountCurrency     Currency `json:"currency" gorm:"constraint:OnDelete:CASCADE"`
+
+	MoneyAmountValue float64 `json:"value"`
+}
+
+type AccountDebtBalance struct {
+	DebtBalanceCurrencyCode uint     `json:"-" gorm:"index"`
+	DebtBalanceCurrency     Currency `json:"currency" gorm:"constraint:OnDelete:CASCADE"`
+
+	DebtBalanceValue float64 `json:"value"`
+}
+
+type AccountCurrentMinimalPayment struct {
+	CurrentMinimalPaymentCurrencyCode uint     `json:"-" gorm:"index"`
+	CurrentMinimalPaymentCurrency     Currency `json:"currency" gorm:"constraint:OnDelete:CASCADE"`
+
+	CurrentMinimalPaymentValue float64 `json:"value"`
+}
+
+type AccountPastDueDebt struct {
+	PastDueDebtCurrencyCode uint     `json:"-" gorm:"index"`
+	PastDueDebtCurrency     Currency `json:"currency" gorm:"constraint:OnDelete:CASCADE"`
+
+	PastDueDebtValue float64 `json:"value"`
+}
+
+type AccountDebtAmount struct {
+	DebtAmountCurrencyCode uint     `json:"-" gorm:"index"`
+	DebtAmountCurrency     Currency `json:"currency" gorm:"constraint:OnDelete:CASCADE"`
+
+	DebtAmountValue float64 `json:"value"`
+}
+
 type Account struct {
 	UserPhone string `json:"-" gorm:"index"`
 	User      User   `json:"-" gorm:"constraint:OnDelete:CASCADE"`
 
-	CurrencyCode uint      `json:"-" gorm:"index"`
+	CurrencyCode *uint     `json:"-" gorm:"index"`
 	Currency     *Currency `json:"currency,omitempty" gorm:"constraint:OnDelete:CASCADE"`
 
 	Deleted bool `json:"-" gorm:"index"`
 
-	Id                    string            `json:"id" gorm:"primaryKey"`
-	CreditLimit           *MoneyAmount      `json:"creditLimit,omitempty" gorm:"embedded;embeddedPrefix:credit_limit_"`
-	MoneyAmount           *MoneyAmount      `json:"moneyAmount,omitempty" gorm:"embedded;embeddedPrefix:money_amount_"`
-	DebtBalance           *MoneyAmount      `json:"debtBalance,omitempty" gorm:"embedded;embeddedPrefix:debt_balance_"`
-	CurrentMinimalPayment *MoneyAmount      `json:"currentMinimalPayment,omitempty" gorm:"embedded;embeddedPrefix:current_minimal_payment_"`
-	ClientUnverifiedFlag  *string           `json:"clientUnverifiedFlag,omitempty"`
-	IdentificationState   *string           `json:"identificationState,omitempty"`
-	Status                *string           `json:"status,omitempty"`
-	EmoneyFlag            *bool             `json:"emoneyFlag,omitempty"`
-	NextStatementDate     *Milliseconds     `json:"nextStatementDate,omitempty"`
-	DueDate               *Milliseconds     `json:"dueDate,omitempty"`
-	Cards                 []Card            `json:"cards,omitempty" gorm:"constraint:OnDelete:CASCADE;foreignKey:AccountId"`
-	MultiCardCluster      *MultiCardCluster `json:"multiCardCluster,omitempty" gorm:"embedded;embeddedPrefix:multi_card_cluster_"`
-	LoyaltyId             *string           `json:"loyaltyId,omitempty"`
-	MoneyPotFlag          *bool             `json:"moneyPotFlag,omitempty"`
-	PartNumber            *string           `json:"partNumber,omitempty"`
-	PastDueDebt           *MoneyAmount      `json:"pastDueDebt,omitempty" gorm:"embedded;embeddedPrefix:past_due_debt_"`
-	Name                  string            `json:"name"`
-	AccountType           string            `json:"accountType"`
-	Hidden                bool              `json:"hidden"`
-	SharedByMeFlag        *bool             `json:"sharedByMeFlag,omitempty"`
-	Loyalty               *Loyalty          `json:"loyalty,omitempty" gorm:"embedded;embeddedPrefix:loyalty_"`
-	CreationDate          *Milliseconds     `json:"creationDate,omitempty"`
-	DebtAmount            *MoneyAmount      `json:"debtAmount,omitempty" gorm:"embedded;embeddedPrefix:debt_amount_"`
-	LastStatementDate     *Milliseconds     `json:"lastStatementDate,omitempty"`
-	DueColor              *int              `json:"dueColor,omitempty"`
-	LinkedAccountNumber   *string           `json:"linkedAccountNumber,omitempty"`
-	IsKidsSaving          *bool             `json:"isKidsSaving,omitempty"`
-	IsCrowdfunding        *bool             `json:"isCrowdfunding,omitempty"`
+	Id                    string                        `json:"id" gorm:"primaryKey"`
+	CreditLimit           *AccountCreditLimit           `json:"creditLimit,omitempty" gorm:"embedded"`
+	MoneyAmount           *AccountMoneyAmount           `json:"moneyAmount,omitempty" gorm:"embedded"`
+	DebtBalance           *AccountDebtBalance           `json:"debtBalance,omitempty" gorm:"embedded"`
+	CurrentMinimalPayment *AccountCurrentMinimalPayment `json:"currentMinimalPayment,omitempty" gorm:"embedded"`
+	ClientUnverifiedFlag  *string                       `json:"clientUnverifiedFlag,omitempty"`
+	IdentificationState   *string                       `json:"identificationState,omitempty"`
+	Status                *string                       `json:"status,omitempty"`
+	EmoneyFlag            *bool                         `json:"emoneyFlag,omitempty"`
+	NextStatementDate     *Milliseconds                 `json:"nextStatementDate,omitempty"`
+	DueDate               *Milliseconds                 `json:"dueDate,omitempty"`
+	Cards                 []Card                        `json:"cards,omitempty" gorm:"constraint:OnDelete:CASCADE;foreignKey:AccountId"`
+	MultiCardCluster      *MultiCardCluster             `json:"multiCardCluster,omitempty" gorm:"embedded;embeddedPrefix:multi_card_cluster_"`
+	LoyaltyId             *string                       `json:"loyaltyId,omitempty"`
+	MoneyPotFlag          *bool                         `json:"moneyPotFlag,omitempty"`
+	PartNumber            *string                       `json:"partNumber,omitempty"`
+	PastDueDebt           *AccountPastDueDebt           `json:"pastDueDebt,omitempty" gorm:"embedded"`
+	Name                  string                        `json:"name"`
+	AccountType           string                        `json:"accountType"`
+	Hidden                bool                          `json:"hidden"`
+	SharedByMeFlag        *bool                         `json:"sharedByMeFlag,omitempty"`
+	Loyalty               *Loyalty                      `json:"loyalty,omitempty" gorm:"embedded;embeddedPrefix:loyalty_"`
+	CreationDate          *Milliseconds                 `json:"creationDate,omitempty"`
+	DebtAmount            *AccountDebtAmount            `json:"debtAmount,omitempty" gorm:"embedded"`
+	LastStatementDate     *Milliseconds                 `json:"lastStatementDate,omitempty"`
+	DueColor              *int                          `json:"dueColor,omitempty"`
+	LinkedAccountNumber   *string                       `json:"linkedAccountNumber,omitempty"`
+	IsKidsSaving          *bool                         `json:"isKidsSaving,omitempty"`
+	IsCrowdfunding        *bool                         `json:"isCrowdfunding,omitempty"`
 	//Shared                *AccountShared    `json:"shared,omitempty"`
 }
 
@@ -320,19 +355,26 @@ type LoyaltyBonusSummary struct {
 	Amount float64 `json:"amount"`
 }
 
+type PaymentFeeAmount struct {
+	FeeAmountCurrencyCode uint     `json:"-" gorm:"index"`
+	FeeAmountCurrency     Currency `json:"currency" gorm:"constraint:OnDelete:CASCADE"`
+
+	FeeAmountValue float64 `json:"value"`
+}
+
 type Payment struct {
 	OperationId string `json:"-" gorm:"primaryKey"`
 
-	SourceIsQr      bool         `json:"sourceIsQr"`
-	BankAccountId   string       `json:"bankAccountId"`
-	PaymentId       string       `json:"paymentId"`
-	ProviderGroupId *string      `json:"providerGroupId,omitempty"`
-	PaymentType     string       `json:"paymentType"`
-	FeeAmount       *MoneyAmount `json:"feeAmount,omitempty" gorm:"embedded;embeddedPrefix:fee_amount_"`
-	ProviderId      string       `json:"providerId"`
-	HasPaymentOrder bool         `json:"hasPaymentOrder"`
-	Comment         string       `json:"comment"`
-	IsQrPayment     bool         `json:"isQrPayment"`
+	SourceIsQr      bool              `json:"sourceIsQr"`
+	BankAccountId   string            `json:"bankAccountId"`
+	PaymentId       string            `json:"paymentId"`
+	ProviderGroupId *string           `json:"providerGroupId,omitempty"`
+	PaymentType     string            `json:"paymentType"`
+	FeeAmount       *PaymentFeeAmount `json:"feeAmount,omitempty" gorm:"embedded"`
+	ProviderId      string            `json:"providerId"`
+	HasPaymentOrder bool              `json:"hasPaymentOrder"`
+	Comment         string            `json:"comment"`
+	IsQrPayment     bool              `json:"isQrPayment"`
 	//FieldsValues       map[string]any `json:"fieldsValues"`
 	Repeatable         bool    `json:"repeatable"`
 	CardNumber         string  `json:"cardNumber"`
@@ -343,6 +385,27 @@ type Payment struct {
 type Subgroup struct {
 	Id   string  `json:"id" gorm:"primaryKey"`
 	Name *string `json:"name,omitempty" gorm:"index"`
+}
+
+type OperationCashbackAmount struct {
+	CashbackCurrencyCode uint     `json:"-" gorm:"index"`
+	CashbackCurrency     Currency `json:"currency" gorm:"constraint:OnDelete:CASCADE"`
+
+	CashbackValue float64 `json:"value"`
+}
+
+type OperationAmount struct {
+	CurrencyCode uint     `json:"-" gorm:"index"`
+	Currency     Currency `json:"currency" gorm:"constraint:OnDelete:CASCADE"`
+
+	Value float64 `json:"value"`
+}
+
+type OperationAccountAmount struct {
+	AccountCurrencyCode uint     `json:"-" gorm:"index"`
+	AccountCurrency     Currency `json:"currency" gorm:"constraint:OnDelete:CASCADE"`
+
+	AccountValue float64 `json:"value"`
 }
 
 type Operation struct {
@@ -361,58 +424,58 @@ type Operation struct {
 	SubgroupId *string   `json:"-" gorm:"index"`
 	Subgroup   *Subgroup `json:"subgroup,omitempty" gorm:"constraint:OnDelete:CASCADE"`
 
-	IsDispute              bool                 `json:"isDispute"`
-	IsOffline              bool                 `json:"isOffline"`
-	HasStatement           bool                 `json:"hasStatement"`
-	IsSuspicious           bool                 `json:"isSuspicious"`
-	AuthorizationId        *string              `json:"authorizationId,omitempty"`
-	IsInner                bool                 `json:"isInner" gorm:"index"`
-	Id                     string               `json:"id" gorm:"primaryKey"`
-	Status                 string               `json:"status" gorm:"index"`
-	OperationTransferred   bool                 `json:"operationTransferred"`
-	IdSourceType           string               `json:"idSourceType"`
-	HasShoppingReceipt     *bool                `json:"hasShoppingReceipt,omitempty" gorm:"index"`
-	Type                   string               `json:"type" gorm:"index"`
-	Locations              []Location           `json:"locations,omitempty" gorm:"constraint:OnDelete:CASCADE;foreignKey:OperationId"`
-	LoyaltyBonus           []LoyaltyBonus       `json:"loyaltyBonus,omitempty" gorm:"constraint:OnDelete:CASCADE;foreignKey:OperationId"`
-	CashbackAmount         MoneyAmount          `json:"cashbackAmount" gorm:"embedded;embeddedPrefix:cashback_"`
-	AuthMessage            *string              `json:"authMessage,omitempty"`
-	Description            string               `json:"description"`
-	IsTemplatable          bool                 `json:"isTemplatable"`
-	Cashback               float64              `json:"cashback"`
-	Amount                 MoneyAmount          `json:"amount" gorm:"embedded"`
-	OperationTime          Milliseconds         `json:"operationTime" gorm:"index"`
-	IsHce                  bool                 `json:"isHce"`
-	Mcc                    uint                 `json:"mcc"`
-	AdditionalInfo         []AdditionalInfo     `json:"additionalInfo,omitempty" gorm:"constraint:OnDelete:CASCADE;foreignKey:OperationId"`
-	VirtualPaymentType     uint8                `json:"virtualPaymentType"`
-	Ucid                   *string              `json:"ucid,omitempty"`
-	Merchant               *Merchant            `json:"merchant,omitempty" gorm:"embedded;embeddedPrefix:merchant_"`
-	Card                   *string              `json:"card,omitempty" gorm:"index"`
-	LoyaltyPayment         []LoyaltyPayment     `json:"loyaltyPayment,omitempty" gorm:"constraint:OnDelete:CASCADE;foreignKey:OperationId"`
-	TrancheCreationAllowed bool                 `json:"trancheCreationAllowed"`
-	Group                  *string              `json:"group,omitempty"`
-	MccString              string               `json:"mccString"`
-	CardPresent            bool                 `json:"cardPresent"`
-	IsExternalCard         bool                 `json:"isExternalCard"`
-	CardNumber             *string              `json:"cardNumber,omitempty"`
-	AccountAmount          MoneyAmount          `json:"accountAmount" gorm:"embedded;embeddedPrefix:account_"`
-	LoyaltyBonusSummary    *LoyaltyBonusSummary `json:"loyaltyBonusSummary,omitempty" gorm:"embedded;embeddedPrefix:loyalty_bonus_summary_"`
-	TypeSerno              *uint                `json:"typeSerno"`
-	Payment                *Payment             `json:"payment,omitempty" gorm:"constraint:OnDelete:CASCADE;foreignKey:OperationId"`
-	OperationPaymentType   *string              `json:"operationPaymentType,omitempty"`
-	DebitingTime           *Milliseconds        `json:"debitingTime,omitempty" gorm:"index"`
-	PosId                  *string              `json:"posId,omitempty"`
-	Subcategory            *string              `json:"subcategory,omitempty" gorm:"index"`
-	SenderAgreement        *string              `json:"senderAgreement,omitempty"`
-	PointOfSaleId          *uint64              `json:"pointOfSaleId,omitempty"`
-	Compensation           *string              `json:"compensation,omitempty"`
-	InstallmentStatus      *string              `json:"installmentStatus,omitempty"`
-	SenderDetails          *string              `json:"senderDetails,omitempty"`
-	PartnerType            *string              `json:"partnerType,omitempty"`
-	Nomination             *string              `json:"nomination,omitempty"`
-	Message                *string              `json:"message,omitempty"`
-	TrancheId              *string              `json:"trancheId,omitempty"`
+	IsDispute              bool                    `json:"isDispute"`
+	IsOffline              bool                    `json:"isOffline"`
+	HasStatement           bool                    `json:"hasStatement"`
+	IsSuspicious           bool                    `json:"isSuspicious"`
+	AuthorizationId        *string                 `json:"authorizationId,omitempty"`
+	IsInner                bool                    `json:"isInner" gorm:"index"`
+	Id                     string                  `json:"id" gorm:"primaryKey"`
+	Status                 string                  `json:"status" gorm:"index"`
+	OperationTransferred   bool                    `json:"operationTransferred"`
+	IdSourceType           string                  `json:"idSourceType"`
+	HasShoppingReceipt     *bool                   `json:"hasShoppingReceipt,omitempty" gorm:"index"`
+	Type                   string                  `json:"type" gorm:"index"`
+	Locations              []Location              `json:"locations,omitempty" gorm:"constraint:OnDelete:CASCADE;foreignKey:OperationId"`
+	LoyaltyBonus           []LoyaltyBonus          `json:"loyaltyBonus,omitempty" gorm:"constraint:OnDelete:CASCADE;foreignKey:OperationId"`
+	CashbackAmount         OperationCashbackAmount `json:"cashbackAmount" gorm:"embedded"`
+	AuthMessage            *string                 `json:"authMessage,omitempty"`
+	Description            string                  `json:"description"`
+	IsTemplatable          bool                    `json:"isTemplatable"`
+	Cashback               float64                 `json:"cashback"`
+	Amount                 OperationAmount         `json:"amount" gorm:"embedded"`
+	OperationTime          Milliseconds            `json:"operationTime" gorm:"index"`
+	IsHce                  bool                    `json:"isHce"`
+	Mcc                    uint                    `json:"mcc"`
+	AdditionalInfo         []AdditionalInfo        `json:"additionalInfo,omitempty" gorm:"constraint:OnDelete:CASCADE;foreignKey:OperationId"`
+	VirtualPaymentType     uint8                   `json:"virtualPaymentType"`
+	Ucid                   *string                 `json:"ucid,omitempty"`
+	Merchant               *Merchant               `json:"merchant,omitempty" gorm:"embedded;embeddedPrefix:merchant_"`
+	Card                   *string                 `json:"card,omitempty" gorm:"index"`
+	LoyaltyPayment         []LoyaltyPayment        `json:"loyaltyPayment,omitempty" gorm:"constraint:OnDelete:CASCADE;foreignKey:OperationId"`
+	TrancheCreationAllowed bool                    `json:"trancheCreationAllowed"`
+	Group                  *string                 `json:"group,omitempty"`
+	MccString              string                  `json:"mccString"`
+	CardPresent            bool                    `json:"cardPresent"`
+	IsExternalCard         bool                    `json:"isExternalCard"`
+	CardNumber             *string                 `json:"cardNumber,omitempty"`
+	AccountAmount          OperationAccountAmount  `json:"accountAmount" gorm:"embedded"`
+	LoyaltyBonusSummary    *LoyaltyBonusSummary    `json:"loyaltyBonusSummary,omitempty" gorm:"embedded;embeddedPrefix:loyalty_bonus_summary_"`
+	TypeSerno              *uint                   `json:"typeSerno"`
+	Payment                *Payment                `json:"payment,omitempty" gorm:"constraint:OnDelete:CASCADE;foreignKey:OperationId"`
+	OperationPaymentType   *string                 `json:"operationPaymentType,omitempty"`
+	DebitingTime           *Milliseconds           `json:"debitingTime,omitempty" gorm:"index"`
+	PosId                  *string                 `json:"posId,omitempty"`
+	Subcategory            *string                 `json:"subcategory,omitempty" gorm:"index"`
+	SenderAgreement        *string                 `json:"senderAgreement,omitempty"`
+	PointOfSaleId          *uint64                 `json:"pointOfSaleId,omitempty"`
+	Compensation           *string                 `json:"compensation,omitempty"`
+	InstallmentStatus      *string                 `json:"installmentStatus,omitempty"`
+	SenderDetails          *string                 `json:"senderDetails,omitempty"`
+	PartnerType            *string                 `json:"partnerType,omitempty"`
+	Nomination             *string                 `json:"nomination,omitempty"`
+	Message                *string                 `json:"message,omitempty"`
+	TrancheId              *string                 `json:"trancheId,omitempty"`
 }
 
 type ReceiptItem struct {
@@ -467,38 +530,192 @@ type StatementPeriod struct {
 	End   Milliseconds `json:"end"`
 }
 
+type StatementOverdraftFee struct {
+	OverdraftFeeCurrencyCode uint     `json:"-" gorm:"index"`
+	OverdraftFeeCurrency     Currency `json:"currency" gorm:"constraint:OnDelete:CASCADE"`
+
+	OverdraftFeeValue float64 `json:"value"`
+}
+
+type StatementExpense struct {
+	ExpenseCurrencyCode uint     `json:"-" gorm:"index"`
+	ExpenseCurrency     Currency `json:"currency" gorm:"constraint:OnDelete:CASCADE"`
+
+	ExpenseValue float64 `json:"value"`
+}
+
+type StatementOverLimitDebt struct {
+	OverLimitDebtCurrencyCode uint     `json:"-" gorm:"index"`
+	OverLimitDebtCurrency     Currency `json:"currency" gorm:"constraint:OnDelete:CASCADE"`
+
+	OverLimitDebtValue float64 `json:"value"`
+}
+
+type StatementPeriodEndBalance struct {
+	PeriodEndBalanceCurrencyCode uint     `json:"-" gorm:"index"`
+	PeriodEndBalanceCurrency     Currency `json:"currency" gorm:"constraint:OnDelete:CASCADE"`
+
+	PeriodEndBalanceValue float64 `json:"value"`
+}
+
+type StatementArrestAmount struct {
+	ArrestAmountCurrencyCode uint     `json:"-" gorm:"index"`
+	ArrestAmountCurrency     Currency `json:"currency" gorm:"constraint:OnDelete:CASCADE"`
+
+	ArrestAmountValue float64 `json:"value"`
+}
+
+type StatementOtherBonus struct {
+	OtherBonusCurrencyCode uint     `json:"-" gorm:"index"`
+	OtherBonusCurrency     Currency `json:"currency" gorm:"constraint:OnDelete:CASCADE"`
+
+	OtherBonusValue float64 `json:"value"`
+}
+
+type StatementCreditLimit struct {
+	CreditLimitCurrencyCode uint     `json:"-" gorm:"index"`
+	CreditLimitCurrency     Currency `json:"currency" gorm:"constraint:OnDelete:CASCADE"`
+
+	CreditLimitValue float64 `json:"value"`
+}
+
+type StatementTranchesMonthlyPayment struct {
+	TranchesMonthlyPaymentCurrencyCode uint     `json:"-" gorm:"index"`
+	TranchesMonthlyPaymentCurrency     Currency `json:"currency" gorm:"constraint:OnDelete:CASCADE"`
+
+	TranchesMonthlyPaymentValue float64 `json:"value"`
+}
+
+type StatementBilledDebt struct {
+	BilledDebtCurrencyCode uint     `json:"-" gorm:"index"`
+	BilledDebtCurrency     Currency `json:"currency" gorm:"constraint:OnDelete:CASCADE"`
+
+	BilledDebtValue float64 `json:"value"`
+}
+
+type StatementCashback struct {
+	CashbackCurrencyCode uint     `json:"-" gorm:"index"`
+	CashbackCurrency     Currency `json:"currency" gorm:"constraint:OnDelete:CASCADE"`
+
+	CashbackValue float64 `json:"value"`
+}
+
+type StatementBalance struct {
+	BalanceCurrencyCode uint     `json:"-" gorm:"index"`
+	BalanceCurrency     Currency `json:"currency" gorm:"constraint:OnDelete:CASCADE"`
+
+	BalanceValue float64 `json:"value"`
+}
+
+type StatementHighCashback struct {
+	HighCashbackCurrencyCode uint     `json:"-" gorm:"index"`
+	HighCashbackCurrency     Currency `json:"currency" gorm:"constraint:OnDelete:CASCADE"`
+
+	HighCashbackValue float64 `json:"value"`
+}
+
+type StatementPeriodStartBalance struct {
+	PeriodStartBalanceCurrencyCode uint     `json:"-" gorm:"index"`
+	PeriodStartBalanceCurrency     Currency `json:"currency" gorm:"constraint:OnDelete:CASCADE"`
+
+	PeriodStartBalanceValue float64 `json:"value"`
+}
+
+type StatementLowCashback struct {
+	LowCashbackCurrencyCode uint     `json:"-" gorm:"index"`
+	LowCashbackCurrency     Currency `json:"currency" gorm:"constraint:OnDelete:CASCADE"`
+
+	LowCashbackValue float64 `json:"value"`
+}
+
+type StatementAvailableLimit struct {
+	AvailableLimitCurrencyCode uint     `json:"-" gorm:"index"`
+	AvailableLimitCurrency     Currency `json:"currency" gorm:"constraint:OnDelete:CASCADE"`
+
+	AvailableLimitValue float64 `json:"value"`
+}
+
+type StatementInterestBonus struct {
+	InterestBonusCurrencyCode uint     `json:"-" gorm:"index"`
+	InterestBonusCurrency     Currency `json:"currency" gorm:"constraint:OnDelete:CASCADE"`
+
+	InterestBonusValue float64 `json:"value"`
+}
+
+type StatementInterest struct {
+	InterestCurrencyCode uint     `json:"-" gorm:"index"`
+	InterestCurrency     Currency `json:"currency" gorm:"constraint:OnDelete:CASCADE"`
+
+	InterestValue float64 `json:"value"`
+}
+
+type StatementIncome struct {
+	IncomeCurrencyCode uint     `json:"-" gorm:"index"`
+	IncomeCurrency     Currency `json:"currency" gorm:"constraint:OnDelete:CASCADE"`
+
+	IncomeValue float64 `json:"value"`
+}
+
+type StatementCreditBonus struct {
+	CreditBonusCurrencyCode uint     `json:"-" gorm:"index"`
+	CreditBonusCurrency     Currency `json:"currency" gorm:"constraint:OnDelete:CASCADE"`
+
+	CreditBonusValue float64 `json:"value"`
+}
+
+type StatementOtherCashback struct {
+	OtherCashbackCurrencyCode uint     `json:"-" gorm:"index"`
+	OtherCashbackCurrency     Currency `json:"currency" gorm:"constraint:OnDelete:CASCADE"`
+
+	OtherCashbackValue float64 `json:"value"`
+}
+
+type StatementMinimalPaymentAmount struct {
+	MinimalPaymentAmountCurrencyCode uint     `json:"-" gorm:"index"`
+	MinimalPaymentAmountCurrency     Currency `json:"currency" gorm:"constraint:OnDelete:CASCADE"`
+
+	MinimalPaymentAmountValue float64 `json:"value"`
+}
+
+type StatementPastDueDebt struct {
+	PastDueDebtCurrencyCode uint     `json:"-" gorm:"index"`
+	PastDueDebtCurrency     Currency `json:"currency" gorm:"constraint:OnDelete:CASCADE"`
+
+	PastDueDebtValue float64 `json:"value"`
+}
+
 type Statement struct {
 	AccountId string  `json:"-" gorm:"index"`
 	Account   Account `json:"-" gorm:"constraint:OnDelete:CASCADE"`
 
-	OverdraftFee           MoneyAmount     `json:"overdraftFee" gorm:"embedded;embeddedPrefix:overdraft_fee_"`
-	Expense                MoneyAmount     `json:"expense" gorm:"embedded;embeddedPrefix:expense_"`
-	OverLimitDebt          MoneyAmount     `json:"overLimitDebt" gorm:"embedded;embeddedPrefix:over_limit_debt_"`
-	PeriodEndBalance       MoneyAmount     `json:"periodEndBalance" gorm:"embedded;embeddedPrefix:period_end_balance_"`
-	ArrestAmount           MoneyAmount     `json:"arrestAmount" gorm:"embedded;embeddedPrefix:arrest_amount_"`
-	OtherBonus             MoneyAmount     `json:"otherBonus" gorm:"embedded;embeddedPrefix:other_bonus_"`
-	CreditLimit            MoneyAmount     `json:"creditLimit" gorm:"embedded;embeddedPrefix:credit_limit_"`
-	TranchesMonthlyPayment *MoneyAmount    `json:"tranchesMonthlyPayment,omitempty" gorm:"embedded;embeddedPrefix:tranches_monthly_payment_"`
-	BilledDebt             MoneyAmount     `json:"billedDebt" gorm:"embedded;embeddedPrefix:billed_debt_"`
-	Cashback               MoneyAmount     `json:"cashback" gorm:"embedded;embeddedPrefix:cashback_"`
-	Balance                MoneyAmount     `json:"balance" gorm:"embedded;embeddedPrefix:balance_"`
-	HighCashback           MoneyAmount     `json:"highCashback" gorm:"embedded;embeddedPrefix:high_cashback_"`
-	PeriodStartBalance     MoneyAmount     `json:"periodStartBalance" gorm:"embedded;embeddedPrefix:period_start_balance_"`
-	LowCashback            MoneyAmount     `json:"lowCashback" gorm:"embedded;embeddedPrefix:low_cashback_"`
-	AvailableLimit         MoneyAmount     `json:"availableLimit" gorm:"embedded;embeddedPrefix:available_limit_"`
-	Id                     string          `json:"id" gorm:"primaryKey"`
-	InterestBonus          MoneyAmount     `json:"interestBonus" gorm:"embedded;embeddedPrefix:interest_bonus_"`
-	Interest               MoneyAmount     `json:"interest" gorm:"embedded;embeddedPrefix:interest_"`
-	Date                   Milliseconds    `json:"date" gorm:"index"`
-	Income                 MoneyAmount     `json:"income" gorm:"embedded;embeddedPrefix:income_"`
-	CreditBonus            MoneyAmount     `json:"creditBonus" gorm:"embedded;embeddedPrefix:credit_bonus_"`
-	LastPaymentDate        *Milliseconds   `json:"lastPaymentDate,omitempty"`
-	OtherCashback          MoneyAmount     `json:"otherCashback" gorm:"embedded;embeddedPrefix:other_cashback_"`
-	MinimalPaymentAmount   *MoneyAmount    `json:"minimalPaymentAmount,omitempty" gorm:"embedded;embeddedPrefix:minimal_payment_amount_"`
-	PastDueDebt            *MoneyAmount    `json:"pastDueDebt,omitempty" gorm:"embedded;embeddedPrefix:past_due_debt_"`
-	Period                 StatementPeriod `json:"period" gorm:"embedded;embeddedPrefix:period_"`
-	NoOverdue              *bool           `json:"noOverdue,omitempty"`
-	Repaid                 *string         `json:"repaid,omitempty"`
+	OverdraftFee           *StatementOverdraftFee           `json:"overdraftFee,omitempty" gorm:"embedded"`
+	Expense                StatementExpense                 `json:"expense" gorm:"embedded"`
+	OverLimitDebt          *StatementOverLimitDebt          `json:"overLimitDebt,omitempty" gorm:"embedded"`
+	PeriodEndBalance       StatementPeriodEndBalance        `json:"periodEndBalance" gorm:"embedded"`
+	ArrestAmount           *StatementArrestAmount           `json:"arrestAmount,omitempty" gorm:"embedded"`
+	OtherBonus             *StatementOtherBonus             `json:"otherBonus,omitempty" gorm:"embedded"`
+	CreditLimit            *StatementCreditLimit            `json:"creditLimit,omitempty" gorm:"embedded"`
+	TranchesMonthlyPayment *StatementTranchesMonthlyPayment `json:"tranchesMonthlyPayment,omitempty" gorm:"embedded"`
+	BilledDebt             *StatementBilledDebt             `json:"billedDebt,omitempty" gorm:"embedded"`
+	Cashback               StatementCashback                `json:"cashback" gorm:"embedded"`
+	Balance                StatementBalance                 `json:"balance" gorm:"embedded"`
+	HighCashback           *StatementHighCashback           `json:"highCashback,omitempty" gorm:"embedded"`
+	PeriodStartBalance     StatementPeriodStartBalance      `json:"periodStartBalance" gorm:"embedded"`
+	LowCashback            *StatementLowCashback            `json:"lowCashback,omitempty" gorm:"embedded"`
+	AvailableLimit         *StatementAvailableLimit         `json:"availableLimit,omitempty" gorm:"embedded"`
+	Id                     string                           `json:"id" gorm:"primaryKey"`
+	InterestBonus          *StatementInterestBonus          `json:"interestBonus,omitempty" gorm:"embedded"`
+	Interest               StatementInterest                `json:"interest" gorm:"embedded"`
+	Date                   Milliseconds                     `json:"date" gorm:"index"`
+	Income                 StatementIncome                  `json:"income" gorm:"embedded"`
+	CreditBonus            *StatementCreditBonus            `json:"creditBonus,omitempty" gorm:"embedded"`
+	LastPaymentDate        *Milliseconds                    `json:"lastPaymentDate,omitempty"`
+	OtherCashback          *StatementOtherCashback          `json:"otherCashback,omitempty" gorm:"embedded"`
+	MinimalPaymentAmount   *StatementMinimalPaymentAmount   `json:"minimalPaymentAmount,omitempty" gorm:"embedded"`
+	PastDueDebt            *StatementPastDueDebt            `json:"pastDueDebt,omitempty" gorm:"embedded"`
+	Period                 StatementPeriod                  `json:"period" gorm:"embedded;embeddedPrefix:period_"`
+	NoOverdue              *bool                            `json:"noOverdue,omitempty"`
+	Repaid                 *string                          `json:"repaid,omitempty"`
 }
 
 type ClientOfferEssenceMccCode struct {
