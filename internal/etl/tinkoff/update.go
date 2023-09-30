@@ -184,8 +184,8 @@ func (u *operations) run(ctx context.Context, log *etl.Logger, client Client, db
 	var since sql.NullTime
 	if err := db.Model(new(Operation)).
 		Select("operation_time").
-		Where("account_id = ?", u.accountId).
-		Order("debiting_time is null desc, operation_time desc").
+		Where("account_id = ? and status = ? and debiting_time is null", u.accountId, "OK").
+		Order("operation_time").
 		Limit(1).
 		Scan(&since).
 		Error; log.Error(&errs, err, "failed to select latest") {
@@ -209,9 +209,21 @@ func (u *operations) run(ctx context.Context, log *etl.Logger, client Client, db
 		return
 	}
 
-	if err := db.Clauses(etl.Upsert("id")).
-		CreateInBatches(entities, u.batchSize).
-		Error; log.Error(&errs, err, "failed to update entities in db") {
+	if errs = db.Transaction(func(tx *gorm.DB) (errs error) {
+		if err := tx.Delete(new(Operation),
+			"account_id = ? and status = ? and debiting_time is null and operation_time >= ?", u.accountId, "OK", start).
+			Error; log.Error(&errs, err, "failed to delete non-debited operations") {
+			return
+		}
+
+		if err := db.Clauses(etl.Upsert("id")).
+			CreateInBatches(entities, u.batchSize).
+			Error; log.Error(&errs, err, "failed to update entities in db") {
+			return
+		}
+
+		return
+	}); err != nil {
 		return
 	}
 
