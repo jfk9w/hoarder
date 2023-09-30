@@ -223,7 +223,7 @@ func (u *operations) run(ctx context.Context, log *etl.Logger, client Client, db
 		}
 
 		return
-	}); err != nil {
+	}); errs != nil {
 		return
 	}
 
