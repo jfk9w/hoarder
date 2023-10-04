@@ -8,7 +8,7 @@ require (
 	github.com/AlekSi/pointer v1.2.0
 	github.com/jfk9w-go/based v0.0.11
 	github.com/jfk9w-go/confi v0.0.3
-	github.com/jfk9w-go/lkdr-api v0.0.7
+	github.com/jfk9w-go/lkdr-api v0.0.8
 	github.com/jfk9w-go/rucaptcha-api v0.0.6
 	github.com/jfk9w-go/tinkoff-api v0.1.6
 	github.com/pkg/errors v0.9.1
