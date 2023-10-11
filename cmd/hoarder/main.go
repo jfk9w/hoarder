@@ -2,22 +2,22 @@ package main
 
 import (
 	"context"
-	"log/slog"
 	"os"
 	"syscall"
 
 	"github.com/AlekSi/pointer"
 	"github.com/jfk9w-go/based"
 	"github.com/jfk9w-go/confi"
+	"github.com/pkg/errors"
 
 	"github.com/jfk9w/hoarder/internal/captcha"
-	"github.com/jfk9w/hoarder/internal/etl"
-	"github.com/jfk9w/hoarder/internal/etl/lkdr"
-	"github.com/jfk9w/hoarder/internal/etl/tinkoff"
-	"github.com/jfk9w/hoarder/internal/iface/schedule"
-	"github.com/jfk9w/hoarder/internal/iface/stdin"
-	"github.com/jfk9w/hoarder/internal/iface/xmpp"
-	"github.com/jfk9w/hoarder/internal/log"
+	"github.com/jfk9w/hoarder/internal/firefly"
+	"github.com/jfk9w/hoarder/internal/jobs"
+	"github.com/jfk9w/hoarder/internal/jobs/tinkoff"
+	"github.com/jfk9w/hoarder/internal/logs"
+	"github.com/jfk9w/hoarder/internal/triggers"
+	"github.com/jfk9w/hoarder/internal/triggers/schedule"
+	"github.com/jfk9w/hoarder/internal/triggers/stdin"
 )
 
 type Config struct {
@@ -28,13 +28,14 @@ type Config struct {
 		Values bool `yaml:"values,omitempty" doc:"Вывод значений конфигурации по умолчанию в JSON."`
 	} `yaml:"dump,omitempty" doc:"Вывод параметров конфигурации в стандартный поток вывода.\n\nПредназначены для использования как CLI-параметры."`
 
-	Log log.Config `yaml:"log,omitempty" doc:"Настройки логирования для библиотеки slog."`
+	Log     logs.Config     `yaml:"log,omitempty" doc:"Настройки логирования для библиотеки slog."`
+	Firefly *firefly.Config `yaml:"firefly,omitempty" doc:"Настройки подключения к Firefly III."`
 
-	XMPP     *xmpp.Config     `yaml:"xmpp,omitempty" doc:"Настройки XMPP-интерфейса."`
+	//XMPP     *xmpp.Config     `yaml:"xmpp,omitempty" doc:"Настройки XMPP-интерфейса."`
 	Schedule *schedule.Config `yaml:"schedule,omitempty" doc:"Настройки фоновой синхронизации."`
 	Stdin    bool             `yaml:"stdin,omitempty" doc:"Включение интерактивной командной строки."`
 
-	LKDR    *lkdr.Config    `yaml:"lkdr,omitempty" doc:"Настройка пайплана для сервиса ФНС \"Мои чеки онлайн\"."`
+	//LKDR    *lkdr.Config    `yaml:"lkdr,omitempty" doc:"Настройка пайплана для сервиса ФНС \"Мои чеки онлайн\"."`
 	Tinkoff *tinkoff.Config `yaml:"tinkoff,omitempty" doc:"Настройка пайплайна для онлайн-банка \"Тинькофф\"."`
 
 	Captcha captcha.Config `yaml:"captcha,omitempty" doc:"Настройки для решения капчи."`
@@ -60,82 +61,68 @@ func main() {
 		return
 	}
 
-	log := log.Get(cfg.Log)
+	log := logs.Get(cfg.Log)
 	clock := based.StandardClock
 
-	captchaSolver, err := captcha.NewTokenProvider(cfg.Captcha, clock)
-	if err != nil {
-		panic(err)
-	}
+	var fireflyClient firefly.Invoker
+	if cfg := cfg.Firefly; cfg != nil {
+		fireflyClient, err = firefly.NewDefaultClient(firefly.ClientParams{
+			Config: cfg,
+		})
 
-	registry := new(etl.Registry)
-
-	if cfg := cfg.LKDR; cfg != nil {
-		builder := lkdr.Builder{
-			Config:        *cfg,
-			Clock:         clock,
-			CaptchaSolver: captchaSolver,
+		if err != nil {
+			panic(errors.Wrap(err, "create firefly registry"))
 		}
-
-		pipeline := must(builder.Build())
-		registry.Register("lkdr", pipeline)
 	}
+
+	jobs := new(jobs.Registry)
 
 	if cfg := cfg.Tinkoff; cfg != nil {
-		builder := tinkoff.Builder{
-			Config: *cfg,
-			Clock:  clock,
+		job, err := tinkoff.NewJob(ctx, tinkoff.JobParams{
+			Clock:   clock,
+			Logger:  log,
+			Config:  cfg,
+			Firefly: fireflyClient,
+		})
+
+		if err != nil {
+			panic(errors.Wrap(err, "create tinkoff job"))
 		}
 
-		pipeline := must(builder.Build())
-		registry.Register("tinkoff", pipeline)
+		defer job.Close()
+		jobs.Register(job)
 	}
 
-	if cfg := cfg.XMPP; cfg != nil {
-		builder := xmpp.Builder{
-			Config:    *cfg,
-			Pipelines: registry,
-			Log:       log.With(slog.String("interface", "xmpp")),
-		}
-
-		defer must(builder.Run(ctx)).Stop()
-	}
+	triggers := triggers.NewRegistry(log)
 
 	if cfg := cfg.Schedule; cfg != nil {
-		builder := schedule.Builder{
-			Config:    *cfg,
-			Pipelines: registry,
-			Log:       log.With(slog.String("interface", "schedule")),
-		}
+		trigger, err := schedule.NewTrigger(schedule.TriggerParams{
+			Clock:  clock,
+			Config: cfg,
+		})
 
-		handler, err := builder.Run(ctx)
 		if err != nil {
-			panic(err)
+			panic(errors.Wrap(err, "create schedule trigger"))
 		}
 
-		defer handler.Stop()
+		triggers.Register(trigger)
 	}
 
 	if cfg.Stdin {
-		builder := stdin.Builder{
-			Pipelines: registry,
-			Log:       log.With(slog.String("interface", "stdin")),
+		trigger, err := stdin.NewTrigger(stdin.TriggerParams{})
+		if err != nil {
+			panic(errors.Wrap(err, "create stdin trigger"))
 		}
 
-		defer must(builder.Run(ctx))
+		triggers.Register(trigger)
 	}
+
+	triggers.Run(ctx, jobs)
+	defer triggers.Close()
 
 	if err := based.AwaitSignal(ctx, syscall.SIGINT, syscall.SIGTERM); err != nil {
 		panic(err)
 	}
-}
-
-func must[R any](result R, err error) R {
-	if err != nil {
-		panic(err)
-	}
-
-	return result
 }
 
 func dump(value any, codec confi.Codec) {

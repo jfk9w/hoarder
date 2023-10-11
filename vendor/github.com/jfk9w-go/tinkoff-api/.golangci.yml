@@ -1,5 +1,0 @@
-run:
-  skip-dirs-use-default: true
-  skip-files:
-    - common.go
-    - invest.go
