@@ -57,7 +57,7 @@ github.com/jfk9w-go/confi
 # github.com/jfk9w-go/lkdr-api v0.0.8
 ## explicit; go 1.21
 github.com/jfk9w-go/lkdr-api
-# github.com/jfk9w-go/rucaptcha-api v0.0.6
+# github.com/jfk9w-go/rucaptcha-api v0.0.7
 ## explicit; go 1.21
 github.com/jfk9w-go/rucaptcha-api
 # github.com/jfk9w-go/tinkoff-api v0.1.6
