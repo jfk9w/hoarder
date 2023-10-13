@@ -76,8 +76,8 @@ github.com/jfk9w-go/based v0.0.11 h1:oI83w8UezlI94Vx+L06OzibNj5jfjn5XTPtWYn+ktME
 github.com/jfk9w-go/based v0.0.11/go.mod h1:UJahSHVJEakn2rVdDAn+t5XeRl0dhcQyQvW/1PAw1SU=
 github.com/jfk9w-go/confi v0.0.3 h1:RYUckqpx4RR7EHJq1Tnoi86WXC4S3TnlLj0O7mh3vOg=
 github.com/jfk9w-go/confi v0.0.3/go.mod h1:NSWDLU3xJX+mcLzhXl4D0C1n5EBF28rzQHA5PIJmvf8=
-github.com/jfk9w-go/lkdr-api v0.0.9 h1:npqdp3iCu9aUeC89cKKm9FGQLKwhVQF5N4QZFCG0axU=
-github.com/jfk9w-go/lkdr-api v0.0.9/go.mod h1:9MbMlQcpMSGYfxZf1Tq1UcDmZLQj42GUR5xkFx6pmFY=
+github.com/jfk9w-go/lkdr-api v0.0.10 h1:hEc/n9nUz9rkvifqBhaAvNso1k4XP15WyuaOLj+EZDs=
+github.com/jfk9w-go/lkdr-api v0.0.10/go.mod h1:+RHWxOpir1ETTUY8jXk2M54V2ZlMCKsDWk5z3zN0B1A=
 github.com/jfk9w-go/rucaptcha-api v0.0.7 h1:tBszHkW/v6Iz3TEokUgaiy/MMeHOPIs+63KPMCvscG4=
 github.com/jfk9w-go/rucaptcha-api v0.0.7/go.mod h1:NU9n9+zNEKSXtD3KLPGiEDTm21hOG1zTQ+yFF/+uwfo=
 github.com/jfk9w-go/tinkoff-api v0.1.7 h1:OtWgEgM91a6C0h2/TaDyYrUKKBA+dPV/RiG6tDGfz7o=
