@@ -9,7 +9,7 @@ require (
 	github.com/jfk9w-go/based v0.0.13
 	github.com/jfk9w-go/confi v0.0.3
 	github.com/jfk9w-go/lkdr-api v0.0.12
-	github.com/jfk9w-go/rucaptcha-api v0.0.8
+	github.com/jfk9w-go/rucaptcha-api v0.0.9
 	github.com/jfk9w-go/tinkoff-api v0.1.9
 	github.com/pkg/errors v0.9.1
 	go.uber.org/multierr v1.11.0
