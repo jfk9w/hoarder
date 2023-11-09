@@ -29,21 +29,21 @@ func (ms *Milliseconds) Scan(value any) error {
 	return errors.Errorf("expected time.Time, got %T", value)
 }
 
-type Seconds struct {
-	tinkoff.Seconds
+type ReceiptDateTime struct {
+	tinkoff.ReceiptDateTime
 }
 
-func (s Seconds) GormDataType() string {
+func (dt ReceiptDateTime) GormDataType() string {
 	return "time"
 }
 
-func (s Seconds) Value() (driver.Value, error) {
-	return s.Time(), nil
+func (dt ReceiptDateTime) Value() (driver.Value, error) {
+	return dt.Time(), nil
 }
 
-func (s *Seconds) Scan(value any) error {
+func (dt *ReceiptDateTime) Scan(value any) error {
 	if value, ok := value.(time.Time); ok {
-		s.Seconds = tinkoff.Seconds(value)
+		dt.ReceiptDateTime = tinkoff.ReceiptDateTime(value)
 		return nil
 	}
 
@@ -107,6 +107,27 @@ func (d Date) Value() (driver.Value, error) {
 func (d *Date) Scan(value any) error {
 	if value, ok := value.(time.Time); ok {
 		d.Date = tinkoff.Date(value)
+		return nil
+	}
+
+	return errors.Errorf("expected time.Time, got %T", value)
+}
+
+type InvestCandleDate struct {
+	tinkoff.InvestCandleDate
+}
+
+func (d InvestCandleDate) GormDataType() string {
+	return "time"
+}
+
+func (d InvestCandleDate) Value() (driver.Value, error) {
+	return d.Time(), nil
+}
+
+func (d *InvestCandleDate) Scan(value any) error {
+	if value, ok := value.(time.Time); ok {
+		d.InvestCandleDate = tinkoff.InvestCandleDate(value)
 		return nil
 	}
 

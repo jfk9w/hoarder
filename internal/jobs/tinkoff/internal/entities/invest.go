@@ -132,3 +132,18 @@ type InvestOperation struct {
 func (o InvestOperation) TableName() string {
 	return "invest_operations"
 }
+
+type InvestCandle struct {
+	Ticker string `json:"-" gorm:"primaryKey"`
+
+	O    float64          `json:"o"`
+	C    float64          `json:"c"`
+	H    float64          `json:"h"`
+	L    float64          `json:"l"`
+	V    float64          `json:"v"`
+	Date InvestCandleDate `json:"date" gorm:"primaryKey"`
+}
+
+func (c InvestCandle) TableName() string {
+	return "invest_candles"
+}

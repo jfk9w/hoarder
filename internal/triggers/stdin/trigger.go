@@ -69,20 +69,25 @@ func (t *Trigger) Run(ctx context.Context, log *slog.Logger, job triggers.Jobs) 
 
 		log := log.With(logs.User(userID))
 		ctx := jobs.NewContext(ctx, log, userID).WithAskFn(t.ask)
-
-		reply := " ✔ OK"
-		if err := job.Run(ctx, strings.Fields(jobIDs)); err != nil {
-			var b strings.Builder
-			for _, err := range multierr.Errors(err) {
-				b.WriteString(" ✘ ")
-				b.WriteString(err.Error())
-				b.WriteRune('\n')
+		results := job.Run(ctx, strings.Fields(jobIDs))
+		var reply strings.Builder
+		for _, result := range results {
+			if result.Error == nil {
+				reply.WriteString(" ✔ ")
+				reply.WriteString(result.ID)
+				reply.WriteRune('\n')
+			} else {
+				for _, err := range multierr.Errors(result.Error) {
+					reply.WriteString(" ✘ ")
+					reply.WriteString(result.ID)
+					reply.WriteString(": ")
+					reply.WriteString(err.Error())
+					reply.WriteRune('\n')
+				}
 			}
-
-			reply = strings.Trim(b.String(), "\n")
 		}
 
-		if _, err := fmt.Fprintln(t.out, reply); err != nil {
+		if _, err := fmt.Fprintln(t.out, reply.String()); err != nil {
 			log.Error("failed to print result", logs.Error(err))
 			return
 		}

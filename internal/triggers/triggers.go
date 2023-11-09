@@ -4,22 +4,19 @@ import (
 	"context"
 	"log/slog"
 
-	"github.com/jfk9w/hoarder/internal/logs"
-
-	"go.uber.org/multierr"
-
 	"github.com/jfk9w-go/based"
-
 	"github.com/jfk9w/hoarder/internal/jobs"
+	"github.com/jfk9w/hoarder/internal/logs"
+	"go.uber.org/multierr"
 )
 
 type Jobs interface {
-	Run(ctx jobs.Context, jobIDs []string) error
+	Run(ctx jobs.Context, jobIDs []string) []jobs.Result
 }
 
 type Interface interface {
 	ID() string
-	Run(ctx context.Context, log *slog.Logger, jobs Jobs)
+	Run(ctx Context, jobs Jobs)
 }
 
 type Registry struct {
@@ -44,7 +41,7 @@ func (r *Registry) Run(ctx context.Context, job Jobs) {
 		goroutine := based.Go(ctx, func(ctx context.Context) {
 			log.Info("trigger started")
 			defer log.Info("trigger stopped")
-			trigger.Run(ctx, log, job)
+			trigger.Run(NewContext(ctx, log), job)
 		})
 
 		go func() {

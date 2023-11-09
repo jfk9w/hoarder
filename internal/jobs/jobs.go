@@ -1,6 +1,8 @@
 package jobs
 
 import (
+	"sync"
+
 	"go.uber.org/multierr"
 
 	"github.com/jfk9w/hoarder/internal/common"
@@ -9,6 +11,11 @@ import (
 type Interface interface {
 	ID() string
 	Run(ctx Context) error
+}
+
+type Result struct {
+	ID    string
+	Error error
 }
 
 type exclusiveJob struct {
@@ -40,7 +47,7 @@ func (r *Registry) Register(job Interface) {
 	r.jobs = append(r.jobs, exclusiveJob{job: job})
 }
 
-func (r *Registry) Run(ctx Context, jobIDs []string) (errs error) {
+func (r *Registry) Run(ctx Context, jobIDs []string) []Result {
 	var filter jobFilterFunc
 	if len(jobIDs) == 0 || jobIDs[0] == "all" {
 		filter = func(_ string) bool { return true }
@@ -53,6 +60,11 @@ func (r *Registry) Run(ctx Context, jobIDs []string) (errs error) {
 		filter = func(id string) bool { return uniqueJobIDs[id] }
 	}
 
+	var (
+		results []Result
+		wg      sync.WaitGroup
+	)
+
 	for i := range r.jobs {
 		job := &r.jobs[i]
 		id := job.ID()
@@ -60,10 +72,18 @@ func (r *Registry) Run(ctx Context, jobIDs []string) (errs error) {
 			continue
 		}
 
-		ctx := ctx.With("job", id)
-		err := job.Run(ctx)
-		_ = multierr.AppendInto(&errs, err)
+		ctx := ctx.LogWith("job", id)
+		result := Result{ID: id}
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			err := job.Run(ctx)
+			_ = multierr.AppendInto(&result.Error, err)
+		}()
+
+		results = append(results, result)
 	}
 
-	return
+	wg.Wait()
+	return results
 }
