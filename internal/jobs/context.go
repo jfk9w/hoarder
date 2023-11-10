@@ -13,13 +13,6 @@ import (
 	"go.uber.org/multierr"
 )
 
-type TriggerContext interface {
-	context.Context
-	Debug(msg string, args ...any)
-	Info(msg string, args ...any)
-	Warn(msg string, args ...any)
-}
-
 type contextPathElement struct {
 	key   string
 	value any
@@ -41,18 +34,14 @@ type AskFunc func(ctx context.Context, text string) (string, error)
 type Context struct {
 	std   context.Context
 	log   *slog.Logger
-	now   time.Time
-	user  string
 	path  contextPath
 	askFn AskFunc
 }
 
-func NewContext(ctx context.Context, log *slog.Logger, now time.Time, userID string) Context {
+func NewContext(ctx context.Context, log *slog.Logger) Context {
 	return Context{
-		std:  ctx,
-		log:  log,
-		now:  now,
-		user: userID,
+		std: ctx,
+		log: log,
 	}
 }
 
@@ -65,18 +54,9 @@ func (ctx Context) Debug(msg string, args ...any) { ctx.log.Debug(msg, args...) 
 func (ctx Context) Info(msg string, args ...any)  { ctx.log.Info(msg, args...) }
 func (ctx Context) Warn(msg string, args ...any)  { ctx.log.Warn(msg, args...) }
 
-func (ctx Context) User() string {
-	return ctx.user
-}
-
 func (ctx Context) With(key string, value any) Context {
 	ctx.log = ctx.log.With(slog.Any(key, value))
 	ctx.path = append(ctx.path, contextPathElement{key, value})
-	return ctx
-}
-
-func (ctx Context) LogWith(key string, value any) Context {
-	ctx.log = ctx.log.With(slog.Any(key, value))
 	return ctx
 }
 

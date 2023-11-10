@@ -2,6 +2,7 @@ package jobs
 
 import (
 	"sync"
+	"time"
 
 	"go.uber.org/multierr"
 
@@ -10,11 +11,11 @@ import (
 
 type Interface interface {
 	ID() string
-	Run(ctx Context) error
+	Run(ctx Context, now time.Time, userID string) error
 }
 
 type Result struct {
-	ID    string
+	JobID string
 	Error error
 }
 
@@ -27,14 +28,14 @@ func (j *exclusiveJob) ID() string {
 	return j.job.ID()
 }
 
-func (j *exclusiveJob) Run(ctx Context) (errs error) {
-	cancel, err := j.users.TryLock(ctx.User())
+func (j *exclusiveJob) Run(ctx Context, now time.Time, userID string) (errs error) {
+	cancel, err := j.users.TryLock(userID)
 	if ctx.Error(&errs, err, "already running") {
 		return
 	}
 
 	defer cancel()
-	return j.job.Run(ctx)
+	return j.job.Run(ctx, now, userID)
 }
 
 type Registry struct {
@@ -47,7 +48,7 @@ func (r *Registry) Register(job Interface) {
 	r.jobs = append(r.jobs, exclusiveJob{job: job})
 }
 
-func (r *Registry) Run(ctx Context, jobIDs []string) []Result {
+func (r *Registry) Run(ctx Context, now time.Time, userID string, jobIDs []string) []Result {
 	var filter jobFilterFunc
 	if len(jobIDs) == 0 || jobIDs[0] == "all" {
 		filter = func(_ string) bool { return true }
@@ -67,17 +68,16 @@ func (r *Registry) Run(ctx Context, jobIDs []string) []Result {
 
 	for i := range r.jobs {
 		job := &r.jobs[i]
-		id := job.ID()
-		if !filter(id) {
+		jobID := job.ID()
+		if !filter(jobID) {
 			continue
 		}
 
-		ctx := ctx.LogWith("job", id)
-		result := Result{ID: id}
+		result := Result{JobID: jobID}
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
-			err := job.Run(ctx)
+			err := job.Run(ctx, now, userID)
 			_ = multierr.AppendInto(&result.Error, err)
 		}()
 

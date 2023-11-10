@@ -3,6 +3,7 @@ package triggers
 import (
 	"context"
 	"log/slog"
+	"time"
 
 	"github.com/jfk9w-go/based"
 	"github.com/jfk9w/hoarder/internal/jobs"
@@ -11,7 +12,7 @@ import (
 )
 
 type Jobs interface {
-	Run(ctx jobs.Context, jobIDs []string) []jobs.Result
+	Run(ctx jobs.Context, now time.Time, userID string, jobIDs []string) []jobs.Result
 }
 
 type Interface interface {

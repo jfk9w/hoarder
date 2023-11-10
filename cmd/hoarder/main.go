@@ -109,7 +109,10 @@ func main() {
 	}
 
 	if cfg.Stdin {
-		trigger, err := stdin.NewTrigger(stdin.TriggerParams{})
+		trigger, err := stdin.NewTrigger(stdin.TriggerParams{
+			Clock: clock,
+		})
+
 		if err != nil {
 			panic(errors.Wrap(err, "create stdin trigger"))
 		}

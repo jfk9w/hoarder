@@ -6,14 +6,12 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"log/slog"
 	"os"
 	"strings"
 
 	"github.com/jfk9w-go/based"
 	"go.uber.org/multierr"
 
-	"github.com/jfk9w/hoarder/internal/jobs"
 	"github.com/jfk9w/hoarder/internal/logs"
 	"github.com/jfk9w/hoarder/internal/triggers"
 )
@@ -21,13 +19,15 @@ import (
 const TriggerID = "stdin"
 
 type TriggerParams struct {
+	Clock  based.Clock `validate:"required"`
 	Reader io.Reader
 	Writer io.Writer
 }
 
 type Trigger struct {
-	in  io.Reader
-	out io.Writer
+	clock based.Clock
+	in    io.Reader
+	out   io.Writer
 }
 
 func NewTrigger(params TriggerParams) (*Trigger, error) {
@@ -44,8 +44,9 @@ func NewTrigger(params TriggerParams) (*Trigger, error) {
 	}
 
 	return &Trigger{
-		in:  params.Reader,
-		out: params.Writer,
+		clock: params.Clock,
+		in:    params.Reader,
+		out:   params.Writer,
 	}, nil
 }
 
@@ -53,33 +54,32 @@ func (t *Trigger) ID() string {
 	return TriggerID
 }
 
-func (t *Trigger) Run(ctx context.Context, log *slog.Logger, job triggers.Jobs) {
+func (t *Trigger) Run(ctx triggers.Context, job triggers.Jobs) {
 	for {
 		userID, err := t.ask(ctx, "Enter user: ")
 		if err != nil {
-			log.Error("failed to get user", logs.Error(err))
+			ctx.Error("failed to get user", logs.Error(err))
 			return
 		}
 
+		ctx := ctx.As(userID)
 		jobIDs, err := t.ask(ctx, "Enter jobs: ")
 		if err != nil {
-			log.Error("failed to get jobs", logs.Error(err))
+			ctx.Error("failed to get jobs", logs.Error(err))
 			return
 		}
 
-		log := log.With(logs.User(userID))
-		ctx := jobs.NewContext(ctx, log, userID).WithAskFn(t.ask)
-		results := job.Run(ctx, strings.Fields(jobIDs))
+		results := job.Run(ctx.Job().WithAskFn(t.ask), t.clock.Now(), userID, strings.Fields(jobIDs))
 		var reply strings.Builder
 		for _, result := range results {
 			if result.Error == nil {
 				reply.WriteString(" ✔ ")
-				reply.WriteString(result.ID)
+				reply.WriteString(result.JobID)
 				reply.WriteRune('\n')
 			} else {
 				for _, err := range multierr.Errors(result.Error) {
 					reply.WriteString(" ✘ ")
-					reply.WriteString(result.ID)
+					reply.WriteString(result.JobID)
 					reply.WriteString(": ")
 					reply.WriteString(err.Error())
 					reply.WriteRune('\n')
@@ -88,7 +88,7 @@ func (t *Trigger) Run(ctx context.Context, log *slog.Logger, job triggers.Jobs) 
 		}
 
 		if _, err := fmt.Fprintln(t.out, reply.String()); err != nil {
-			log.Error("failed to print result", logs.Error(err))
+			ctx.Error("failed to print result", logs.Error(err))
 			return
 		}
 	}

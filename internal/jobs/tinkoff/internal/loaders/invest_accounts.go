@@ -3,7 +3,6 @@ package loaders
 import (
 	"time"
 
-	"github.com/jfk9w-go/based"
 	"github.com/jfk9w-go/tinkoff-api"
 
 	"github.com/jfk9w/hoarder/internal/database"
@@ -15,7 +14,7 @@ type InvestAccounts struct {
 	Phone     string
 	BatchSize int
 	Overlap   time.Duration
-	Clock     based.Clock
+	Now       time.Time
 }
 
 func (l InvestAccounts) TableName() string {
@@ -64,7 +63,7 @@ func (l InvestAccounts) Load(ctx jobs.Context, client Client, db database.DB) (l
 			accountId: id,
 			batchSize: l.BatchSize,
 			overlap:   l.Overlap,
-			clock:     l.Clock,
+			now:       l.Now,
 		})
 	}
 

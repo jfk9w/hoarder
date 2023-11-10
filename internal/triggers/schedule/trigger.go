@@ -1,15 +1,10 @@
 package schedule
 
 import (
-	"context"
-	"log/slog"
 	"sync"
 	"time"
 
 	"github.com/jfk9w-go/based"
-
-	jobs "github.com/jfk9w/hoarder/internal/jobs"
-	"github.com/jfk9w/hoarder/internal/logs"
 	"github.com/jfk9w/hoarder/internal/triggers"
 )
 
@@ -47,7 +42,7 @@ func (t *Trigger) ID() string {
 	return TriggerID
 }
 
-func (t *Trigger) Run(ctx context.Context, log *slog.Logger, job triggers.Jobs) {
+func (t *Trigger) Run(ctx triggers.Context, job triggers.Jobs) {
 	for {
 		now := t.clock.Now()
 		timeout := now.Round(t.interval).Sub(now)
@@ -63,12 +58,11 @@ func (t *Trigger) Run(ctx context.Context, log *slog.Logger, job triggers.Jobs) 
 
 		var wg sync.WaitGroup
 		for userID, jobIDs := range t.users {
+			ctx := ctx.As(userID)
 			wg.Add(1)
 			go func(userID string, jobIDs []string) {
 				defer wg.Done()
-				log := log.With(logs.User(userID))
-				ctx := jobs.NewContext(ctx, log, userID)
-				_ = job.Run(ctx, jobIDs)
+				_ = job.Run(ctx.Job(), now, userID, jobIDs)
 			}(userID, jobIDs)
 		}
 	}

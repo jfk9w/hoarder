@@ -5,7 +5,6 @@ import (
 	"time"
 
 	"github.com/AlekSi/pointer"
-	"github.com/jfk9w-go/based"
 	"github.com/jfk9w-go/tinkoff-api"
 
 	"github.com/jfk9w/hoarder/internal/database"
@@ -17,7 +16,7 @@ type investOperations struct {
 	accountId string
 	batchSize int
 	overlap   time.Duration
-	clock     based.Clock
+	now       time.Time
 }
 
 func (l investOperations) TableName() string {
@@ -51,7 +50,7 @@ func (l investOperations) Load(ctx jobs.Context, client Client, db database.DB) 
 		client:    client,
 		db:        db,
 		from:      from,
-		to:        l.clock.Now(),
+		to:        l.now,
 	}.load)
 }
 

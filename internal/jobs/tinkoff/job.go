@@ -31,7 +31,6 @@ type JobParams struct {
 }
 
 type Job struct {
-	clock        based.Clock
 	users        map[string]map[string]pingingClient
 	batchSize    int
 	overlap      time.Duration
@@ -87,7 +86,6 @@ func NewJob(ctx context.Context, params JobParams) (*Job, error) {
 	}
 
 	return &Job{
-		clock:        params.Clock,
 		users:        users,
 		batchSize:    params.Config.BatchSize,
 		overlap:      params.Config.Overlap,
@@ -111,8 +109,8 @@ func (j *Job) ID() string {
 	return JobID
 }
 
-func (j *Job) Run(ctx jobs.Context) (errs error) {
-	phones := j.users[ctx.User()]
+func (j *Job) Run(ctx jobs.Context, now time.Time, userID string) (errs error) {
+	phones := j.users[userID]
 	if phones == nil {
 		return
 	}
@@ -120,20 +118,20 @@ func (j *Job) Run(ctx jobs.Context) (errs error) {
 	ctx = ctx.ApplyAskFn(inAuthorizer)
 	for phone, client := range phones {
 		ctx := ctx.With("phone", phone)
-		err := j.executeLoaders(ctx, phone, client)
+		err := j.executeLoaders(ctx, now, userID, phone, client)
 		_ = multierr.AppendInto(&errs, err)
 	}
 
-	if err := j.executeFireflySync(ctx); err != nil {
+	if err := j.executeFireflySync(ctx, userID); err != nil {
 		_ = multierr.AppendInto(&errs, err)
 	}
 
 	return
 }
 
-func (j *Job) executeLoaders(ctx jobs.Context, phone string, client Client) (errs error) {
+func (j *Job) executeLoaders(ctx jobs.Context, now time.Time, userID string, phone string, client Client) (errs error) {
 	if err := j.db.WithContext(ctx).
-		Upsert(&User{Name: ctx.User(), Phone: phone}).
+		Upsert(&User{Name: userID, Phone: phone}).
 		Error; ctx.Error(&errs, err, "failed to create user in db") {
 		return
 	}
@@ -143,7 +141,7 @@ func (j *Job) executeLoaders(ctx jobs.Context, phone string, client Client) (err
 		loaders.ClientOffers{Phone: phone, BatchSize: j.batchSize},
 		loaders.Accounts{Phone: phone, BatchSize: j.batchSize, Overlap: j.overlap, WithReceipts: j.withReceipts},
 		loaders.InvestOperationTypes{BatchSize: j.batchSize},
-		loaders.InvestAccounts{Phone: phone, BatchSize: j.batchSize, Overlap: j.overlap, Clock: j.clock},
+		loaders.InvestAccounts{Phone: phone, BatchSize: j.batchSize, Overlap: j.overlap, Now: now},
 	)
 
 	for {
@@ -162,13 +160,13 @@ func (j *Job) executeLoaders(ctx jobs.Context, phone string, client Client) (err
 	return
 }
 
-func (j *Job) executeFireflySync(ctx jobs.Context) (errs error) {
+func (j *Job) executeFireflySync(ctx jobs.Context, userID string) (errs error) {
 	if j.firefly == nil {
 		return
 	}
 
 	var phones []string
-	for phone := range j.users[ctx.User()] {
+	for phone := range j.users[userID] {
 		phones = append(phones, phone)
 	}
 
