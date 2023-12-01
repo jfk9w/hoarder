@@ -153,7 +153,7 @@ func (t *Trigger) handleMessage(ctx triggers.Context, sender xmpp.Sender, messag
 		return
 
 	case errors.Is(err, common.ErrNoQuestions):
-		typing := t.typing(ctx, sender, message.From)
+		typing := t.startTyping(ctx, sender, message.From)
 
 		askFn := t.askFn(sender, message.From)
 		results := jobs.Run(ctx.Job().WithAskFn(askFn), t.clock.Now(), userID, strings.Fields(message.Body))
@@ -194,17 +194,26 @@ func (t *Trigger) askFn(sender xmpp.Sender, to string) jobs.AskFunc {
 	}
 }
 
-func (t *Trigger) typing(ctx triggers.Context, sender xmpp.Sender, to string) based.Goroutine {
+func (t *Trigger) startTyping(ctx triggers.Context, sender xmpp.Sender, to string) based.Goroutine {
 	ticker := time.NewTicker(t.config.State)
-	return based.Go(ctx, func(gctx context.Context) {
+	return based.Go(ctx, func(cctx context.Context) {
+		ctx := triggers.ContextFrom(cctx)
 		defer t.sendState(ctx, sender, to, stanza.StateInactive{})
 		defer ticker.Stop()
+
+		select {
+		case <-time.After(2 * t.config.State):
+		case <-ctx.Done():
+			return
+		}
+
 		for {
 			t.sendState(ctx, sender, to, stanza.StateComposing{})
+
 			select {
 			case <-ticker.C:
 				continue
-			case <-gctx.Done():
+			case <-ctx.Done():
 				return
 			}
 		}
