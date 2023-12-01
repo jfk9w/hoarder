@@ -143,4 +143,34 @@ properties:
       - database
       - users
     type: object
+  xmpp:
+    additionalProperties: false
+    description: Настройки XMPP-триггера.
+    properties:
+      jid:
+        description: JID бота.
+        type: string
+      password:
+        description: Пароль.
+        type: string
+      presence:
+        default: 1m0s
+        description: Интервал для отправки присутствия.
+        pattern: (\d+h)?(\d+m)?(\d+s)?(\d+ms)?(\d+µs)?(\d+ns)?
+        type: string
+      state:
+        default: 5s
+        description: Интервал для отправки состояния ("печатает").
+        pattern: (\d+h)?(\d+m)?(\d+s)?(\d+ms)?(\d+µs)?(\d+ns)?
+        type: string
+      users:
+        additionalProperties:
+          type: string
+        description: Маппинг JID в имя пользователя.
+        type: object
+    required:
+      - jid
+      - password
+      - users
+    type: object
 type: object

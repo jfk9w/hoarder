@@ -6,9 +6,10 @@ import (
 	"time"
 
 	"github.com/jfk9w-go/based"
+	"go.uber.org/multierr"
+
 	"github.com/jfk9w/hoarder/internal/jobs"
 	"github.com/jfk9w/hoarder/internal/logs"
-	"go.uber.org/multierr"
 )
 
 type Jobs interface {

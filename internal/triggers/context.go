@@ -8,6 +8,8 @@ import (
 	"github.com/jfk9w/hoarder/internal/jobs"
 )
 
+type loggerKey struct{}
+
 type Context struct {
 	std context.Context
 	log *slog.Logger
@@ -15,8 +17,15 @@ type Context struct {
 
 func NewContext(ctx context.Context, log *slog.Logger) Context {
 	return Context{
-		std: ctx,
+		std: context.WithValue(ctx, loggerKey{}, log),
 		log: log,
+	}
+}
+
+func ContextFrom(ctx context.Context) Context {
+	return Context{
+		std: ctx,
+		log: ctx.Value(loggerKey{}).(*slog.Logger),
 	}
 }
 
@@ -32,6 +41,7 @@ func (ctx Context) Error(msg string, args ...any) { ctx.log.Error(msg, args...) 
 
 func (ctx Context) With(key string, value any) Context {
 	ctx.log = ctx.log.With(slog.Any(key, value))
+	ctx.std = context.WithValue(ctx.std, loggerKey{}, ctx.log)
 	return ctx
 }
 

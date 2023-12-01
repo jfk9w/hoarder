@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/jfk9w-go/based"
+
 	"github.com/jfk9w/hoarder/internal/triggers"
 )
 
@@ -65,5 +66,7 @@ func (t *Trigger) Run(ctx triggers.Context, job triggers.Jobs) {
 				_ = job.Run(ctx.Job(), now, userID, jobIDs)
 			}(userID, jobIDs)
 		}
+
+		wg.Wait()
 	}
 }

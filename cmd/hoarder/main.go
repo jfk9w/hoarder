@@ -5,6 +5,8 @@ import (
 	"os"
 	"syscall"
 
+	"github.com/jfk9w/hoarder/internal/triggers/xmpp"
+
 	"github.com/AlekSi/pointer"
 	"github.com/jfk9w-go/based"
 	"github.com/jfk9w-go/confi"
@@ -34,6 +36,7 @@ type Config struct {
 	//XMPP     *xmpp.Config     `yaml:"xmpp,omitempty" doc:"Настройки XMPP-интерфейса."`
 	Schedule *schedule.Config `yaml:"schedule,omitempty" doc:"Настройки фоновой синхронизации."`
 	Stdin    bool             `yaml:"stdin,omitempty" doc:"Включение интерактивной командной строки."`
+	XMPP     *xmpp.Config     `yaml:"xmpp,omitempty" doc:"Настройки XMPP-триггера."`
 
 	//LKDR    *lkdr.Config    `yaml:"lkdr,omitempty" doc:"Настройка пайплана для сервиса ФНС \"Мои чеки онлайн\"."`
 	Tinkoff *tinkoff.Config `yaml:"tinkoff,omitempty" doc:"Настройка пайплайна для онлайн-банка \"Тинькофф\"."`
@@ -115,6 +118,19 @@ func main() {
 
 		if err != nil {
 			panic(errors.Wrap(err, "create stdin trigger"))
+		}
+
+		triggers.Register(trigger)
+	}
+
+	if cfg := cfg.XMPP; cfg != nil {
+		trigger, err := xmpp.NewTrigger(xmpp.TriggerParams{
+			Clock:  clock,
+			Config: *cfg,
+		})
+
+		if err != nil {
+			panic(errors.Wrap(err, "create xmpp trigger"))
 		}
 
 		triggers.Register(trigger)
