@@ -1408,7 +1408,6 @@ func (c *Client) requestURL(ctx context.Context) *url.URL {
 // POST /v1/data/bulk/transactions
 func (c *Client) BulkUpdateTransactions(ctx context.Context, params BulkUpdateTransactionsParams) (BulkUpdateTransactionsRes, error) {
 	res, err := c.sendBulkUpdateTransactions(ctx, params)
-	_ = res
 	return res, err
 }
 
@@ -1533,7 +1532,6 @@ func (c *Client) sendBulkUpdateTransactions(ctx context.Context, params BulkUpda
 // POST /v1/currencies/{code}/default
 func (c *Client) DefaultCurrency(ctx context.Context, params DefaultCurrencyParams) (DefaultCurrencyRes, error) {
 	res, err := c.sendDefaultCurrency(ctx, params)
-	_ = res
 	return res, err
 }
 
@@ -1676,7 +1674,6 @@ func (c *Client) sendDefaultCurrency(ctx context.Context, params DefaultCurrency
 // DELETE /v1/accounts/{id}
 func (c *Client) DeleteAccount(ctx context.Context, params DeleteAccountParams) (DeleteAccountRes, error) {
 	res, err := c.sendDeleteAccount(ctx, params)
-	_ = res
 	return res, err
 }
 
@@ -1817,7 +1814,6 @@ func (c *Client) sendDeleteAccount(ctx context.Context, params DeleteAccountPara
 // DELETE /v1/attachments/{id}
 func (c *Client) DeleteAttachment(ctx context.Context, params DeleteAttachmentParams) (DeleteAttachmentRes, error) {
 	res, err := c.sendDeleteAttachment(ctx, params)
-	_ = res
 	return res, err
 }
 
@@ -1959,7 +1955,6 @@ func (c *Client) sendDeleteAttachment(ctx context.Context, params DeleteAttachme
 // DELETE /v1/bills/{id}
 func (c *Client) DeleteBill(ctx context.Context, params DeleteBillParams) (DeleteBillRes, error) {
 	res, err := c.sendDeleteBill(ctx, params)
-	_ = res
 	return res, err
 }
 
@@ -2100,7 +2095,6 @@ func (c *Client) sendDeleteBill(ctx context.Context, params DeleteBillParams) (r
 // DELETE /v1/budgets/{id}
 func (c *Client) DeleteBudget(ctx context.Context, params DeleteBudgetParams) (DeleteBudgetRes, error) {
 	res, err := c.sendDeleteBudget(ctx, params)
-	_ = res
 	return res, err
 }
 
@@ -2241,7 +2235,6 @@ func (c *Client) sendDeleteBudget(ctx context.Context, params DeleteBudgetParams
 // DELETE /v1/budgets/{id}/limits/{limitId}
 func (c *Client) DeleteBudgetLimit(ctx context.Context, params DeleteBudgetLimitParams) (DeleteBudgetLimitRes, error) {
 	res, err := c.sendDeleteBudgetLimit(ctx, params)
-	_ = res
 	return res, err
 }
 
@@ -2401,7 +2394,6 @@ func (c *Client) sendDeleteBudgetLimit(ctx context.Context, params DeleteBudgetL
 // DELETE /v1/categories/{id}
 func (c *Client) DeleteCategory(ctx context.Context, params DeleteCategoryParams) (DeleteCategoryRes, error) {
 	res, err := c.sendDeleteCategory(ctx, params)
-	_ = res
 	return res, err
 }
 
@@ -2542,7 +2534,6 @@ func (c *Client) sendDeleteCategory(ctx context.Context, params DeleteCategoryPa
 // DELETE /v1/currencies/{code}
 func (c *Client) DeleteCurrency(ctx context.Context, params DeleteCurrencyParams) (DeleteCurrencyRes, error) {
 	res, err := c.sendDeleteCurrency(ctx, params)
-	_ = res
 	return res, err
 }
 
@@ -2685,7 +2676,6 @@ func (c *Client) sendDeleteCurrency(ctx context.Context, params DeleteCurrencyPa
 // DELETE /v1/link-types/{id}
 func (c *Client) DeleteLinkType(ctx context.Context, params DeleteLinkTypeParams) (DeleteLinkTypeRes, error) {
 	res, err := c.sendDeleteLinkType(ctx, params)
-	_ = res
 	return res, err
 }
 
@@ -2826,7 +2816,6 @@ func (c *Client) sendDeleteLinkType(ctx context.Context, params DeleteLinkTypePa
 // DELETE /v1/object-groups/{id}
 func (c *Client) DeleteObjectGroup(ctx context.Context, params DeleteObjectGroupParams) (DeleteObjectGroupRes, error) {
 	res, err := c.sendDeleteObjectGroup(ctx, params)
-	_ = res
 	return res, err
 }
 
@@ -2967,7 +2956,6 @@ func (c *Client) sendDeleteObjectGroup(ctx context.Context, params DeleteObjectG
 // DELETE /v1/piggy-banks/{id}
 func (c *Client) DeletePiggyBank(ctx context.Context, params DeletePiggyBankParams) (DeletePiggyBankRes, error) {
 	res, err := c.sendDeletePiggyBank(ctx, params)
-	_ = res
 	return res, err
 }
 
@@ -3109,7 +3097,6 @@ func (c *Client) sendDeletePiggyBank(ctx context.Context, params DeletePiggyBank
 // DELETE /v1/recurrences/{id}
 func (c *Client) DeleteRecurrence(ctx context.Context, params DeleteRecurrenceParams) (DeleteRecurrenceRes, error) {
 	res, err := c.sendDeleteRecurrence(ctx, params)
-	_ = res
 	return res, err
 }
 
@@ -3250,7 +3237,6 @@ func (c *Client) sendDeleteRecurrence(ctx context.Context, params DeleteRecurren
 // DELETE /v1/rules/{id}
 func (c *Client) DeleteRule(ctx context.Context, params DeleteRuleParams) (DeleteRuleRes, error) {
 	res, err := c.sendDeleteRule(ctx, params)
-	_ = res
 	return res, err
 }
 
@@ -3391,7 +3377,6 @@ func (c *Client) sendDeleteRule(ctx context.Context, params DeleteRuleParams) (r
 // DELETE /v1/rule-groups/{id}
 func (c *Client) DeleteRuleGroup(ctx context.Context, params DeleteRuleGroupParams) (DeleteRuleGroupRes, error) {
 	res, err := c.sendDeleteRuleGroup(ctx, params)
-	_ = res
 	return res, err
 }
 
@@ -3532,7 +3517,6 @@ func (c *Client) sendDeleteRuleGroup(ctx context.Context, params DeleteRuleGroup
 // DELETE /v1/tags/{tag}
 func (c *Client) DeleteTag(ctx context.Context, params DeleteTagParams) (DeleteTagRes, error) {
 	res, err := c.sendDeleteTag(ctx, params)
-	_ = res
 	return res, err
 }
 
@@ -3673,7 +3657,6 @@ func (c *Client) sendDeleteTag(ctx context.Context, params DeleteTagParams) (res
 // DELETE /v1/transactions/{id}
 func (c *Client) DeleteTransaction(ctx context.Context, params DeleteTransactionParams) (DeleteTransactionRes, error) {
 	res, err := c.sendDeleteTransaction(ctx, params)
-	_ = res
 	return res, err
 }
 
@@ -3814,7 +3797,6 @@ func (c *Client) sendDeleteTransaction(ctx context.Context, params DeleteTransac
 // DELETE /v1/transaction-journals/{id}
 func (c *Client) DeleteTransactionJournal(ctx context.Context, params DeleteTransactionJournalParams) (DeleteTransactionJournalRes, error) {
 	res, err := c.sendDeleteTransactionJournal(ctx, params)
-	_ = res
 	return res, err
 }
 
@@ -3955,7 +3937,6 @@ func (c *Client) sendDeleteTransactionJournal(ctx context.Context, params Delete
 // DELETE /v1/transaction-links/{id}
 func (c *Client) DeleteTransactionLink(ctx context.Context, params DeleteTransactionLinkParams) (DeleteTransactionLinkRes, error) {
 	res, err := c.sendDeleteTransactionLink(ctx, params)
-	_ = res
 	return res, err
 }
 
@@ -4097,7 +4078,6 @@ func (c *Client) sendDeleteTransactionLink(ctx context.Context, params DeleteTra
 // DELETE /v1/users/{id}
 func (c *Client) DeleteUser(ctx context.Context, params DeleteUserParams) (DeleteUserRes, error) {
 	res, err := c.sendDeleteUser(ctx, params)
-	_ = res
 	return res, err
 }
 
@@ -4238,7 +4218,6 @@ func (c *Client) sendDeleteUser(ctx context.Context, params DeleteUserParams) (r
 // DELETE /v1/webhooks/{id}
 func (c *Client) DeleteWebhook(ctx context.Context, params DeleteWebhookParams) (DeleteWebhookRes, error) {
 	res, err := c.sendDeleteWebhook(ctx, params)
-	_ = res
 	return res, err
 }
 
@@ -4380,7 +4359,6 @@ func (c *Client) sendDeleteWebhook(ctx context.Context, params DeleteWebhookPara
 // DELETE /v1/webhooks/{id}/messages/{messageId}
 func (c *Client) DeleteWebhookMessage(ctx context.Context, params DeleteWebhookMessageParams) (DeleteWebhookMessageRes, error) {
 	res, err := c.sendDeleteWebhookMessage(ctx, params)
-	_ = res
 	return res, err
 }
 
@@ -4541,7 +4519,6 @@ func (c *Client) sendDeleteWebhookMessage(ctx context.Context, params DeleteWebh
 // DELETE /v1/webhooks/{id}/messages/{messageId}/attempts/{attemptId}
 func (c *Client) DeleteWebhookMessageAttempt(ctx context.Context, params DeleteWebhookMessageAttemptParams) (DeleteWebhookMessageAttemptRes, error) {
 	res, err := c.sendDeleteWebhookMessageAttempt(ctx, params)
-	_ = res
 	return res, err
 }
 
@@ -4722,7 +4699,6 @@ func (c *Client) sendDeleteWebhookMessageAttempt(ctx context.Context, params Del
 // DELETE /v1/data/destroy
 func (c *Client) DestroyData(ctx context.Context, params DestroyDataParams) (DestroyDataRes, error) {
 	res, err := c.sendDestroyData(ctx, params)
-	_ = res
 	return res, err
 }
 
@@ -4863,7 +4839,6 @@ func (c *Client) sendDestroyData(ctx context.Context, params DestroyDataParams) 
 // POST /v1/currencies/{code}/disable
 func (c *Client) DisableCurrency(ctx context.Context, params DisableCurrencyParams) (DisableCurrencyRes, error) {
 	res, err := c.sendDisableCurrency(ctx, params)
-	_ = res
 	return res, err
 }
 
@@ -5007,7 +4982,6 @@ func (c *Client) sendDisableCurrency(ctx context.Context, params DisableCurrency
 // GET /v1/attachments/{id}/download
 func (c *Client) DownloadAttachment(ctx context.Context, params DownloadAttachmentParams) (DownloadAttachmentRes, error) {
 	res, err := c.sendDownloadAttachment(ctx, params)
-	_ = res
 	return res, err
 }
 
@@ -5149,7 +5123,6 @@ func (c *Client) sendDownloadAttachment(ctx context.Context, params DownloadAtta
 // POST /v1/currencies/{code}/enable
 func (c *Client) EnableCurrency(ctx context.Context, params EnableCurrencyParams) (EnableCurrencyRes, error) {
 	res, err := c.sendEnableCurrency(ctx, params)
-	_ = res
 	return res, err
 }
 
@@ -5292,7 +5265,6 @@ func (c *Client) sendEnableCurrency(ctx context.Context, params EnableCurrencyPa
 // GET /v1/data/export/accounts
 func (c *Client) ExportAccounts(ctx context.Context, params ExportAccountsParams) (ExportAccountsRes, error) {
 	res, err := c.sendExportAccounts(ctx, params)
-	_ = res
 	return res, err
 }
 
@@ -5437,7 +5409,6 @@ func (c *Client) sendExportAccounts(ctx context.Context, params ExportAccountsPa
 // GET /v1/data/export/bills
 func (c *Client) ExportBills(ctx context.Context, params ExportBillsParams) (ExportBillsRes, error) {
 	res, err := c.sendExportBills(ctx, params)
-	_ = res
 	return res, err
 }
 
@@ -5582,7 +5553,6 @@ func (c *Client) sendExportBills(ctx context.Context, params ExportBillsParams) 
 // GET /v1/data/export/budgets
 func (c *Client) ExportBudgets(ctx context.Context, params ExportBudgetsParams) (ExportBudgetsRes, error) {
 	res, err := c.sendExportBudgets(ctx, params)
-	_ = res
 	return res, err
 }
 
@@ -5727,7 +5697,6 @@ func (c *Client) sendExportBudgets(ctx context.Context, params ExportBudgetsPara
 // GET /v1/data/export/categories
 func (c *Client) ExportCategories(ctx context.Context, params ExportCategoriesParams) (ExportCategoriesRes, error) {
 	res, err := c.sendExportCategories(ctx, params)
-	_ = res
 	return res, err
 }
 
@@ -5872,7 +5841,6 @@ func (c *Client) sendExportCategories(ctx context.Context, params ExportCategori
 // GET /v1/data/export/piggy-banks
 func (c *Client) ExportPiggies(ctx context.Context, params ExportPiggiesParams) (ExportPiggiesRes, error) {
 	res, err := c.sendExportPiggies(ctx, params)
-	_ = res
 	return res, err
 }
 
@@ -6017,7 +5985,6 @@ func (c *Client) sendExportPiggies(ctx context.Context, params ExportPiggiesPara
 // GET /v1/data/export/recurring
 func (c *Client) ExportRecurring(ctx context.Context, params ExportRecurringParams) (ExportRecurringRes, error) {
 	res, err := c.sendExportRecurring(ctx, params)
-	_ = res
 	return res, err
 }
 
@@ -6162,7 +6129,6 @@ func (c *Client) sendExportRecurring(ctx context.Context, params ExportRecurring
 // GET /v1/data/export/rules
 func (c *Client) ExportRules(ctx context.Context, params ExportRulesParams) (ExportRulesRes, error) {
 	res, err := c.sendExportRules(ctx, params)
-	_ = res
 	return res, err
 }
 
@@ -6307,7 +6273,6 @@ func (c *Client) sendExportRules(ctx context.Context, params ExportRulesParams) 
 // GET /v1/data/export/tags
 func (c *Client) ExportTags(ctx context.Context, params ExportTagsParams) (ExportTagsRes, error) {
 	res, err := c.sendExportTags(ctx, params)
-	_ = res
 	return res, err
 }
 
@@ -6452,7 +6417,6 @@ func (c *Client) sendExportTags(ctx context.Context, params ExportTagsParams) (r
 // GET /v1/data/export/transactions
 func (c *Client) ExportTransactions(ctx context.Context, params ExportTransactionsParams) (ExportTransactionsRes, error) {
 	res, err := c.sendExportTransactions(ctx, params)
-	_ = res
 	return res, err
 }
 
@@ -6642,7 +6606,6 @@ func (c *Client) sendExportTransactions(ctx context.Context, params ExportTransa
 // POST /v1/rules/{id}/trigger
 func (c *Client) FireRule(ctx context.Context, params FireRuleParams) (FireRuleRes, error) {
 	res, err := c.sendFireRule(ctx, params)
-	_ = res
 	return res, err
 }
 
@@ -6846,7 +6809,6 @@ func (c *Client) sendFireRule(ctx context.Context, params FireRuleParams) (res F
 // POST /v1/rule-groups/{id}/trigger
 func (c *Client) FireRuleGroup(ctx context.Context, params FireRuleGroupParams) (FireRuleGroupRes, error) {
 	res, err := c.sendFireRuleGroup(ctx, params)
-	_ = res
 	return res, err
 }
 
@@ -7049,7 +7011,6 @@ func (c *Client) sendFireRuleGroup(ctx context.Context, params FireRuleGroupPara
 // GET /v1/about
 func (c *Client) GetAbout(ctx context.Context, params GetAboutParams) (GetAboutRes, error) {
 	res, err := c.sendGetAbout(ctx, params)
-	_ = res
 	return res, err
 }
 
@@ -7172,7 +7133,6 @@ func (c *Client) sendGetAbout(ctx context.Context, params GetAboutParams) (res G
 // GET /v1/accounts/{id}
 func (c *Client) GetAccount(ctx context.Context, params GetAccountParams) (GetAccountRes, error) {
 	res, err := c.sendGetAccount(ctx, params)
-	_ = res
 	return res, err
 }
 
@@ -7334,7 +7294,6 @@ func (c *Client) sendGetAccount(ctx context.Context, params GetAccountParams) (r
 // GET /v1/autocomplete/accounts
 func (c *Client) GetAccountsAC(ctx context.Context, params GetAccountsACParams) (GetAccountsACRes, error) {
 	res, err := c.sendGetAccountsAC(ctx, params)
-	_ = res
 	return res, err
 }
 
@@ -7536,7 +7495,6 @@ func (c *Client) sendGetAccountsAC(ctx context.Context, params GetAccountsACPara
 // GET /v1/attachments/{id}
 func (c *Client) GetAttachment(ctx context.Context, params GetAttachmentParams) (GetAttachmentRes, error) {
 	res, err := c.sendGetAttachment(ctx, params)
-	_ = res
 	return res, err
 }
 
@@ -7677,7 +7635,6 @@ func (c *Client) sendGetAttachment(ctx context.Context, params GetAttachmentPara
 // GET /v1/available-budgets/{id}
 func (c *Client) GetAvailableBudget(ctx context.Context, params GetAvailableBudgetParams) (GetAvailableBudgetRes, error) {
 	res, err := c.sendGetAvailableBudget(ctx, params)
-	_ = res
 	return res, err
 }
 
@@ -7819,7 +7776,6 @@ func (c *Client) sendGetAvailableBudget(ctx context.Context, params GetAvailable
 // GET /v1/summary/basic
 func (c *Client) GetBasicSummary(ctx context.Context, params GetBasicSummaryParams) (GetBasicSummaryRes, error) {
 	res, err := c.sendGetBasicSummary(ctx, params)
-	_ = res
 	return res, err
 }
 
@@ -7991,7 +7947,6 @@ func (c *Client) sendGetBasicSummary(ctx context.Context, params GetBasicSummary
 // GET /v1/bills/{id}
 func (c *Client) GetBill(ctx context.Context, params GetBillParams) (GetBillRes, error) {
 	res, err := c.sendGetBill(ctx, params)
-	_ = res
 	return res, err
 }
 
@@ -8170,7 +8125,6 @@ func (c *Client) sendGetBill(ctx context.Context, params GetBillParams) (res Get
 // GET /v1/autocomplete/bills
 func (c *Client) GetBillsAC(ctx context.Context, params GetBillsACParams) (GetBillsACRes, error) {
 	res, err := c.sendGetBillsAC(ctx, params)
-	_ = res
 	return res, err
 }
 
@@ -8332,7 +8286,6 @@ func (c *Client) sendGetBillsAC(ctx context.Context, params GetBillsACParams) (r
 // GET /v1/budgets/{id}
 func (c *Client) GetBudget(ctx context.Context, params GetBudgetParams) (GetBudgetRes, error) {
 	res, err := c.sendGetBudget(ctx, params)
-	_ = res
 	return res, err
 }
 
@@ -8511,7 +8464,6 @@ func (c *Client) sendGetBudget(ctx context.Context, params GetBudgetParams) (res
 // GET /v1/budgets/{id}/limits/{limitId}
 func (c *Client) GetBudgetLimit(ctx context.Context, params GetBudgetLimitParams) (GetBudgetLimitRes, error) {
 	res, err := c.sendGetBudgetLimit(ctx, params)
-	_ = res
 	return res, err
 }
 
@@ -8671,7 +8623,6 @@ func (c *Client) sendGetBudgetLimit(ctx context.Context, params GetBudgetLimitPa
 // GET /v1/autocomplete/budgets
 func (c *Client) GetBudgetsAC(ctx context.Context, params GetBudgetsACParams) (GetBudgetsACRes, error) {
 	res, err := c.sendGetBudgetsAC(ctx, params)
-	_ = res
 	return res, err
 }
 
@@ -8832,7 +8783,6 @@ func (c *Client) sendGetBudgetsAC(ctx context.Context, params GetBudgetsACParams
 // GET /v1/autocomplete/categories
 func (c *Client) GetCategoriesAC(ctx context.Context, params GetCategoriesACParams) (GetCategoriesACRes, error) {
 	res, err := c.sendGetCategoriesAC(ctx, params)
-	_ = res
 	return res, err
 }
 
@@ -8993,7 +8943,6 @@ func (c *Client) sendGetCategoriesAC(ctx context.Context, params GetCategoriesAC
 // GET /v1/categories/{id}
 func (c *Client) GetCategory(ctx context.Context, params GetCategoryParams) (GetCategoryRes, error) {
 	res, err := c.sendGetCategory(ctx, params)
-	_ = res
 	return res, err
 }
 
@@ -9173,7 +9122,6 @@ func (c *Client) sendGetCategory(ctx context.Context, params GetCategoryParams) 
 // GET /v1/chart/account/overview
 func (c *Client) GetChartAccountOverview(ctx context.Context, params GetChartAccountOverviewParams) (GetChartAccountOverviewRes, error) {
 	res, err := c.sendGetChartAccountOverview(ctx, params)
-	_ = res
 	return res, err
 }
 
@@ -9328,7 +9276,6 @@ func (c *Client) sendGetChartAccountOverview(ctx context.Context, params GetChar
 // GET /v1/configuration
 func (c *Client) GetConfiguration(ctx context.Context, params GetConfigurationParams) (GetConfigurationRes, error) {
 	res, err := c.sendGetConfiguration(ctx, params)
-	_ = res
 	return res, err
 }
 
@@ -9453,7 +9400,6 @@ func (c *Client) sendGetConfiguration(ctx context.Context, params GetConfigurati
 // GET /v1/cron/{cliToken}
 func (c *Client) GetCron(ctx context.Context, params GetCronParams) (GetCronRes, error) {
 	res, err := c.sendGetCron(ctx, params)
-	_ = res
 	return res, err
 }
 
@@ -9632,7 +9578,6 @@ func (c *Client) sendGetCron(ctx context.Context, params GetCronParams) (res Get
 // GET /v1/autocomplete/currencies
 func (c *Client) GetCurrenciesAC(ctx context.Context, params GetCurrenciesACParams) (GetCurrenciesACRes, error) {
 	res, err := c.sendGetCurrenciesAC(ctx, params)
-	_ = res
 	return res, err
 }
 
@@ -9794,7 +9739,6 @@ func (c *Client) sendGetCurrenciesAC(ctx context.Context, params GetCurrenciesAC
 // GET /v1/autocomplete/currencies-with-code
 func (c *Client) GetCurrenciesCodeAC(ctx context.Context, params GetCurrenciesCodeACParams) (GetCurrenciesCodeACRes, error) {
 	res, err := c.sendGetCurrenciesCodeAC(ctx, params)
-	_ = res
 	return res, err
 }
 
@@ -9955,7 +9899,6 @@ func (c *Client) sendGetCurrenciesCodeAC(ctx context.Context, params GetCurrenci
 // GET /v1/currencies/{code}
 func (c *Client) GetCurrency(ctx context.Context, params GetCurrencyParams) (GetCurrencyRes, error) {
 	res, err := c.sendGetCurrency(ctx, params)
-	_ = res
 	return res, err
 }
 
@@ -10096,7 +10039,6 @@ func (c *Client) sendGetCurrency(ctx context.Context, params GetCurrencyParams) 
 // GET /v1/about/user
 func (c *Client) GetCurrentUser(ctx context.Context, params GetCurrentUserParams) (GetCurrentUserRes, error) {
 	res, err := c.sendGetCurrentUser(ctx, params)
-	_ = res
 	return res, err
 }
 
@@ -10219,7 +10161,6 @@ func (c *Client) sendGetCurrentUser(ctx context.Context, params GetCurrentUserPa
 // GET /v1/currencies/default
 func (c *Client) GetDefaultCurrency(ctx context.Context, params GetDefaultCurrencyParams) (GetDefaultCurrencyRes, error) {
 	res, err := c.sendGetDefaultCurrency(ctx, params)
-	_ = res
 	return res, err
 }
 
@@ -10342,7 +10283,6 @@ func (c *Client) sendGetDefaultCurrency(ctx context.Context, params GetDefaultCu
 // GET /v1/link-types/{id}
 func (c *Client) GetLinkType(ctx context.Context, params GetLinkTypeParams) (GetLinkTypeRes, error) {
 	res, err := c.sendGetLinkType(ctx, params)
-	_ = res
 	return res, err
 }
 
@@ -10483,7 +10423,6 @@ func (c *Client) sendGetLinkType(ctx context.Context, params GetLinkTypeParams) 
 // GET /v1/object-groups/{id}
 func (c *Client) GetObjectGroup(ctx context.Context, params GetObjectGroupParams) (GetObjectGroupRes, error) {
 	res, err := c.sendGetObjectGroup(ctx, params)
-	_ = res
 	return res, err
 }
 
@@ -10624,7 +10563,6 @@ func (c *Client) sendGetObjectGroup(ctx context.Context, params GetObjectGroupPa
 // GET /v1/autocomplete/object-groups
 func (c *Client) GetObjectGroupsAC(ctx context.Context, params GetObjectGroupsACParams) (GetObjectGroupsACRes, error) {
 	res, err := c.sendGetObjectGroupsAC(ctx, params)
-	_ = res
 	return res, err
 }
 
@@ -10785,7 +10723,6 @@ func (c *Client) sendGetObjectGroupsAC(ctx context.Context, params GetObjectGrou
 // GET /v1/autocomplete/piggy-banks
 func (c *Client) GetPiggiesAC(ctx context.Context, params GetPiggiesACParams) (GetPiggiesACRes, error) {
 	res, err := c.sendGetPiggiesAC(ctx, params)
-	_ = res
 	return res, err
 }
 
@@ -10947,7 +10884,6 @@ func (c *Client) sendGetPiggiesAC(ctx context.Context, params GetPiggiesACParams
 // GET /v1/autocomplete/piggy-banks-with-balance
 func (c *Client) GetPiggiesBalanceAC(ctx context.Context, params GetPiggiesBalanceACParams) (GetPiggiesBalanceACRes, error) {
 	res, err := c.sendGetPiggiesBalanceAC(ctx, params)
-	_ = res
 	return res, err
 }
 
@@ -11108,7 +11044,6 @@ func (c *Client) sendGetPiggiesBalanceAC(ctx context.Context, params GetPiggiesB
 // GET /v1/piggy-banks/{id}
 func (c *Client) GetPiggyBank(ctx context.Context, params GetPiggyBankParams) (GetPiggyBankRes, error) {
 	res, err := c.sendGetPiggyBank(ctx, params)
-	_ = res
 	return res, err
 }
 
@@ -11249,7 +11184,6 @@ func (c *Client) sendGetPiggyBank(ctx context.Context, params GetPiggyBankParams
 // GET /v1/preferences/{name}
 func (c *Client) GetPreference(ctx context.Context, params GetPreferenceParams) (GetPreferenceRes, error) {
 	res, err := c.sendGetPreference(ctx, params)
-	_ = res
 	return res, err
 }
 
@@ -11390,7 +11324,6 @@ func (c *Client) sendGetPreference(ctx context.Context, params GetPreferencePara
 // GET /v1/recurrences/{id}
 func (c *Client) GetRecurrence(ctx context.Context, params GetRecurrenceParams) (GetRecurrenceRes, error) {
 	res, err := c.sendGetRecurrence(ctx, params)
-	_ = res
 	return res, err
 }
 
@@ -11531,7 +11464,6 @@ func (c *Client) sendGetRecurrence(ctx context.Context, params GetRecurrencePara
 // GET /v1/autocomplete/recurring
 func (c *Client) GetRecurringAC(ctx context.Context, params GetRecurringACParams) (GetRecurringACRes, error) {
 	res, err := c.sendGetRecurringAC(ctx, params)
-	_ = res
 	return res, err
 }
 
@@ -11692,7 +11624,6 @@ func (c *Client) sendGetRecurringAC(ctx context.Context, params GetRecurringACPa
 // GET /v1/rules/{id}
 func (c *Client) GetRule(ctx context.Context, params GetRuleParams) (GetRuleRes, error) {
 	res, err := c.sendGetRule(ctx, params)
-	_ = res
 	return res, err
 }
 
@@ -11833,7 +11764,6 @@ func (c *Client) sendGetRule(ctx context.Context, params GetRuleParams) (res Get
 // GET /v1/rule-groups/{id}
 func (c *Client) GetRuleGroup(ctx context.Context, params GetRuleGroupParams) (GetRuleGroupRes, error) {
 	res, err := c.sendGetRuleGroup(ctx, params)
-	_ = res
 	return res, err
 }
 
@@ -11974,7 +11904,6 @@ func (c *Client) sendGetRuleGroup(ctx context.Context, params GetRuleGroupParams
 // GET /v1/autocomplete/rule-groups
 func (c *Client) GetRuleGroupsAC(ctx context.Context, params GetRuleGroupsACParams) (GetRuleGroupsACRes, error) {
 	res, err := c.sendGetRuleGroupsAC(ctx, params)
-	_ = res
 	return res, err
 }
 
@@ -12135,7 +12064,6 @@ func (c *Client) sendGetRuleGroupsAC(ctx context.Context, params GetRuleGroupsAC
 // GET /v1/autocomplete/rules
 func (c *Client) GetRulesAC(ctx context.Context, params GetRulesACParams) (GetRulesACRes, error) {
 	res, err := c.sendGetRulesAC(ctx, params)
-	_ = res
 	return res, err
 }
 
@@ -12296,7 +12224,6 @@ func (c *Client) sendGetRulesAC(ctx context.Context, params GetRulesACParams) (r
 // GET /v1/configuration/{name}
 func (c *Client) GetSingleConfiguration(ctx context.Context, params GetSingleConfigurationParams) (GetSingleConfigurationRes, error) {
 	res, err := c.sendGetSingleConfiguration(ctx, params)
-	_ = res
 	return res, err
 }
 
@@ -12438,7 +12365,6 @@ func (c *Client) sendGetSingleConfiguration(ctx context.Context, params GetSingl
 // GET /v1/webhooks/{id}/messages/{messageId}
 func (c *Client) GetSingleWebhookMessage(ctx context.Context, params GetSingleWebhookMessageParams) (GetSingleWebhookMessageRes, error) {
 	res, err := c.sendGetSingleWebhookMessage(ctx, params)
-	_ = res
 	return res, err
 }
 
@@ -12601,7 +12527,6 @@ func (c *Client) sendGetSingleWebhookMessage(ctx context.Context, params GetSing
 // GET /v1/webhooks/{id}/messages/{messageId}/attempts/{attemptId}
 func (c *Client) GetSingleWebhookMessageAttempt(ctx context.Context, params GetSingleWebhookMessageAttemptParams) (GetSingleWebhookMessageAttemptRes, error) {
 	res, err := c.sendGetSingleWebhookMessageAttempt(ctx, params)
-	_ = res
 	return res, err
 }
 
@@ -12780,7 +12705,6 @@ func (c *Client) sendGetSingleWebhookMessageAttempt(ctx context.Context, params 
 // GET /v1/tags/{tag}
 func (c *Client) GetTag(ctx context.Context, params GetTagParams) (GetTagRes, error) {
 	res, err := c.sendGetTag(ctx, params)
-	_ = res
 	return res, err
 }
 
@@ -12942,7 +12866,6 @@ func (c *Client) sendGetTag(ctx context.Context, params GetTagParams) (res GetTa
 // GET /v1/autocomplete/tags
 func (c *Client) GetTagAC(ctx context.Context, params GetTagACParams) (GetTagACRes, error) {
 	res, err := c.sendGetTagAC(ctx, params)
-	_ = res
 	return res, err
 }
 
@@ -13103,7 +13026,6 @@ func (c *Client) sendGetTagAC(ctx context.Context, params GetTagACParams) (res G
 // GET /v1/transactions/{id}
 func (c *Client) GetTransaction(ctx context.Context, params GetTransactionParams) (GetTransactionRes, error) {
 	res, err := c.sendGetTransaction(ctx, params)
-	_ = res
 	return res, err
 }
 
@@ -13244,7 +13166,6 @@ func (c *Client) sendGetTransaction(ctx context.Context, params GetTransactionPa
 // GET /v1/transaction-journals/{id}
 func (c *Client) GetTransactionByJournal(ctx context.Context, params GetTransactionByJournalParams) (GetTransactionByJournalRes, error) {
 	res, err := c.sendGetTransactionByJournal(ctx, params)
-	_ = res
 	return res, err
 }
 
@@ -13385,7 +13306,6 @@ func (c *Client) sendGetTransactionByJournal(ctx context.Context, params GetTran
 // GET /v1/transaction-links/{id}
 func (c *Client) GetTransactionLink(ctx context.Context, params GetTransactionLinkParams) (GetTransactionLinkRes, error) {
 	res, err := c.sendGetTransactionLink(ctx, params)
-	_ = res
 	return res, err
 }
 
@@ -13526,7 +13446,6 @@ func (c *Client) sendGetTransactionLink(ctx context.Context, params GetTransacti
 // GET /v1/autocomplete/transaction-types
 func (c *Client) GetTransactionTypesAC(ctx context.Context, params GetTransactionTypesACParams) (GetTransactionTypesACRes, error) {
 	res, err := c.sendGetTransactionTypesAC(ctx, params)
-	_ = res
 	return res, err
 }
 
@@ -13687,7 +13606,6 @@ func (c *Client) sendGetTransactionTypesAC(ctx context.Context, params GetTransa
 // GET /v1/autocomplete/transactions
 func (c *Client) GetTransactionsAC(ctx context.Context, params GetTransactionsACParams) (GetTransactionsACRes, error) {
 	res, err := c.sendGetTransactionsAC(ctx, params)
-	_ = res
 	return res, err
 }
 
@@ -13849,7 +13767,6 @@ func (c *Client) sendGetTransactionsAC(ctx context.Context, params GetTransactio
 // GET /v1/autocomplete/transactions-with-id
 func (c *Client) GetTransactionsIDAC(ctx context.Context, params GetTransactionsIDACParams) (GetTransactionsIDACRes, error) {
 	res, err := c.sendGetTransactionsIDAC(ctx, params)
-	_ = res
 	return res, err
 }
 
@@ -14010,7 +13927,6 @@ func (c *Client) sendGetTransactionsIDAC(ctx context.Context, params GetTransact
 // GET /v1/users/{id}
 func (c *Client) GetUser(ctx context.Context, params GetUserParams) (GetUserRes, error) {
 	res, err := c.sendGetUser(ctx, params)
-	_ = res
 	return res, err
 }
 
@@ -14151,7 +14067,6 @@ func (c *Client) sendGetUser(ctx context.Context, params GetUserParams) (res Get
 // GET /v1/webhooks/{id}
 func (c *Client) GetWebhook(ctx context.Context, params GetWebhookParams) (GetWebhookRes, error) {
 	res, err := c.sendGetWebhook(ctx, params)
-	_ = res
 	return res, err
 }
 
@@ -14294,7 +14209,6 @@ func (c *Client) sendGetWebhook(ctx context.Context, params GetWebhookParams) (r
 // GET /v1/webhooks/{id}/messages/{messageId}/attempts
 func (c *Client) GetWebhookMessageAttempts(ctx context.Context, params GetWebhookMessageAttemptsParams) (GetWebhookMessageAttemptsRes, error) {
 	res, err := c.sendGetWebhookMessageAttempts(ctx, params)
-	_ = res
 	return res, err
 }
 
@@ -14477,7 +14391,6 @@ func (c *Client) sendGetWebhookMessageAttempts(ctx context.Context, params GetWe
 // GET /v1/webhooks/{id}/messages
 func (c *Client) GetWebhookMessages(ctx context.Context, params GetWebhookMessagesParams) (GetWebhookMessagesRes, error) {
 	res, err := c.sendGetWebhookMessages(ctx, params)
-	_ = res
 	return res, err
 }
 
@@ -14619,7 +14532,6 @@ func (c *Client) sendGetWebhookMessages(ctx context.Context, params GetWebhookMe
 // GET /v1/insight/expense/asset
 func (c *Client) InsightExpenseAsset(ctx context.Context, params InsightExpenseAssetParams) (InsightExpenseAssetRes, error) {
 	res, err := c.sendInsightExpenseAsset(ctx, params)
-	_ = res
 	return res, err
 }
 
@@ -14797,7 +14709,6 @@ func (c *Client) sendInsightExpenseAsset(ctx context.Context, params InsightExpe
 // GET /v1/insight/expense/bill
 func (c *Client) InsightExpenseBill(ctx context.Context, params InsightExpenseBillParams) (InsightExpenseBillRes, error) {
 	res, err := c.sendInsightExpenseBill(ctx, params)
-	_ = res
 	return res, err
 }
 
@@ -14998,7 +14909,6 @@ func (c *Client) sendInsightExpenseBill(ctx context.Context, params InsightExpen
 // GET /v1/insight/expense/budget
 func (c *Client) InsightExpenseBudget(ctx context.Context, params InsightExpenseBudgetParams) (InsightExpenseBudgetRes, error) {
 	res, err := c.sendInsightExpenseBudget(ctx, params)
-	_ = res
 	return res, err
 }
 
@@ -15199,7 +15109,6 @@ func (c *Client) sendInsightExpenseBudget(ctx context.Context, params InsightExp
 // GET /v1/insight/expense/category
 func (c *Client) InsightExpenseCategory(ctx context.Context, params InsightExpenseCategoryParams) (InsightExpenseCategoryRes, error) {
 	res, err := c.sendInsightExpenseCategory(ctx, params)
-	_ = res
 	return res, err
 }
 
@@ -15400,7 +15309,6 @@ func (c *Client) sendInsightExpenseCategory(ctx context.Context, params InsightE
 // GET /v1/insight/expense/expense
 func (c *Client) InsightExpenseExpense(ctx context.Context, params InsightExpenseExpenseParams) (InsightExpenseExpenseRes, error) {
 	res, err := c.sendInsightExpenseExpense(ctx, params)
-	_ = res
 	return res, err
 }
 
@@ -15579,7 +15487,6 @@ func (c *Client) sendInsightExpenseExpense(ctx context.Context, params InsightEx
 // GET /v1/insight/expense/no-bill
 func (c *Client) InsightExpenseNoBill(ctx context.Context, params InsightExpenseNoBillParams) (InsightExpenseNoBillRes, error) {
 	res, err := c.sendInsightExpenseNoBill(ctx, params)
-	_ = res
 	return res, err
 }
 
@@ -15758,7 +15665,6 @@ func (c *Client) sendInsightExpenseNoBill(ctx context.Context, params InsightExp
 // GET /v1/insight/expense/no-budget
 func (c *Client) InsightExpenseNoBudget(ctx context.Context, params InsightExpenseNoBudgetParams) (InsightExpenseNoBudgetRes, error) {
 	res, err := c.sendInsightExpenseNoBudget(ctx, params)
-	_ = res
 	return res, err
 }
 
@@ -15937,7 +15843,6 @@ func (c *Client) sendInsightExpenseNoBudget(ctx context.Context, params InsightE
 // GET /v1/insight/expense/no-category
 func (c *Client) InsightExpenseNoCategory(ctx context.Context, params InsightExpenseNoCategoryParams) (InsightExpenseNoCategoryRes, error) {
 	res, err := c.sendInsightExpenseNoCategory(ctx, params)
-	_ = res
 	return res, err
 }
 
@@ -16116,7 +16021,6 @@ func (c *Client) sendInsightExpenseNoCategory(ctx context.Context, params Insigh
 // GET /v1/insight/expense/no-tag
 func (c *Client) InsightExpenseNoTag(ctx context.Context, params InsightExpenseNoTagParams) (InsightExpenseNoTagRes, error) {
 	res, err := c.sendInsightExpenseNoTag(ctx, params)
-	_ = res
 	return res, err
 }
 
@@ -16294,7 +16198,6 @@ func (c *Client) sendInsightExpenseNoTag(ctx context.Context, params InsightExpe
 // GET /v1/insight/expense/tag
 func (c *Client) InsightExpenseTag(ctx context.Context, params InsightExpenseTagParams) (InsightExpenseTagRes, error) {
 	res, err := c.sendInsightExpenseTag(ctx, params)
-	_ = res
 	return res, err
 }
 
@@ -16495,7 +16398,6 @@ func (c *Client) sendInsightExpenseTag(ctx context.Context, params InsightExpens
 // GET /v1/insight/expense/total
 func (c *Client) InsightExpenseTotal(ctx context.Context, params InsightExpenseTotalParams) (InsightExpenseTotalRes, error) {
 	res, err := c.sendInsightExpenseTotal(ctx, params)
-	_ = res
 	return res, err
 }
 
@@ -16673,7 +16575,6 @@ func (c *Client) sendInsightExpenseTotal(ctx context.Context, params InsightExpe
 // GET /v1/insight/income/asset
 func (c *Client) InsightIncomeAsset(ctx context.Context, params InsightIncomeAssetParams) (InsightIncomeAssetRes, error) {
 	res, err := c.sendInsightIncomeAsset(ctx, params)
-	_ = res
 	return res, err
 }
 
@@ -16851,7 +16752,6 @@ func (c *Client) sendInsightIncomeAsset(ctx context.Context, params InsightIncom
 // GET /v1/insight/income/category
 func (c *Client) InsightIncomeCategory(ctx context.Context, params InsightIncomeCategoryParams) (InsightIncomeCategoryRes, error) {
 	res, err := c.sendInsightIncomeCategory(ctx, params)
-	_ = res
 	return res, err
 }
 
@@ -17053,7 +16953,6 @@ func (c *Client) sendInsightIncomeCategory(ctx context.Context, params InsightIn
 // GET /v1/insight/income/no-category
 func (c *Client) InsightIncomeNoCategory(ctx context.Context, params InsightIncomeNoCategoryParams) (InsightIncomeNoCategoryRes, error) {
 	res, err := c.sendInsightIncomeNoCategory(ctx, params)
-	_ = res
 	return res, err
 }
 
@@ -17232,7 +17131,6 @@ func (c *Client) sendInsightIncomeNoCategory(ctx context.Context, params Insight
 // GET /v1/insight/income/no-tag
 func (c *Client) InsightIncomeNoTag(ctx context.Context, params InsightIncomeNoTagParams) (InsightIncomeNoTagRes, error) {
 	res, err := c.sendInsightIncomeNoTag(ctx, params)
-	_ = res
 	return res, err
 }
 
@@ -17410,7 +17308,6 @@ func (c *Client) sendInsightIncomeNoTag(ctx context.Context, params InsightIncom
 // GET /v1/insight/income/revenue
 func (c *Client) InsightIncomeRevenue(ctx context.Context, params InsightIncomeRevenueParams) (InsightIncomeRevenueRes, error) {
 	res, err := c.sendInsightIncomeRevenue(ctx, params)
-	_ = res
 	return res, err
 }
 
@@ -17588,7 +17485,6 @@ func (c *Client) sendInsightIncomeRevenue(ctx context.Context, params InsightInc
 // GET /v1/insight/income/tag
 func (c *Client) InsightIncomeTag(ctx context.Context, params InsightIncomeTagParams) (InsightIncomeTagRes, error) {
 	res, err := c.sendInsightIncomeTag(ctx, params)
-	_ = res
 	return res, err
 }
 
@@ -17789,7 +17685,6 @@ func (c *Client) sendInsightIncomeTag(ctx context.Context, params InsightIncomeT
 // GET /v1/insight/income/total
 func (c *Client) InsightIncomeTotal(ctx context.Context, params InsightIncomeTotalParams) (InsightIncomeTotalRes, error) {
 	res, err := c.sendInsightIncomeTotal(ctx, params)
-	_ = res
 	return res, err
 }
 
@@ -17967,7 +17862,6 @@ func (c *Client) sendInsightIncomeTotal(ctx context.Context, params InsightIncom
 // GET /v1/insight/transfer/category
 func (c *Client) InsightTransferCategory(ctx context.Context, params InsightTransferCategoryParams) (InsightTransferCategoryRes, error) {
 	res, err := c.sendInsightTransferCategory(ctx, params)
-	_ = res
 	return res, err
 }
 
@@ -18169,7 +18063,6 @@ func (c *Client) sendInsightTransferCategory(ctx context.Context, params Insight
 // GET /v1/insight/transfer/no-category
 func (c *Client) InsightTransferNoCategory(ctx context.Context, params InsightTransferNoCategoryParams) (InsightTransferNoCategoryRes, error) {
 	res, err := c.sendInsightTransferNoCategory(ctx, params)
-	_ = res
 	return res, err
 }
 
@@ -18348,7 +18241,6 @@ func (c *Client) sendInsightTransferNoCategory(ctx context.Context, params Insig
 // GET /v1/insight/transfer/no-tag
 func (c *Client) InsightTransferNoTag(ctx context.Context, params InsightTransferNoTagParams) (InsightTransferNoTagRes, error) {
 	res, err := c.sendInsightTransferNoTag(ctx, params)
-	_ = res
 	return res, err
 }
 
@@ -18526,7 +18418,6 @@ func (c *Client) sendInsightTransferNoTag(ctx context.Context, params InsightTra
 // GET /v1/insight/transfer/tag
 func (c *Client) InsightTransferTag(ctx context.Context, params InsightTransferTagParams) (InsightTransferTagRes, error) {
 	res, err := c.sendInsightTransferTag(ctx, params)
-	_ = res
 	return res, err
 }
 
@@ -18727,7 +18618,6 @@ func (c *Client) sendInsightTransferTag(ctx context.Context, params InsightTrans
 // GET /v1/insight/transfer/total
 func (c *Client) InsightTransferTotal(ctx context.Context, params InsightTransferTotalParams) (InsightTransferTotalRes, error) {
 	res, err := c.sendInsightTransferTotal(ctx, params)
-	_ = res
 	return res, err
 }
 
@@ -18906,7 +18796,6 @@ func (c *Client) sendInsightTransferTotal(ctx context.Context, params InsightTra
 // GET /v1/insight/transfer/asset
 func (c *Client) InsightTransfers(ctx context.Context, params InsightTransfersParams) (InsightTransfersRes, error) {
 	res, err := c.sendInsightTransfers(ctx, params)
-	_ = res
 	return res, err
 }
 
@@ -19084,7 +18973,6 @@ func (c *Client) sendInsightTransfers(ctx context.Context, params InsightTransfe
 // GET /v1/accounts
 func (c *Client) ListAccount(ctx context.Context, params ListAccountParams) (ListAccountRes, error) {
 	res, err := c.sendListAccount(ctx, params)
-	_ = res
 	return res, err
 }
 
@@ -19262,7 +19150,6 @@ func (c *Client) sendListAccount(ctx context.Context, params ListAccountParams) 
 // GET /v1/currencies/{code}/accounts
 func (c *Client) ListAccountByCurrency(ctx context.Context, params ListAccountByCurrencyParams) (ListAccountByCurrencyRes, error) {
 	res, err := c.sendListAccountByCurrency(ctx, params)
-	_ = res
 	return res, err
 }
 
@@ -19459,7 +19346,6 @@ func (c *Client) sendListAccountByCurrency(ctx context.Context, params ListAccou
 // GET /v1/attachments
 func (c *Client) ListAttachment(ctx context.Context, params ListAttachmentParams) (ListAttachmentRes, error) {
 	res, err := c.sendListAttachment(ctx, params)
-	_ = res
 	return res, err
 }
 
@@ -19603,7 +19489,6 @@ func (c *Client) sendListAttachment(ctx context.Context, params ListAttachmentPa
 // GET /v1/accounts/{id}/attachments
 func (c *Client) ListAttachmentByAccount(ctx context.Context, params ListAttachmentByAccountParams) (ListAttachmentByAccountRes, error) {
 	res, err := c.sendListAttachmentByAccount(ctx, params)
-	_ = res
 	return res, err
 }
 
@@ -19766,7 +19651,6 @@ func (c *Client) sendListAttachmentByAccount(ctx context.Context, params ListAtt
 // GET /v1/bills/{id}/attachments
 func (c *Client) ListAttachmentByBill(ctx context.Context, params ListAttachmentByBillParams) (ListAttachmentByBillRes, error) {
 	res, err := c.sendListAttachmentByBill(ctx, params)
-	_ = res
 	return res, err
 }
 
@@ -19929,7 +19813,6 @@ func (c *Client) sendListAttachmentByBill(ctx context.Context, params ListAttach
 // GET /v1/budgets/{id}/attachments
 func (c *Client) ListAttachmentByBudget(ctx context.Context, params ListAttachmentByBudgetParams) (ListAttachmentByBudgetRes, error) {
 	res, err := c.sendListAttachmentByBudget(ctx, params)
-	_ = res
 	return res, err
 }
 
@@ -20092,7 +19975,6 @@ func (c *Client) sendListAttachmentByBudget(ctx context.Context, params ListAtta
 // GET /v1/categories/{id}/attachments
 func (c *Client) ListAttachmentByCategory(ctx context.Context, params ListAttachmentByCategoryParams) (ListAttachmentByCategoryRes, error) {
 	res, err := c.sendListAttachmentByCategory(ctx, params)
-	_ = res
 	return res, err
 }
 
@@ -20255,7 +20137,6 @@ func (c *Client) sendListAttachmentByCategory(ctx context.Context, params ListAt
 // GET /v1/piggy-banks/{id}/attachments
 func (c *Client) ListAttachmentByPiggyBank(ctx context.Context, params ListAttachmentByPiggyBankParams) (ListAttachmentByPiggyBankRes, error) {
 	res, err := c.sendListAttachmentByPiggyBank(ctx, params)
-	_ = res
 	return res, err
 }
 
@@ -20418,7 +20299,6 @@ func (c *Client) sendListAttachmentByPiggyBank(ctx context.Context, params ListA
 // GET /v1/tags/{tag}/attachments
 func (c *Client) ListAttachmentByTag(ctx context.Context, params ListAttachmentByTagParams) (ListAttachmentByTagRes, error) {
 	res, err := c.sendListAttachmentByTag(ctx, params)
-	_ = res
 	return res, err
 }
 
@@ -20581,7 +20461,6 @@ func (c *Client) sendListAttachmentByTag(ctx context.Context, params ListAttachm
 // GET /v1/transactions/{id}/attachments
 func (c *Client) ListAttachmentByTransaction(ctx context.Context, params ListAttachmentByTransactionParams) (ListAttachmentByTransactionRes, error) {
 	res, err := c.sendListAttachmentByTransaction(ctx, params)
-	_ = res
 	return res, err
 }
 
@@ -20747,7 +20626,6 @@ func (c *Client) sendListAttachmentByTransaction(ctx context.Context, params Lis
 // GET /v1/available-budgets
 func (c *Client) ListAvailableBudget(ctx context.Context, params ListAvailableBudgetParams) (ListAvailableBudgetRes, error) {
 	res, err := c.sendListAvailableBudget(ctx, params)
-	_ = res
 	return res, err
 }
 
@@ -20925,7 +20803,6 @@ func (c *Client) sendListAvailableBudget(ctx context.Context, params ListAvailab
 // GET /v1/currencies/{code}/available-budgets
 func (c *Client) ListAvailableBudgetByCurrency(ctx context.Context, params ListAvailableBudgetByCurrencyParams) (ListAvailableBudgetByCurrencyRes, error) {
 	res, err := c.sendListAvailableBudgetByCurrency(ctx, params)
-	_ = res
 	return res, err
 }
 
@@ -21088,7 +20965,6 @@ func (c *Client) sendListAvailableBudgetByCurrency(ctx context.Context, params L
 // GET /v1/bills
 func (c *Client) ListBill(ctx context.Context, params ListBillParams) (ListBillRes, error) {
 	res, err := c.sendListBill(ctx, params)
-	_ = res
 	return res, err
 }
 
@@ -21266,7 +21142,6 @@ func (c *Client) sendListBill(ctx context.Context, params ListBillParams) (res L
 // GET /v1/currencies/{code}/bills
 func (c *Client) ListBillByCurrency(ctx context.Context, params ListBillByCurrencyParams) (ListBillByCurrencyRes, error) {
 	res, err := c.sendListBillByCurrency(ctx, params)
-	_ = res
 	return res, err
 }
 
@@ -21429,7 +21304,6 @@ func (c *Client) sendListBillByCurrency(ctx context.Context, params ListBillByCu
 // GET /v1/object-groups/{id}/bills
 func (c *Client) ListBillByObjectGroup(ctx context.Context, params ListBillByObjectGroupParams) (ListBillByObjectGroupRes, error) {
 	res, err := c.sendListBillByObjectGroup(ctx, params)
-	_ = res
 	return res, err
 }
 
@@ -21593,7 +21467,6 @@ func (c *Client) sendListBillByObjectGroup(ctx context.Context, params ListBillB
 // GET /v1/budgets
 func (c *Client) ListBudget(ctx context.Context, params ListBudgetParams) (ListBudgetRes, error) {
 	res, err := c.sendListBudget(ctx, params)
-	_ = res
 	return res, err
 }
 
@@ -21771,7 +21644,6 @@ func (c *Client) sendListBudget(ctx context.Context, params ListBudgetParams) (r
 // GET /v1/budget-limits
 func (c *Client) ListBudgetLimit(ctx context.Context, params ListBudgetLimitParams) (ListBudgetLimitRes, error) {
 	res, err := c.sendListBudgetLimit(ctx, params)
-	_ = res
 	return res, err
 }
 
@@ -21928,7 +21800,6 @@ func (c *Client) sendListBudgetLimit(ctx context.Context, params ListBudgetLimit
 // GET /v1/budgets/{id}/limits
 func (c *Client) ListBudgetLimitByBudget(ctx context.Context, params ListBudgetLimitByBudgetParams) (ListBudgetLimitByBudgetRes, error) {
 	res, err := c.sendListBudgetLimitByBudget(ctx, params)
-	_ = res
 	return res, err
 }
 
@@ -22108,7 +21979,6 @@ func (c *Client) sendListBudgetLimitByBudget(ctx context.Context, params ListBud
 // GET /v1/currencies/{code}/budget_limits
 func (c *Client) ListBudgetLimitByCurrency(ctx context.Context, params ListBudgetLimitByCurrencyParams) (ListBudgetLimitByCurrencyRes, error) {
 	res, err := c.sendListBudgetLimitByCurrency(ctx, params)
-	_ = res
 	return res, err
 }
 
@@ -22305,7 +22175,6 @@ func (c *Client) sendListBudgetLimitByCurrency(ctx context.Context, params ListB
 // GET /v1/categories
 func (c *Client) ListCategory(ctx context.Context, params ListCategoryParams) (ListCategoryRes, error) {
 	res, err := c.sendListCategory(ctx, params)
-	_ = res
 	return res, err
 }
 
@@ -22449,7 +22318,6 @@ func (c *Client) sendListCategory(ctx context.Context, params ListCategoryParams
 // GET /v1/currencies
 func (c *Client) ListCurrency(ctx context.Context, params ListCurrencyParams) (ListCurrencyRes, error) {
 	res, err := c.sendListCurrency(ctx, params)
-	_ = res
 	return res, err
 }
 
@@ -22593,7 +22461,6 @@ func (c *Client) sendListCurrency(ctx context.Context, params ListCurrencyParams
 // GET /v1/piggy-banks/{id}/events
 func (c *Client) ListEventByPiggyBank(ctx context.Context, params ListEventByPiggyBankParams) (ListEventByPiggyBankRes, error) {
 	res, err := c.sendListEventByPiggyBank(ctx, params)
-	_ = res
 	return res, err
 }
 
@@ -22756,7 +22623,6 @@ func (c *Client) sendListEventByPiggyBank(ctx context.Context, params ListEventB
 // GET /v1/transactions/{id}/piggy-bank-events
 func (c *Client) ListEventByTransaction(ctx context.Context, params ListEventByTransactionParams) (ListEventByTransactionRes, error) {
 	res, err := c.sendListEventByTransaction(ctx, params)
-	_ = res
 	return res, err
 }
 
@@ -22919,7 +22785,6 @@ func (c *Client) sendListEventByTransaction(ctx context.Context, params ListEven
 // GET /v1/link-types
 func (c *Client) ListLinkType(ctx context.Context, params ListLinkTypeParams) (ListLinkTypeRes, error) {
 	res, err := c.sendListLinkType(ctx, params)
-	_ = res
 	return res, err
 }
 
@@ -23064,7 +22929,6 @@ func (c *Client) sendListLinkType(ctx context.Context, params ListLinkTypeParams
 // GET /v1/transaction-journals/{id}/links
 func (c *Client) ListLinksByJournal(ctx context.Context, params ListLinksByJournalParams) (ListLinksByJournalRes, error) {
 	res, err := c.sendListLinksByJournal(ctx, params)
-	_ = res
 	return res, err
 }
 
@@ -23227,7 +23091,6 @@ func (c *Client) sendListLinksByJournal(ctx context.Context, params ListLinksByJ
 // GET /v1/object-groups
 func (c *Client) ListObjectGroups(ctx context.Context, params ListObjectGroupsParams) (ListObjectGroupsRes, error) {
 	res, err := c.sendListObjectGroups(ctx, params)
-	_ = res
 	return res, err
 }
 
@@ -23371,7 +23234,6 @@ func (c *Client) sendListObjectGroups(ctx context.Context, params ListObjectGrou
 // GET /v1/piggy-banks
 func (c *Client) ListPiggyBank(ctx context.Context, params ListPiggyBankParams) (ListPiggyBankRes, error) {
 	res, err := c.sendListPiggyBank(ctx, params)
-	_ = res
 	return res, err
 }
 
@@ -23515,7 +23377,6 @@ func (c *Client) sendListPiggyBank(ctx context.Context, params ListPiggyBankPara
 // GET /v1/accounts/{id}/piggy-banks
 func (c *Client) ListPiggyBankByAccount(ctx context.Context, params ListPiggyBankByAccountParams) (ListPiggyBankByAccountRes, error) {
 	res, err := c.sendListPiggyBankByAccount(ctx, params)
-	_ = res
 	return res, err
 }
 
@@ -23678,7 +23539,6 @@ func (c *Client) sendListPiggyBankByAccount(ctx context.Context, params ListPigg
 // GET /v1/object-groups/{id}/piggy-banks
 func (c *Client) ListPiggyBankByObjectGroup(ctx context.Context, params ListPiggyBankByObjectGroupParams) (ListPiggyBankByObjectGroupRes, error) {
 	res, err := c.sendListPiggyBankByObjectGroup(ctx, params)
-	_ = res
 	return res, err
 }
 
@@ -23841,7 +23701,6 @@ func (c *Client) sendListPiggyBankByObjectGroup(ctx context.Context, params List
 // GET /v1/preferences
 func (c *Client) ListPreference(ctx context.Context, params ListPreferenceParams) (ListPreferenceRes, error) {
 	res, err := c.sendListPreference(ctx, params)
-	_ = res
 	return res, err
 }
 
@@ -23985,7 +23844,6 @@ func (c *Client) sendListPreference(ctx context.Context, params ListPreferencePa
 // GET /v1/recurrences
 func (c *Client) ListRecurrence(ctx context.Context, params ListRecurrenceParams) (ListRecurrenceRes, error) {
 	res, err := c.sendListRecurrence(ctx, params)
-	_ = res
 	return res, err
 }
 
@@ -24129,7 +23987,6 @@ func (c *Client) sendListRecurrence(ctx context.Context, params ListRecurrencePa
 // GET /v1/currencies/{code}/recurrences
 func (c *Client) ListRecurrenceByCurrency(ctx context.Context, params ListRecurrenceByCurrencyParams) (ListRecurrenceByCurrencyRes, error) {
 	res, err := c.sendListRecurrenceByCurrency(ctx, params)
-	_ = res
 	return res, err
 }
 
@@ -24292,7 +24149,6 @@ func (c *Client) sendListRecurrenceByCurrency(ctx context.Context, params ListRe
 // GET /v1/rules
 func (c *Client) ListRule(ctx context.Context, params ListRuleParams) (ListRuleRes, error) {
 	res, err := c.sendListRule(ctx, params)
-	_ = res
 	return res, err
 }
 
@@ -24436,7 +24292,6 @@ func (c *Client) sendListRule(ctx context.Context, params ListRuleParams) (res L
 // GET /v1/bills/{id}/rules
 func (c *Client) ListRuleByBill(ctx context.Context, params ListRuleByBillParams) (ListRuleByBillRes, error) {
 	res, err := c.sendListRuleByBill(ctx, params)
-	_ = res
 	return res, err
 }
 
@@ -24578,7 +24433,6 @@ func (c *Client) sendListRuleByBill(ctx context.Context, params ListRuleByBillPa
 // GET /v1/currencies/{code}/rules
 func (c *Client) ListRuleByCurrency(ctx context.Context, params ListRuleByCurrencyParams) (ListRuleByCurrencyRes, error) {
 	res, err := c.sendListRuleByCurrency(ctx, params)
-	_ = res
 	return res, err
 }
 
@@ -24741,7 +24595,6 @@ func (c *Client) sendListRuleByCurrency(ctx context.Context, params ListRuleByCu
 // GET /v1/rule-groups/{id}/rules
 func (c *Client) ListRuleByGroup(ctx context.Context, params ListRuleByGroupParams) (ListRuleByGroupRes, error) {
 	res, err := c.sendListRuleByGroup(ctx, params)
-	_ = res
 	return res, err
 }
 
@@ -24904,7 +24757,6 @@ func (c *Client) sendListRuleByGroup(ctx context.Context, params ListRuleByGroup
 // GET /v1/rule-groups
 func (c *Client) ListRuleGroup(ctx context.Context, params ListRuleGroupParams) (ListRuleGroupRes, error) {
 	res, err := c.sendListRuleGroup(ctx, params)
-	_ = res
 	return res, err
 }
 
@@ -25048,7 +24900,6 @@ func (c *Client) sendListRuleGroup(ctx context.Context, params ListRuleGroupPara
 // GET /v1/tags
 func (c *Client) ListTag(ctx context.Context, params ListTagParams) (ListTagRes, error) {
 	res, err := c.sendListTag(ctx, params)
-	_ = res
 	return res, err
 }
 
@@ -25192,7 +25043,6 @@ func (c *Client) sendListTag(ctx context.Context, params ListTagParams) (res Lis
 // GET /v1/transactions
 func (c *Client) ListTransaction(ctx context.Context, params ListTransactionParams) (ListTransactionRes, error) {
 	res, err := c.sendListTransaction(ctx, params)
-	_ = res
 	return res, err
 }
 
@@ -25387,7 +25237,6 @@ func (c *Client) sendListTransaction(ctx context.Context, params ListTransaction
 // GET /v1/accounts/{id}/transactions
 func (c *Client) ListTransactionByAccount(ctx context.Context, params ListTransactionByAccountParams) (ListTransactionByAccountRes, error) {
 	res, err := c.sendListTransactionByAccount(ctx, params)
-	_ = res
 	return res, err
 }
 
@@ -25618,7 +25467,6 @@ func (c *Client) sendListTransactionByAccount(ctx context.Context, params ListTr
 // GET /v1/bills/{id}/transactions
 func (c *Client) ListTransactionByBill(ctx context.Context, params ListTransactionByBillParams) (ListTransactionByBillRes, error) {
 	res, err := c.sendListTransactionByBill(ctx, params)
-	_ = res
 	return res, err
 }
 
@@ -25815,7 +25663,6 @@ func (c *Client) sendListTransactionByBill(ctx context.Context, params ListTrans
 // GET /v1/budgets/{id}/transactions
 func (c *Client) ListTransactionByBudget(ctx context.Context, params ListTransactionByBudgetParams) (ListTransactionByBudgetRes, error) {
 	res, err := c.sendListTransactionByBudget(ctx, params)
-	_ = res
 	return res, err
 }
 
@@ -26047,7 +25894,6 @@ func (c *Client) sendListTransactionByBudget(ctx context.Context, params ListTra
 // GET /v1/budgets/{id}/limits/{limitId}/transactions
 func (c *Client) ListTransactionByBudgetLimit(ctx context.Context, params ListTransactionByBudgetLimitParams) (ListTransactionByBudgetLimitRes, error) {
 	res, err := c.sendListTransactionByBudgetLimit(ctx, params)
-	_ = res
 	return res, err
 }
 
@@ -26246,7 +26092,6 @@ func (c *Client) sendListTransactionByBudgetLimit(ctx context.Context, params Li
 // GET /v1/categories/{id}/transactions
 func (c *Client) ListTransactionByCategory(ctx context.Context, params ListTransactionByCategoryParams) (ListTransactionByCategoryRes, error) {
 	res, err := c.sendListTransactionByCategory(ctx, params)
-	_ = res
 	return res, err
 }
 
@@ -26460,7 +26305,6 @@ func (c *Client) sendListTransactionByCategory(ctx context.Context, params ListT
 // GET /v1/currencies/{code}/transactions
 func (c *Client) ListTransactionByCurrency(ctx context.Context, params ListTransactionByCurrencyParams) (ListTransactionByCurrencyRes, error) {
 	res, err := c.sendListTransactionByCurrency(ctx, params)
-	_ = res
 	return res, err
 }
 
@@ -26674,7 +26518,6 @@ func (c *Client) sendListTransactionByCurrency(ctx context.Context, params ListT
 // GET /v1/link-types/{id}/transactions
 func (c *Client) ListTransactionByLinkType(ctx context.Context, params ListTransactionByLinkTypeParams) (ListTransactionByLinkTypeRes, error) {
 	res, err := c.sendListTransactionByLinkType(ctx, params)
-	_ = res
 	return res, err
 }
 
@@ -26889,7 +26732,6 @@ func (c *Client) sendListTransactionByLinkType(ctx context.Context, params ListT
 // GET /v1/recurrences/{id}/transactions
 func (c *Client) ListTransactionByRecurrence(ctx context.Context, params ListTransactionByRecurrenceParams) (ListTransactionByRecurrenceRes, error) {
 	res, err := c.sendListTransactionByRecurrence(ctx, params)
-	_ = res
 	return res, err
 }
 
@@ -27103,7 +26945,6 @@ func (c *Client) sendListTransactionByRecurrence(ctx context.Context, params Lis
 // GET /v1/tags/{tag}/transactions
 func (c *Client) ListTransactionByTag(ctx context.Context, params ListTransactionByTagParams) (ListTransactionByTagRes, error) {
 	res, err := c.sendListTransactionByTag(ctx, params)
-	_ = res
 	return res, err
 }
 
@@ -27317,7 +27158,6 @@ func (c *Client) sendListTransactionByTag(ctx context.Context, params ListTransa
 // GET /v1/transaction-links
 func (c *Client) ListTransactionLink(ctx context.Context, params ListTransactionLinkParams) (ListTransactionLinkRes, error) {
 	res, err := c.sendListTransactionLink(ctx, params)
-	_ = res
 	return res, err
 }
 
@@ -27461,7 +27301,6 @@ func (c *Client) sendListTransactionLink(ctx context.Context, params ListTransac
 // GET /v1/users
 func (c *Client) ListUser(ctx context.Context, params ListUserParams) (ListUserRes, error) {
 	res, err := c.sendListUser(ctx, params)
-	_ = res
 	return res, err
 }
 
@@ -27605,7 +27444,6 @@ func (c *Client) sendListUser(ctx context.Context, params ListUserParams) (res L
 // GET /v1/webhooks
 func (c *Client) ListWebhook(ctx context.Context, params ListWebhookParams) (ListWebhookRes, error) {
 	res, err := c.sendListWebhook(ctx, params)
-	_ = res
 	return res, err
 }
 
@@ -27751,7 +27589,6 @@ func (c *Client) sendListWebhook(ctx context.Context, params ListWebhookParams) 
 // DELETE /v1/data/purge
 func (c *Client) PurgeData(ctx context.Context, params PurgeDataParams) (PurgeDataRes, error) {
 	res, err := c.sendPurgeData(ctx, params)
-	_ = res
 	return res, err
 }
 
@@ -27874,7 +27711,6 @@ func (c *Client) sendPurgeData(ctx context.Context, params PurgeDataParams) (res
 // GET /v1/search/accounts
 func (c *Client) SearchAccounts(ctx context.Context, params SearchAccountsParams) (SearchAccountsRes, error) {
 	res, err := c.sendSearchAccounts(ctx, params)
-	_ = res
 	return res, err
 }
 
@@ -28063,7 +27899,6 @@ func (c *Client) sendSearchAccounts(ctx context.Context, params SearchAccountsPa
 // GET /v1/search/transactions
 func (c *Client) SearchTransactions(ctx context.Context, params SearchTransactionsParams) (SearchTransactionsRes, error) {
 	res, err := c.sendSearchTransactions(ctx, params)
-	_ = res
 	return res, err
 }
 
@@ -28222,7 +28057,6 @@ func (c *Client) sendSearchTransactions(ctx context.Context, params SearchTransa
 // PUT /v1/configuration/{name}
 func (c *Client) SetConfiguration(ctx context.Context, request *ConfigurationUpdate, params SetConfigurationParams) (SetConfigurationRes, error) {
 	res, err := c.sendSetConfiguration(ctx, request, params)
-	_ = res
 	return res, err
 }
 
@@ -28376,7 +28210,6 @@ func (c *Client) sendSetConfiguration(ctx context.Context, request *Configuratio
 // POST /v1/accounts
 func (c *Client) StoreAccount(ctx context.Context, request *AccountStore, params StoreAccountParams) (StoreAccountRes, error) {
 	res, err := c.sendStoreAccount(ctx, request, params)
-	_ = res
 	return res, err
 }
 
@@ -28513,7 +28346,6 @@ func (c *Client) sendStoreAccount(ctx context.Context, request *AccountStore, pa
 // POST /v1/attachments
 func (c *Client) StoreAttachment(ctx context.Context, request *AttachmentStore, params StoreAttachmentParams) (StoreAttachmentRes, error) {
 	res, err := c.sendStoreAttachment(ctx, request, params)
-	_ = res
 	return res, err
 }
 
@@ -28648,7 +28480,6 @@ func (c *Client) sendStoreAttachment(ctx context.Context, request *AttachmentSto
 // POST /v1/bills
 func (c *Client) StoreBill(ctx context.Context, request *BillStore, params StoreBillParams) (StoreBillRes, error) {
 	res, err := c.sendStoreBill(ctx, request, params)
-	_ = res
 	return res, err
 }
 
@@ -28783,7 +28614,6 @@ func (c *Client) sendStoreBill(ctx context.Context, request *BillStore, params S
 // POST /v1/budgets
 func (c *Client) StoreBudget(ctx context.Context, request *BudgetStore, params StoreBudgetParams) (StoreBudgetRes, error) {
 	res, err := c.sendStoreBudget(ctx, request, params)
-	_ = res
 	return res, err
 }
 
@@ -28918,7 +28748,6 @@ func (c *Client) sendStoreBudget(ctx context.Context, request *BudgetStore, para
 // POST /v1/budgets/{id}/limits
 func (c *Client) StoreBudgetLimit(ctx context.Context, request *BudgetLimitStore, params StoreBudgetLimitParams) (StoreBudgetLimitRes, error) {
 	res, err := c.sendStoreBudgetLimit(ctx, request, params)
-	_ = res
 	return res, err
 }
 
@@ -29064,7 +28893,6 @@ func (c *Client) sendStoreBudgetLimit(ctx context.Context, request *BudgetLimitS
 // POST /v1/categories
 func (c *Client) StoreCategory(ctx context.Context, request *Category, params StoreCategoryParams) (StoreCategoryRes, error) {
 	res, err := c.sendStoreCategory(ctx, request, params)
-	_ = res
 	return res, err
 }
 
@@ -29191,7 +29019,6 @@ func (c *Client) sendStoreCategory(ctx context.Context, request *Category, param
 // POST /v1/currencies
 func (c *Client) StoreCurrency(ctx context.Context, request *CurrencyStore, params StoreCurrencyParams) (StoreCurrencyRes, error) {
 	res, err := c.sendStoreCurrency(ctx, request, params)
-	_ = res
 	return res, err
 }
 
@@ -29318,7 +29145,6 @@ func (c *Client) sendStoreCurrency(ctx context.Context, request *CurrencyStore, 
 // POST /v1/link-types
 func (c *Client) StoreLinkType(ctx context.Context, request *LinkType, params StoreLinkTypeParams) (StoreLinkTypeRes, error) {
 	res, err := c.sendStoreLinkType(ctx, request, params)
-	_ = res
 	return res, err
 }
 
@@ -29445,7 +29271,6 @@ func (c *Client) sendStoreLinkType(ctx context.Context, request *LinkType, param
 // POST /v1/piggy-banks
 func (c *Client) StorePiggyBank(ctx context.Context, request *PiggyBankStore, params StorePiggyBankParams) (StorePiggyBankRes, error) {
 	res, err := c.sendStorePiggyBank(ctx, request, params)
-	_ = res
 	return res, err
 }
 
@@ -29573,7 +29398,6 @@ func (c *Client) sendStorePiggyBank(ctx context.Context, request *PiggyBankStore
 // POST /v1/preferences
 func (c *Client) StorePreference(ctx context.Context, request *Preference, params StorePreferenceParams) (StorePreferenceRes, error) {
 	res, err := c.sendStorePreference(ctx, request, params)
-	_ = res
 	return res, err
 }
 
@@ -29709,7 +29533,6 @@ func (c *Client) sendStorePreference(ctx context.Context, request *Preference, p
 // POST /v1/recurrences
 func (c *Client) StoreRecurrence(ctx context.Context, request *RecurrenceStore, params StoreRecurrenceParams) (StoreRecurrenceRes, error) {
 	res, err := c.sendStoreRecurrence(ctx, request, params)
-	_ = res
 	return res, err
 }
 
@@ -29844,7 +29667,6 @@ func (c *Client) sendStoreRecurrence(ctx context.Context, request *RecurrenceSto
 // POST /v1/rules
 func (c *Client) StoreRule(ctx context.Context, request *RuleStore, params StoreRuleParams) (StoreRuleRes, error) {
 	res, err := c.sendStoreRule(ctx, request, params)
-	_ = res
 	return res, err
 }
 
@@ -29980,7 +29802,6 @@ func (c *Client) sendStoreRule(ctx context.Context, request *RuleStore, params S
 // POST /v1/rule-groups
 func (c *Client) StoreRuleGroup(ctx context.Context, request *RuleGroupStore, params StoreRuleGroupParams) (StoreRuleGroupRes, error) {
 	res, err := c.sendStoreRuleGroup(ctx, request, params)
-	_ = res
 	return res, err
 }
 
@@ -30106,7 +29927,6 @@ func (c *Client) sendStoreRuleGroup(ctx context.Context, request *RuleGroupStore
 // POST /v1/tags
 func (c *Client) StoreTag(ctx context.Context, request *TagModelStore, params StoreTagParams) (StoreTagRes, error) {
 	res, err := c.sendStoreTag(ctx, request, params)
-	_ = res
 	return res, err
 }
 
@@ -30242,7 +30062,6 @@ func (c *Client) sendStoreTag(ctx context.Context, request *TagModelStore, param
 // POST /v1/transactions
 func (c *Client) StoreTransaction(ctx context.Context, request *TransactionStore, params StoreTransactionParams) (StoreTransactionRes, error) {
 	res, err := c.sendStoreTransaction(ctx, request, params)
-	_ = res
 	return res, err
 }
 
@@ -30378,7 +30197,6 @@ func (c *Client) sendStoreTransaction(ctx context.Context, request *TransactionS
 // POST /v1/transaction-links
 func (c *Client) StoreTransactionLink(ctx context.Context, request *TransactionLinkStore, params StoreTransactionLinkParams) (StoreTransactionLinkRes, error) {
 	res, err := c.sendStoreTransactionLink(ctx, request, params)
-	_ = res
 	return res, err
 }
 
@@ -30506,7 +30324,6 @@ func (c *Client) sendStoreTransactionLink(ctx context.Context, request *Transact
 // POST /v1/users
 func (c *Client) StoreUser(ctx context.Context, request *User, params StoreUserParams) (StoreUserRes, error) {
 	res, err := c.sendStoreUser(ctx, request, params)
-	_ = res
 	return res, err
 }
 
@@ -30642,7 +30459,6 @@ func (c *Client) sendStoreUser(ctx context.Context, request *User, params StoreU
 // POST /v1/webhooks
 func (c *Client) StoreWebhook(ctx context.Context, request *WebhookStore, params StoreWebhookParams) (StoreWebhookRes, error) {
 	res, err := c.sendStoreWebhook(ctx, request, params)
-	_ = res
 	return res, err
 }
 
@@ -30779,7 +30595,6 @@ func (c *Client) sendStoreWebhook(ctx context.Context, request *WebhookStore, pa
 // POST /v1/webhooks/{id}/submit
 func (c *Client) SubmitWebook(ctx context.Context, params SubmitWebookParams) (SubmitWebookRes, error) {
 	res, err := c.sendSubmitWebook(ctx, params)
-	_ = res
 	return res, err
 }
 
@@ -30922,7 +30737,6 @@ func (c *Client) sendSubmitWebook(ctx context.Context, params SubmitWebookParams
 // GET /v1/rules/{id}/test
 func (c *Client) TestRule(ctx context.Context, params TestRuleParams) (TestRuleRes, error) {
 	res, err := c.sendTestRule(ctx, params)
-	_ = res
 	return res, err
 }
 
@@ -31126,7 +30940,6 @@ func (c *Client) sendTestRule(ctx context.Context, params TestRuleParams) (res T
 // GET /v1/rule-groups/{id}/test
 func (c *Client) TestRuleGroup(ctx context.Context, params TestRuleGroupParams) (TestRuleGroupRes, error) {
 	res, err := c.sendTestRuleGroup(ctx, params)
-	_ = res
 	return res, err
 }
 
@@ -31381,7 +31194,6 @@ func (c *Client) sendTestRuleGroup(ctx context.Context, params TestRuleGroupPara
 // PUT /v1/accounts/{id}
 func (c *Client) UpdateAccount(ctx context.Context, request *AccountUpdate, params UpdateAccountParams) (UpdateAccountRes, error) {
 	res, err := c.sendUpdateAccount(ctx, request, params)
-	_ = res
 	return res, err
 }
 
@@ -31535,7 +31347,6 @@ func (c *Client) sendUpdateAccount(ctx context.Context, request *AccountUpdate, 
 // PUT /v1/attachments/{id}
 func (c *Client) UpdateAttachment(ctx context.Context, request *AttachmentUpdate, params UpdateAttachmentParams) (UpdateAttachmentRes, error) {
 	res, err := c.sendUpdateAttachment(ctx, request, params)
-	_ = res
 	return res, err
 }
 
@@ -31679,7 +31490,6 @@ func (c *Client) sendUpdateAttachment(ctx context.Context, request *AttachmentUp
 // PUT /v1/bills/{id}
 func (c *Client) UpdateBill(ctx context.Context, request *BillUpdate, params UpdateBillParams) (UpdateBillRes, error) {
 	res, err := c.sendUpdateBill(ctx, request, params)
-	_ = res
 	return res, err
 }
 
@@ -31832,7 +31642,6 @@ func (c *Client) sendUpdateBill(ctx context.Context, request *BillUpdate, params
 // PUT /v1/budgets/{id}
 func (c *Client) UpdateBudget(ctx context.Context, request *BudgetUpdate, params UpdateBudgetParams) (UpdateBudgetRes, error) {
 	res, err := c.sendUpdateBudget(ctx, request, params)
-	_ = res
 	return res, err
 }
 
@@ -31985,7 +31794,6 @@ func (c *Client) sendUpdateBudget(ctx context.Context, request *BudgetUpdate, pa
 // PUT /v1/budgets/{id}/limits/{limitId}
 func (c *Client) UpdateBudgetLimit(ctx context.Context, request *BudgetLimit, params UpdateBudgetLimitParams) (UpdateBudgetLimitRes, error) {
 	res, err := c.sendUpdateBudgetLimit(ctx, request, params)
-	_ = res
 	return res, err
 }
 
@@ -32148,7 +31956,6 @@ func (c *Client) sendUpdateBudgetLimit(ctx context.Context, request *BudgetLimit
 // PUT /v1/categories/{id}
 func (c *Client) UpdateCategory(ctx context.Context, request *CategoryUpdate, params UpdateCategoryParams) (UpdateCategoryRes, error) {
 	res, err := c.sendUpdateCategory(ctx, request, params)
-	_ = res
 	return res, err
 }
 
@@ -32292,7 +32099,6 @@ func (c *Client) sendUpdateCategory(ctx context.Context, request *CategoryUpdate
 // PUT /v1/currencies/{code}
 func (c *Client) UpdateCurrency(ctx context.Context, request *CurrencyUpdate, params UpdateCurrencyParams) (UpdateCurrencyRes, error) {
 	res, err := c.sendUpdateCurrency(ctx, request, params)
-	_ = res
 	return res, err
 }
 
@@ -32449,7 +32255,6 @@ func (c *Client) sendUpdateCurrency(ctx context.Context, request *CurrencyUpdate
 // PUT /v1/link-types/{id}
 func (c *Client) UpdateLinkType(ctx context.Context, request *LinkTypeUpdate, params UpdateLinkTypeParams) (UpdateLinkTypeRes, error) {
 	res, err := c.sendUpdateLinkType(ctx, request, params)
-	_ = res
 	return res, err
 }
 
@@ -32593,7 +32398,6 @@ func (c *Client) sendUpdateLinkType(ctx context.Context, request *LinkTypeUpdate
 // PUT /v1/object-groups/{id}
 func (c *Client) UpdateObjectGroup(ctx context.Context, request *ObjectGroupUpdate, params UpdateObjectGroupParams) (UpdateObjectGroupRes, error) {
 	res, err := c.sendUpdateObjectGroup(ctx, request, params)
-	_ = res
 	return res, err
 }
 
@@ -32737,7 +32541,6 @@ func (c *Client) sendUpdateObjectGroup(ctx context.Context, request *ObjectGroup
 // PUT /v1/piggy-banks/{id}
 func (c *Client) UpdatePiggyBank(ctx context.Context, request *PiggyBankUpdate, params UpdatePiggyBankParams) (UpdatePiggyBankRes, error) {
 	res, err := c.sendUpdatePiggyBank(ctx, request, params)
-	_ = res
 	return res, err
 }
 
@@ -32881,7 +32684,6 @@ func (c *Client) sendUpdatePiggyBank(ctx context.Context, request *PiggyBankUpda
 // PUT /v1/preferences/{name}
 func (c *Client) UpdatePreference(ctx context.Context, request *PreferenceUpdate, params UpdatePreferenceParams) (UpdatePreferenceRes, error) {
 	res, err := c.sendUpdatePreference(ctx, request, params)
-	_ = res
 	return res, err
 }
 
@@ -33034,7 +32836,6 @@ func (c *Client) sendUpdatePreference(ctx context.Context, request *PreferenceUp
 // PUT /v1/recurrences/{id}
 func (c *Client) UpdateRecurrence(ctx context.Context, request *RecurrenceUpdate, params UpdateRecurrenceParams) (UpdateRecurrenceRes, error) {
 	res, err := c.sendUpdateRecurrence(ctx, request, params)
-	_ = res
 	return res, err
 }
 
@@ -33187,7 +32988,6 @@ func (c *Client) sendUpdateRecurrence(ctx context.Context, request *RecurrenceUp
 // PUT /v1/rules/{id}
 func (c *Client) UpdateRule(ctx context.Context, request *RuleUpdate, params UpdateRuleParams) (UpdateRuleRes, error) {
 	res, err := c.sendUpdateRule(ctx, request, params)
-	_ = res
 	return res, err
 }
 
@@ -33340,7 +33140,6 @@ func (c *Client) sendUpdateRule(ctx context.Context, request *RuleUpdate, params
 // PUT /v1/rule-groups/{id}
 func (c *Client) UpdateRuleGroup(ctx context.Context, request *RuleGroupUpdate, params UpdateRuleGroupParams) (UpdateRuleGroupRes, error) {
 	res, err := c.sendUpdateRuleGroup(ctx, request, params)
-	_ = res
 	return res, err
 }
 
@@ -33484,7 +33283,6 @@ func (c *Client) sendUpdateRuleGroup(ctx context.Context, request *RuleGroupUpda
 // PUT /v1/tags/{tag}
 func (c *Client) UpdateTag(ctx context.Context, request *TagModelUpdate, params UpdateTagParams) (UpdateTagRes, error) {
 	res, err := c.sendUpdateTag(ctx, request, params)
-	_ = res
 	return res, err
 }
 
@@ -33637,7 +33435,6 @@ func (c *Client) sendUpdateTag(ctx context.Context, request *TagModelUpdate, par
 // PUT /v1/transactions/{id}
 func (c *Client) UpdateTransaction(ctx context.Context, request *TransactionUpdate, params UpdateTransactionParams) (UpdateTransactionRes, error) {
 	res, err := c.sendUpdateTransaction(ctx, request, params)
-	_ = res
 	return res, err
 }
 
@@ -33790,7 +33587,6 @@ func (c *Client) sendUpdateTransaction(ctx context.Context, request *Transaction
 // PUT /v1/transaction-links/{id}
 func (c *Client) UpdateTransactionLink(ctx context.Context, request *TransactionLinkUpdate, params UpdateTransactionLinkParams) (UpdateTransactionLinkRes, error) {
 	res, err := c.sendUpdateTransactionLink(ctx, request, params)
-	_ = res
 	return res, err
 }
 
@@ -33934,7 +33730,6 @@ func (c *Client) sendUpdateTransactionLink(ctx context.Context, request *Transac
 // PUT /v1/users/{id}
 func (c *Client) UpdateUser(ctx context.Context, request *User, params UpdateUserParams) (UpdateUserRes, error) {
 	res, err := c.sendUpdateUser(ctx, request, params)
-	_ = res
 	return res, err
 }
 
@@ -34088,7 +33883,6 @@ func (c *Client) sendUpdateUser(ctx context.Context, request *User, params Updat
 // PUT /v1/webhooks/{id}
 func (c *Client) UpdateWebhook(ctx context.Context, request *WebhookUpdate, params UpdateWebhookParams) (UpdateWebhookRes, error) {
 	res, err := c.sendUpdateWebhook(ctx, request, params)
-	_ = res
 	return res, err
 }
 
@@ -34242,7 +34036,6 @@ func (c *Client) sendUpdateWebhook(ctx context.Context, request *WebhookUpdate, 
 // POST /v1/attachments/{id}/upload
 func (c *Client) UploadAttachment(ctx context.Context, request UploadAttachmentReq, params UploadAttachmentParams) (UploadAttachmentRes, error) {
 	res, err := c.sendUploadAttachment(ctx, request, params)
-	_ = res
 	return res, err
 }
 

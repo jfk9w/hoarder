@@ -9,7 +9,7 @@ $(GOIMPORTS):
 	go install golang.org/x/tools/cmd/goimports@latest
 
 $(OGEN):
-	go install github.com/ogen-go/ogen/cmd/ogen@latest
+	go install github.com/ogen-go/ogen/cmd/ogen@v0.76.0
 
 fmt: $(GOIMPORTS)
 	$(GOIMPORTS) -local $(MODULE) -l -w $(shell find . -type f -name '*.go' -not -path "./vendor/*")
