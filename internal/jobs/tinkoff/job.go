@@ -89,7 +89,7 @@ func NewJob(ctx context.Context, params JobParams) (*Job, error) {
 		users:        users,
 		batchSize:    params.Config.BatchSize,
 		overlap:      params.Config.Overlap,
-		withReceipts: !params.Config.WithReceipts,
+		withReceipts: params.Config.WithReceipts,
 		db:           db,
 		firefly:      params.Firefly,
 	}, nil
