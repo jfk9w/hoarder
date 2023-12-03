@@ -21,19 +21,19 @@ type Config struct {
 	SoftID   int    `url:"soft_id,omitempty"`
 }
 
-type ClientBuilder struct {
+type ClientParams struct {
 	Config Config      `validate:"required"`
 	Clock  based.Clock `validate:"required_with=Config.Pingback"`
 
 	Transport http.RoundTripper
 }
 
-func (b ClientBuilder) Build() (*Client, error) {
-	if err := based.Validate(b); err != nil {
+func NewClient(params ClientParams) (*Client, error) {
+	if err := based.Validate(params); err != nil {
 		return nil, err
 	}
 
-	options, err := query.Values(b.Config)
+	options, err := query.Values(params.Config)
 	if err != nil {
 		return nil, errors.Wrap(err, "encode options")
 	}
@@ -42,15 +42,15 @@ func (b ClientBuilder) Build() (*Client, error) {
 
 	client := &Client{
 		httpClient: &http.Client{
-			Transport: b.Transport,
+			Transport: params.Transport,
 		},
 		options: options,
 	}
 
-	if b.Config.Pingback == "" {
+	if params.Config.Pingback == "" {
 		client.answerer = &answerPoller{client}
 	} else {
-		client.answerer = newAsyncListener(b.Clock)
+		client.answerer = newAsyncListener(params.Clock)
 	}
 
 	return client, nil
