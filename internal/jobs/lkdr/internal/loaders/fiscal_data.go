@@ -83,7 +83,7 @@ func (l fiscalDataBatch) load(ctx jobs.Context, offset, limit int) (nextOffset *
 			return
 		}
 
-		entity.Receipt.Key = key
+		entity.ReceiptKey = key
 
 		if err := l.db.WithContext(ctx).
 			Upsert(&entity).
