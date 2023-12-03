@@ -104,7 +104,7 @@ func (j *Job) ID() string {
 	return JobID
 }
 
-func (j *Job) Run(ctx jobs.Context, now time.Time, userID string) (errs error) {
+func (j *Job) Run(ctx jobs.Context, _ time.Time, userID string) (errs error) {
 	phones := j.users[userID]
 	if phones == nil {
 		return
@@ -113,14 +113,14 @@ func (j *Job) Run(ctx jobs.Context, now time.Time, userID string) (errs error) {
 	ctx = ctx.ApplyAskFn(inAuthorizer)
 	for phone, client := range phones {
 		ctx := ctx.With("phone", phone)
-		err := j.executeLoaders(ctx, now, userID, phone, client)
+		err := j.executeLoaders(ctx, userID, phone, client)
 		_ = multierr.AppendInto(&errs, err)
 	}
 
 	return
 }
 
-func (j *Job) executeLoaders(ctx jobs.Context, now time.Time, userID, phone string, client Client) (errs error) {
+func (j *Job) executeLoaders(ctx jobs.Context, userID, phone string, client Client) (errs error) {
 	if err := j.db.WithContext(ctx).
 		Upsert(&User{Name: userID, Phone: phone}).
 		Error; ctx.Error(&errs, err, "failed to create user in db") {

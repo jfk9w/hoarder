@@ -161,12 +161,12 @@ func (t *Trigger) handleMessage(ctx triggers.Context, sender xmpp.Sender, messag
 		var reply strings.Builder
 		for _, result := range results {
 			if result.Error == nil {
-				reply.WriteString(" ✔ ")
+				reply.WriteString("✔ ")
 				reply.WriteString(result.JobID)
 				reply.WriteRune('\n')
 			} else {
 				for _, err := range multierr.Errors(result.Error) {
-					reply.WriteString(" ✘ ")
+					reply.WriteString("✘ ")
 					reply.WriteString(result.JobID)
 					reply.WriteString(": ")
 					reply.WriteString(err.Error())
