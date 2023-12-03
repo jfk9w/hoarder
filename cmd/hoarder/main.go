@@ -5,8 +5,6 @@ import (
 	"os"
 	"syscall"
 
-	"github.com/jfk9w/hoarder/internal/triggers/xmpp"
-
 	"github.com/AlekSi/pointer"
 	"github.com/jfk9w-go/based"
 	"github.com/jfk9w-go/confi"
@@ -15,11 +13,13 @@ import (
 	"github.com/jfk9w/hoarder/internal/captcha"
 	"github.com/jfk9w/hoarder/internal/firefly"
 	"github.com/jfk9w/hoarder/internal/jobs"
+	"github.com/jfk9w/hoarder/internal/jobs/lkdr"
 	"github.com/jfk9w/hoarder/internal/jobs/tinkoff"
 	"github.com/jfk9w/hoarder/internal/logs"
 	"github.com/jfk9w/hoarder/internal/triggers"
 	"github.com/jfk9w/hoarder/internal/triggers/schedule"
 	"github.com/jfk9w/hoarder/internal/triggers/stdin"
+	"github.com/jfk9w/hoarder/internal/triggers/xmpp"
 )
 
 type Config struct {
@@ -33,15 +33,14 @@ type Config struct {
 	Log     logs.Config     `yaml:"log,omitempty" doc:"Настройки логирования для библиотеки slog."`
 	Firefly *firefly.Config `yaml:"firefly,omitempty" doc:"Настройки подключения к Firefly III."`
 
-	//XMPP     *xmpp.Config     `yaml:"xmpp,omitempty" doc:"Настройки XMPP-интерфейса."`
 	Schedule *schedule.Config `yaml:"schedule,omitempty" doc:"Настройки фоновой синхронизации."`
 	Stdin    bool             `yaml:"stdin,omitempty" doc:"Включение интерактивной командной строки."`
 	XMPP     *xmpp.Config     `yaml:"xmpp,omitempty" doc:"Настройки XMPP-триггера."`
 
-	//LKDR    *lkdr.Config    `yaml:"lkdr,omitempty" doc:"Настройка пайплана для сервиса ФНС \"Мои чеки онлайн\"."`
+	LKDR    *lkdr.Config    `yaml:"lkdr,omitempty" doc:"Настройка пайплана для сервиса ФНС \"Мои чеки онлайн\"."`
 	Tinkoff *tinkoff.Config `yaml:"tinkoff,omitempty" doc:"Настройка пайплайна для онлайн-банка \"Тинькофф\"."`
 
-	Captcha captcha.Config `yaml:"captcha,omitempty" doc:"Настройки для решения капчи."`
+	Captcha *captcha.Config `yaml:"captcha,omitempty" doc:"Настройки для решения капчи."`
 }
 
 func main() {
@@ -78,7 +77,30 @@ func main() {
 		}
 	}
 
+	var captchaSolver captcha.TokenProvider
+	if cfg := cfg.Captcha; cfg != nil {
+		captchaSolver, err = captcha.NewTokenProvider(cfg, clock)
+		if err != nil {
+			panic(errors.Wrap(err, "create captcha solver"))
+		}
+	}
+
 	jobs := new(jobs.Registry)
+
+	if cfg := cfg.LKDR; cfg != nil {
+		job, err := lkdr.NewJob(ctx, lkdr.JobParams{
+			Clock:         clock,
+			Logger:        log,
+			Config:        cfg,
+			CaptchaSolver: captchaSolver,
+		})
+
+		if err != nil {
+			panic(errors.Wrapf(err, "create %s job", lkdr.JobID))
+		}
+
+		jobs.Register(job)
+	}
 
 	if cfg := cfg.Tinkoff; cfg != nil {
 		job, err := tinkoff.NewJob(ctx, tinkoff.JobParams{
@@ -89,7 +111,7 @@ func main() {
 		})
 
 		if err != nil {
-			panic(errors.Wrap(err, "create tinkoff job"))
+			panic(errors.Wrapf(err, "create %s job", tinkoff.JobID))
 		}
 
 		defer job.Close()

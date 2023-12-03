@@ -38,6 +38,70 @@ properties:
       - serverUrl
       - accessToken
     type: object
+  lkdr:
+    additionalProperties: false
+    description: Настройка пайплана для сервиса ФНС "Мои чеки онлайн".
+    properties:
+      batchSize:
+        default: 1000
+        description: Количество чеков в одном запросе и количество фискальных данных за одно обновление.
+        type: integer
+      database:
+        additionalProperties: false
+        description: Настройки подключения к БД.
+        properties:
+          driver:
+            enum:
+              - mysql
+              - postgres
+              - sqlite
+            type: string
+          dsn:
+            examples:
+              - file::memory:?cache=shared
+              - host=localhost port=5432 user=postgres password=postgres dbname=postgres search_path=public
+            type: string
+        required:
+          - driver
+          - dsn
+        type: object
+      timeout:
+        default: 5m0s
+        description: Таймаут для запросов.
+        pattern: (\d+h)?(\d+m)?(\d+s)?(\d+ms)?(\d+µs)?(\d+ns)?
+        type: string
+      users:
+        additionalProperties:
+          items:
+            additionalProperties: false
+            properties:
+              deviceId:
+                description: |-
+                  Используется для авторизации и обновления токена доступа.
+                  При отсутствии генерируется автоматически из userAgent и номера телефона.
+                  Можно подсмотреть в браузере при попытке авторизации.
+                  Обратите внимание, что токены доступа привязаны к deviceId. При смене deviceId потребуется авторизоваться заново.
+                type: string
+              phone:
+                description: Номер телефона пользователя.
+                pattern: 7\d{10}
+                type: string
+              userAgent:
+                default: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36
+                description: |-
+                  Используется для авторизации и обновления токена доступа.
+                  Можно подсмотреть в браузере при попытке авторизации.
+                type: string
+            required:
+              - phone
+            type: object
+          type: array
+        description: Пользователи и их авторизационные данные.
+        type: object
+    required:
+      - database
+      - users
+    type: object
   log:
     additionalProperties: false
     description: Настройки логирования для библиотеки slog.

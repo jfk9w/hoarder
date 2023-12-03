@@ -13,7 +13,7 @@ type Credential struct {
 }
 
 type Config struct {
-	DB        database.Config         `yaml:"db" doc:"Настройки подключения к БД."`
+	Database  database.Config         `yaml:"database" doc:"Настройки подключения к БД."`
 	BatchSize int                     `yaml:"batchSize,omitempty" default:"1000" doc:"Количество чеков в одном запросе и количество фискальных данных за одно обновление."`
 	Timeout   time.Duration           `yaml:"timeout,omitempty" default:"5m" doc:"Таймаут для запросов."`
 	Users     map[string][]Credential `yaml:"users" doc:"Пользователи и их авторизационные данные."`

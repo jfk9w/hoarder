@@ -16,7 +16,7 @@ type TokenProvider interface {
 	GetCaptchaToken(ctx context.Context, userAgent, siteKey, pageURL string) (string, error)
 }
 
-func NewTokenProvider(cfg Config, clock based.Clock) (TokenProvider, error) {
+func NewTokenProvider(cfg *Config, clock based.Clock) (TokenProvider, error) {
 	if key := cfg.RucaptchaKey; key != "" {
 		client, err := rucaptcha.NewClient(rucaptcha.ClientParams{
 			Config: rucaptcha.Config{
