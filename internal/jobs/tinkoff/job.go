@@ -115,7 +115,7 @@ func (j *Job) Run(ctx jobs.Context, now time.Time, userID string) (errs error) {
 		return
 	}
 
-	ctx = ctx.ApplyAskFn(inAuthorizer)
+	ctx = ctx.ApplyAskFn(withAuthorizer)
 	for phone, client := range phones {
 		ctx := ctx.With("phone", phone)
 		err := j.executeLoaders(ctx, now, userID, phone, client)

@@ -110,7 +110,7 @@ func (j *Job) Run(ctx jobs.Context, _ time.Time, userID string) (errs error) {
 		return
 	}
 
-	ctx = ctx.ApplyAskFn(inAuthorizer)
+	ctx = ctx.ApplyAskFn(withAuthorizer(j.captchaSolver))
 	for phone, client := range phones {
 		ctx := ctx.With("phone", phone)
 		err := j.executeLoaders(ctx, userID, phone, client)

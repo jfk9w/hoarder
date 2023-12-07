@@ -19,6 +19,15 @@ func (a authorizer) GetConfirmationCode(ctx context.Context, phone string) (stri
 	return a.askFn(ctx, fmt.Sprintf(`Код подтверждения для сервиса "Мои чеки онлайн" • %s:`, phone))
 }
 
-func inAuthorizer(ctx context.Context, askFn jobs.AskFunc) context.Context {
-	return lkdr.WithAuthorizer(ctx, authorizer{askFn: askFn})
+func withAuthorizer(captchaSolver captcha.TokenProvider) func(ctx context.Context, askFn jobs.AskFunc) context.Context {
+	return func(ctx context.Context, askFn jobs.AskFunc) context.Context {
+		if captchaSolver == nil {
+			return ctx
+		}
+
+		return lkdr.WithAuthorizer(ctx, authorizer{
+			TokenProvider: captchaSolver,
+			askFn:         askFn,
+		})
+	}
 }

@@ -17,6 +17,6 @@ func (a authorizer) GetConfirmationCode(ctx context.Context, phone string) (stri
 	return a.askFn(ctx, fmt.Sprintf(`Код подтверждения для "Тинькофф" • %s: `, phone))
 }
 
-func inAuthorizer(ctx context.Context, askFn jobs.AskFunc) context.Context {
+func withAuthorizer(ctx context.Context, askFn jobs.AskFunc) context.Context {
 	return tinkoff.WithAuthorizer(ctx, authorizer{askFn: askFn})
 }

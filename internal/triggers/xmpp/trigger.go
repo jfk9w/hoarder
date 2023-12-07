@@ -201,12 +201,6 @@ func (t *Trigger) startTyping(ctx triggers.Context, sender xmpp.Sender, to strin
 		defer t.sendState(ctx, sender, to, stanza.StateInactive{})
 		defer ticker.Stop()
 
-		select {
-		case <-time.After(2 * t.config.State):
-		case <-ctx.Done():
-			return
-		}
-
 		for {
 			t.sendState(ctx, sender, to, stanza.StateComposing{})
 
