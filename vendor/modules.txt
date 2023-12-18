@@ -1,7 +1,7 @@
 # github.com/AlekSi/pointer v1.2.0
 ## explicit; go 1.18
 github.com/AlekSi/pointer
-# github.com/gabriel-vasile/mimetype v1.4.2
+# github.com/gabriel-vasile/mimetype v1.4.3
 ## explicit; go 1.20
 github.com/gabriel-vasile/mimetype
 github.com/gabriel-vasile/mimetype/internal/charset
@@ -48,16 +48,16 @@ github.com/jackc/pgx/v5/pgconn/internal/ctxwatch
 github.com/jackc/pgx/v5/pgproto3
 github.com/jackc/pgx/v5/pgtype
 github.com/jackc/pgx/v5/stdlib
-# github.com/jfk9w-go/based v0.0.13
+# github.com/jfk9w-go/based v1.0.0
 ## explicit; go 1.21
 github.com/jfk9w-go/based
 # github.com/jfk9w-go/confi v0.0.3
 ## explicit; go 1.21
 github.com/jfk9w-go/confi
-# github.com/jfk9w-go/lkdr-api v0.0.13
+# github.com/jfk9w-go/lkdr-api v1.0.0
 ## explicit; go 1.21
 github.com/jfk9w-go/lkdr-api
-# github.com/jfk9w-go/rucaptcha-api v0.0.9
+# github.com/jfk9w-go/rucaptcha-api v1.0.0
 ## explicit; go 1.21
 github.com/jfk9w-go/rucaptcha-api
 # github.com/jfk9w-go/tinkoff-api v0.1.9
@@ -92,8 +92,8 @@ go.uber.org/multierr
 ## explicit; go 1.18
 golang.org/x/crypto/pbkdf2
 golang.org/x/crypto/sha3
-# golang.org/x/net v0.17.0
-## explicit; go 1.17
+# golang.org/x/net v0.19.0
+## explicit; go 1.18
 golang.org/x/net/html
 golang.org/x/net/html/atom
 # golang.org/x/sys v0.15.0
