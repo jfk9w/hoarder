@@ -72,8 +72,8 @@ github.com/jackc/pgservicefile v0.0.0-20221227161230-091c0ba34f0a h1:bbPeKD0xmW/
 github.com/jackc/pgservicefile v0.0.0-20221227161230-091c0ba34f0a/go.mod h1:5TJZWKEWniPve33vlWYSoGYefn3gLQRzjfDlhSJ9ZKM=
 github.com/jackc/pgx/v5 v5.4.3 h1:cxFyXhxlvAifxnkKKdlxv8XqUf59tDlYjnV5YYfsJJY=
 github.com/jackc/pgx/v5 v5.4.3/go.mod h1:Ig06C2Vu0t5qXC60W8sqIthScaEnFvojjj9dSljmHRA=
-github.com/jfk9w-go/based v0.0.13 h1:jEjFqjhno4v5/WSGxQc4V65fhwJVHGbPyIUfT68IZCk=
-github.com/jfk9w-go/based v0.0.13/go.mod h1:uAoy/Zx6v8h9B7VhyRJu+K9KPYv75Q286TWg3spHXAk=
+github.com/jfk9w-go/based v1.0.0 h1:WH1EGVepOXEtdVzpxD3Z3TAOhJbjKle7qruvKh2/b8E=
+github.com/jfk9w-go/based v1.0.0/go.mod h1:uAoy/Zx6v8h9B7VhyRJu+K9KPYv75Q286TWg3spHXAk=
 github.com/jfk9w-go/confi v0.0.3 h1:RYUckqpx4RR7EHJq1Tnoi86WXC4S3TnlLj0O7mh3vOg=
 github.com/jfk9w-go/confi v0.0.3/go.mod h1:NSWDLU3xJX+mcLzhXl4D0C1n5EBF28rzQHA5PIJmvf8=
 github.com/jfk9w-go/lkdr-api v0.0.13 h1:HN6Pw5Vcy8Bk0Z/RnBCM5u1Tid4YKHNX3g4Fj/ppPq8=
