@@ -6,7 +6,7 @@ toolchain go1.21.0
 
 require (
 	github.com/AlekSi/pointer v1.2.0
-	github.com/jfk9w-go/based v0.0.13
+	github.com/jfk9w-go/based v1.0.1
 	github.com/jfk9w-go/confi v0.0.3
 	github.com/jfk9w-go/lkdr-api v0.0.13
 	github.com/jfk9w-go/rucaptcha-api v0.0.9
