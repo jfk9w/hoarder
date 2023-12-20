@@ -22,14 +22,14 @@ func (gr *goroutine) Cancel() {
 }
 
 func (gr *goroutine) Join(ctx context.Context) error {
-	_, err := gr.join(ctx)
+	_, err := gr.join.Get(ctx)
 	return err
 }
 
 // Go starts the provided function in a new goroutine and returns the Goroutine handle.
 func Go(ctx context.Context, fn func(ctx context.Context)) Goroutine {
 	ctx, cancel := context.WithCancel(ctx)
-	join := Future[Unit](ctx, func(ctx context.Context) (_ Unit, _ error) {
+	join := FutureFuncRef[Unit](ctx, func(ctx context.Context) (_ Unit, _ error) {
 		defer cancel()
 		fn(ctx)
 		return
