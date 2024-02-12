@@ -6,10 +6,10 @@ toolchain go1.21.0
 
 require (
 	github.com/AlekSi/pointer v1.2.0
-	github.com/jfk9w-go/based v0.0.13
+	github.com/jfk9w-go/based v1.0.2
 	github.com/jfk9w-go/confi v0.0.3
 	github.com/jfk9w-go/lkdr-api v0.0.13
-	github.com/jfk9w-go/rucaptcha-api v0.0.9
+	github.com/jfk9w-go/rucaptcha-api v1.0.2
 	github.com/jfk9w-go/tinkoff-api v0.1.9
 	github.com/pkg/errors v0.9.1
 	go.uber.org/multierr v1.11.0
@@ -21,10 +21,10 @@ require (
 )
 
 require (
-	github.com/gabriel-vasile/mimetype v1.4.2 // indirect
+	github.com/gabriel-vasile/mimetype v1.4.3 // indirect
 	github.com/go-playground/locales v0.14.1 // indirect
 	github.com/go-playground/universal-translator v0.18.1 // indirect
-	github.com/go-playground/validator/v10 v10.16.0 // indirect
+	github.com/go-playground/validator/v10 v10.17.0 // indirect
 	github.com/go-sql-driver/mysql v1.7.1 // indirect
 	github.com/google/go-cmp v0.5.9 // indirect
 	github.com/google/go-querystring v1.1.0 // indirect
@@ -40,7 +40,7 @@ require (
 	github.com/mattn/go-sqlite3 v1.14.17 // indirect
 	github.com/rogpeppe/go-internal v1.11.0 // indirect
 	golang.org/x/crypto v0.17.0 // indirect
-	golang.org/x/net v0.17.0 // indirect
+	golang.org/x/net v0.19.0 // indirect
 	golang.org/x/sys v0.15.0 // indirect
 	golang.org/x/text v0.14.0 // indirect
 	golang.org/x/xerrors v0.0.0-20220907171357-04be3eba64a2 // indirect
