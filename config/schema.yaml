@@ -24,6 +24,20 @@ properties:
         description: Вывод значений конфигурации по умолчанию в JSON.
         type: boolean
     type: object
+  firefly:
+    additionalProperties: false
+    description: Настройки подключения к Firefly III.
+    properties:
+      accessToken:
+        description: Персональный токен доступа.
+        type: string
+      serverUrl:
+        description: URL сервера Firefly III.
+        type: string
+    required:
+      - serverUrl
+      - accessToken
+    type: object
   lkdr:
     additionalProperties: false
     description: Настройка пайплана для сервиса ФНС "Мои чеки онлайн".
@@ -32,7 +46,7 @@ properties:
         default: 1000
         description: Количество чеков в одном запросе и количество фискальных данных за одно обновление.
         type: integer
-      db:
+      database:
         additionalProperties: false
         description: Настройки подключения к БД.
         properties:
@@ -85,7 +99,7 @@ properties:
         description: Пользователи и их авторизационные данные.
         type: object
     required:
-      - db
+      - database
       - users
     type: object
   log:
@@ -122,10 +136,12 @@ properties:
         pattern: (\d+h)?(\d+m)?(\d+s)?(\d+ms)?(\d+µs)?(\d+ns)?
         type: string
       users:
-        description: Пользователи, для которых данные нужно синхронизировать в фоновом режиме.
-        items:
-          type: string
-        type: array
+        additionalProperties:
+          items:
+            type: string
+          type: array
+        description: ID пользователей, для которых данные нужно синхронизировать в фоновом режиме.
+        type: object
     required:
       - users
     type: object
@@ -140,7 +156,7 @@ properties:
         default: 100
         description: Максимальный размер батчей.
         type: integer
-      db:
+      database:
         additionalProperties: false
         description: Настройки подключения к БД.
         properties:
@@ -159,9 +175,6 @@ properties:
           - driver
           - dsn
         type: object
-      disableReceipts:
-        description: Отключить синхронизацию чеков.
-        type: boolean
       overlap:
         default: 168h0m0s
         description: Продолжительность "нахлеста" при обновлении операций.
@@ -186,24 +199,38 @@ properties:
           type: array
         description: Пользователи и их авторизационные данные.
         type: object
+      withReceipts:
+        default: true
+        description: Включить синхронизацию чеков.
+        type: boolean
     required:
-      - db
+      - database
       - users
     type: object
   xmpp:
     additionalProperties: false
-    description: Настройки XMPP-интерфейса.
+    description: Настройки XMPP-триггера.
     properties:
       jid:
-        description: Jabber ID для бота.
+        description: JID бота.
         type: string
       password:
-        description: Пароль для бота.
+        description: Пароль.
+        type: string
+      presence:
+        default: 1m0s
+        description: Интервал для отправки присутствия.
+        pattern: (\d+h)?(\d+m)?(\d+s)?(\d+ms)?(\d+µs)?(\d+ns)?
+        type: string
+      state:
+        default: 5s
+        description: Интервал для отправки состояния ("печатает").
+        pattern: (\d+h)?(\d+m)?(\d+s)?(\d+ms)?(\d+µs)?(\d+ns)?
         type: string
       users:
         additionalProperties:
           type: string
-        description: Маппинг JID в имя пользователя, используемое в пайплайнах.
+        description: Маппинг JID в имя пользователя.
         type: object
     required:
       - jid

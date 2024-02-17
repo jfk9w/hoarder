@@ -1,48 +1,140 @@
 package database
 
 import (
-	"sort"
+	"context"
+	"fmt"
+	"log/slog"
+	"reflect"
+
+	"gorm.io/gorm/clause"
+
+	"gorm.io/gorm/schema"
+
+	"gorm.io/gorm/logger"
 
 	"github.com/jfk9w-go/based"
 	"github.com/pkg/errors"
-	"gorm.io/driver/mysql"
-	"gorm.io/driver/postgres"
-	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 )
 
-var drivers = map[Driver]func(string) gorm.Dialector{
-	"postgres": postgres.Open,
-	"mysql":    mysql.Open,
-	"sqlite":   sqlite.Open,
+var namingStrategy = schema.NamingStrategy{
+	IdentifierMaxLength: 64,
 }
 
-type Driver string
+type Params struct {
+	Clock    based.Clock  `validate:"required"`
+	Logger   *slog.Logger `validate:"required"`
+	Config   Config       `validate:"required"`
+	Entities []any        `validate:"required"`
+}
 
-func (Driver) SchemaEnum() any {
-	var names []string
-	for name := range drivers {
-		names = append(names, string(name))
+type DB struct {
+	*gorm.DB
+}
+
+func Open(ctx context.Context, params Params) (DB, error) {
+	if err := based.Validate(params); err != nil {
+		return DB{}, err
 	}
 
-	sort.Strings(names)
-	return names
-}
-
-type Config struct {
-	Driver Driver `yaml:"driver"`
-	DSN    string `yaml:"dsn" examples:"\"file::memory:?cache=shared\", \"host=localhost port=5432 user=postgres password=postgres dbname=postgres search_path=public\""`
-}
-
-func Open(clock based.Clock, cfg Config) (*gorm.DB, error) {
-	driver, ok := drivers[cfg.Driver]
+	driver, ok := drivers[params.Config.Driver]
 	if !ok {
-		return nil, errors.Errorf("unsupported driver: %s", cfg.Driver)
+		return DB{}, errors.Errorf("unsupported driver: %s", params.Config.Driver)
 	}
 
-	return gorm.Open(driver(cfg.DSN), &gorm.Config{
-		NowFunc:              clock.Now,
-		Logger:               noopLogger{},
+	db, err := gorm.Open(driver(params.Config.DSN), &gorm.Config{
+		NowFunc: params.Clock.Now,
+		Logger: slogLogger{
+			logger: params.Logger,
+			level:  logger.Warn,
+		},
 		FullSaveAssociations: true,
+		NamingStrategy:       namingStrategy,
 	})
+
+	if err != nil {
+		return DB{}, errors.Wrap(err, "open database")
+	}
+
+	if err := db.WithContext(ctx).AutoMigrate(params.Entities...); err != nil {
+		return DB{}, errors.Wrap(err, "migrate database tables")
+	}
+
+	if params.Logger.Enabled(ctx, slog.LevelDebug) {
+		db = db.Debug()
+	}
+
+	return DB{DB: db}, nil
+}
+
+func (db DB) WithContext(ctx context.Context) DB {
+	db.DB = db.DB.WithContext(ctx)
+	return db
+}
+
+func (db DB) Transaction(fn func(tx DB) error) error {
+	return db.DB.Transaction(func(tx *gorm.DB) error {
+		return fn(DB{DB: tx})
+	})
+}
+
+func (db DB) Upsert(value any) *gorm.DB {
+	return db.Clauses(extractUpsertClause(value)).Create(value)
+}
+
+func (db DB) UpsertInBatches(value any, batchSize int) *gorm.DB {
+	return db.Clauses(extractUpsertClause(value)).CreateInBatches(value, batchSize)
+}
+
+func extractUpsertClause(entity any) clause.OnConflict {
+	value := reflect.ValueOf(entity)
+loop:
+	for {
+		switch value.Kind() {
+		case reflect.Ptr:
+			value = value.Elem()
+		case reflect.Slice:
+			value = value.Index(0)
+		default:
+			break loop
+		}
+	}
+
+	for value.Kind() == reflect.Ptr || value.Kind() == reflect.Slice {
+		value = value.Elem()
+	}
+
+	if value.Kind() != reflect.Struct {
+		panic(fmt.Sprintf("expected %s, got %s", reflect.Struct, value.Kind()))
+	}
+
+	cnf := clause.OnConflict{
+		UpdateAll: true,
+	}
+
+	for i := 0; i < value.NumField(); i++ {
+		typeField := value.Type().Field(i)
+		if typeField.Anonymous || !typeField.IsExported() {
+			continue
+		}
+
+		tag := typeField.Tag.Get("gorm")
+		if tag == "" {
+			continue
+		}
+
+		settings := schema.ParseTagSetting(tag, ";")
+		if _, ok := settings["PRIMARYKEY"]; !ok {
+			continue
+		}
+
+		columnName := settings["COLUMN"]
+		if columnName == "" {
+			columnName = namingStrategy.ColumnName("", typeField.Name)
+		}
+
+		cnf.Columns = append(cnf.Columns, clause.Column{Name: columnName})
+	}
+
+	return cnf
 }
