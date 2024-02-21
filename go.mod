@@ -14,7 +14,7 @@ require (
 	github.com/jfk9w-go/lkdr-api v1.0.6
 	github.com/jfk9w-go/rucaptcha-api v1.0.3
 	github.com/jfk9w-go/tinkoff-api v1.0.4
-	github.com/ogen-go/ogen v0.81.2
+	github.com/ogen-go/ogen v0.82.0
 	github.com/pkg/errors v0.9.1
 	go.opentelemetry.io/otel v1.23.1
 	go.opentelemetry.io/otel/metric v1.23.1
