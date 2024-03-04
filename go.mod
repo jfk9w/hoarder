@@ -9,7 +9,7 @@ require (
 	github.com/go-faster/errors v0.7.1
 	github.com/go-faster/jx v1.1.0
 	github.com/google/uuid v1.6.0
-	github.com/jfk9w-go/based v1.0.3
+	github.com/jfk9w-go/based v1.0.4
 	github.com/jfk9w-go/confi v0.0.3
 	github.com/jfk9w-go/lkdr-api v1.0.6
 	github.com/jfk9w-go/rucaptcha-api v1.0.3
