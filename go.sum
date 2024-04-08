@@ -116,8 +116,8 @@ github.com/mattn/go-isatty v0.0.20 h1:xfD0iDuEKnDkl03q4limB+vH+GxLEtL/jb4xVJSWWE
 github.com/mattn/go-isatty v0.0.20/go.mod h1:W+V8PltTTMOvKvAeJH7IuucS94S2C6jfK/D7dTCTo3Y=
 github.com/mattn/go-sqlite3 v1.14.22 h1:2gZY6PC6kBnID23Tichd1K+Z0oS6nE/XwU+Vz/5o4kU=
 github.com/mattn/go-sqlite3 v1.14.22/go.mod h1:Uh1q+B4BYcTPb+yiD3kU8Ct7aC0hY9fxUwlHK0RXw+Y=
-github.com/ogen-go/ogen v0.83.0 h1:YGlYWjRf7ojwJJx+FG01iHf6/0i+0svt49cuvDGPr64=
-github.com/ogen-go/ogen v0.83.0/go.mod h1:NFn616zR+/DPsq8rPoezaHlhKcNQzlYfo5gUieW8utI=
+github.com/ogen-go/ogen v1.0.0 h1:n1hkgOnLtA1Xn369KAzJhqzphQzNo/wAI82NIaFQNXA=
+github.com/ogen-go/ogen v1.0.0/go.mod h1:NFn616zR+/DPsq8rPoezaHlhKcNQzlYfo5gUieW8utI=
 github.com/onsi/ginkgo v1.6.0/go.mod h1:lLunBs/Ym6LB5Z9jYTR76FiuTmxDTDusOGeTQH+WWjE=
 github.com/onsi/ginkgo v1.8.0/go.mod h1:lLunBs/Ym6LB5Z9jYTR76FiuTmxDTDusOGeTQH+WWjE=
 github.com/onsi/gomega v1.4.3/go.mod h1:ex+gbHU/CVuBBDIJjb2X0qEXbFg53c61hWP/1CpauHY=
