@@ -78,7 +78,7 @@ github.com/jackc/pgx/v5/stdlib
 ## explicit; go 1.19
 github.com/jackc/puddle/v2
 github.com/jackc/puddle/v2/internal/genstack
-# github.com/jfk9w-go/based v1.0.5
+# github.com/jfk9w-go/based v1.0.6
 ## explicit; go 1.21
 github.com/jfk9w-go/based
 # github.com/jfk9w-go/confi v0.0.4
@@ -90,7 +90,7 @@ github.com/jfk9w-go/lkdr-api
 # github.com/jfk9w-go/rucaptcha-api v1.0.5
 ## explicit; go 1.21
 github.com/jfk9w-go/rucaptcha-api
-# github.com/jfk9w-go/tinkoff-api v1.0.6
+# github.com/jfk9w-go/tinkoff-api v1.0.8
 ## explicit; go 1.21
 github.com/jfk9w-go/tinkoff-api
 # github.com/jinzhu/inflection v1.0.0
