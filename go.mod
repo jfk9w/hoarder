@@ -12,7 +12,7 @@ require (
 	github.com/jfk9w-go/confi v0.0.4
 	github.com/jfk9w-go/lkdr-api v1.0.15
 	github.com/jfk9w-go/rucaptcha-api v1.0.7
-	github.com/jfk9w-go/tinkoff-api v1.0.8
+	github.com/jfk9w-go/tinkoff-api v1.0.9
 	github.com/ogen-go/ogen v0.83.0
 	github.com/pkg/errors v0.9.1
 	go.opentelemetry.io/otel v1.26.0
