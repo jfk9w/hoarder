@@ -77,6 +77,10 @@ func (l investOperationsBatch) load(ctx jobs.Context, cursor string, limit int) 
 		return
 	}
 
+	if len(out.Items) == 0 {
+		return
+	}
+
 	entities, err := database.ToViaJSON[[]InvestOperation](out.Items)
 	if ctx.Error(&errs, err, "entity conversion failed") {
 		return

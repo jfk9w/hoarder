@@ -20,6 +20,10 @@ func (l InvestOperationTypes) Load(ctx jobs.Context, client Client, db database.
 		return
 	}
 
+	if len(out.OperationsTypes) == 0 {
+		return
+	}
+
 	var (
 		uniqueTypes = make(map[string]bool)
 		entities    []InvestOperationType

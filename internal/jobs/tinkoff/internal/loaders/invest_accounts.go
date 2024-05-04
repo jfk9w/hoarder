@@ -27,6 +27,10 @@ func (l InvestAccounts) Load(ctx jobs.Context, client Client, db database.DB) (l
 		return
 	}
 
+	if len(out.Accounts.List) == 0 {
+		return
+	}
+
 	entities, err := database.ToViaJSON[[]InvestAccount](out.Accounts.List)
 	if ctx.Error(&errs, err, "entity conversion failed") {
 		return
