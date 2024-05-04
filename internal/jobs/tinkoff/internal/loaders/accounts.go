@@ -31,6 +31,10 @@ func (l Accounts) Load(ctx jobs.Context, client Client, db database.DB) (ls []In
 		return
 	}
 
+	if len(out) == 0 {
+		return
+	}
+
 	var (
 		entities []Account
 		ids      []string

@@ -59,6 +59,10 @@ func (l operations) Load(ctx jobs.Context, client Client, db database.DB) (ls []
 		return
 	}
 
+	if len(out) == 0 {
+		return
+	}
+
 	entities, err := database.ToViaJSON[[]Operation](out)
 	if ctx.Error(&errs, err, "entity conversion failed") {
 		return
