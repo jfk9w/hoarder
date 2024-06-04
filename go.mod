@@ -1,18 +1,18 @@
 module github.com/jfk9w/hoarder
 
 go 1.21
-toolchain go1.22.2
+toolchain go1.22.3
 
 require (
 	github.com/AlekSi/pointer v1.2.0
 	github.com/go-faster/errors v0.7.1
 	github.com/go-faster/jx v1.1.0
 	github.com/google/uuid v1.6.0
-	github.com/jfk9w-go/based v1.0.7
+	github.com/jfk9w-go/based v1.0.8
 	github.com/jfk9w-go/confi v0.0.4
 	github.com/jfk9w-go/lkdr-api v1.0.16
 	github.com/jfk9w-go/rucaptcha-api v1.0.8
-	github.com/jfk9w-go/tinkoff-api v1.0.9
+	github.com/jfk9w-go/tinkoff-api v1.0.10
 	github.com/ogen-go/ogen v0.83.0
 	github.com/pkg/errors v0.9.1
 	go.opentelemetry.io/otel v1.27.0
@@ -36,7 +36,7 @@ require (
 	github.com/go-logr/stdr v1.2.2 // indirect
 	github.com/go-playground/locales v0.14.1 // indirect
 	github.com/go-playground/universal-translator v0.18.1 // indirect
-	github.com/go-playground/validator/v10 v10.20.0 // indirect
+	github.com/go-playground/validator/v10 v10.21.0 // indirect
 	github.com/go-sql-driver/mysql v1.7.1 // indirect
 	github.com/google/go-querystring v1.1.0 // indirect
 	github.com/jackc/pgpassfile v1.0.0 // indirect
