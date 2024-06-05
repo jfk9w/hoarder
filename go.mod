@@ -11,7 +11,7 @@ require (
 	github.com/jfk9w-go/based v1.0.8
 	github.com/jfk9w-go/confi v0.0.4
 	github.com/jfk9w-go/lkdr-api v1.0.17
-	github.com/jfk9w-go/rucaptcha-api v1.0.8
+	github.com/jfk9w-go/rucaptcha-api v1.0.9
 	github.com/jfk9w-go/tinkoff-api v1.0.10
 	github.com/ogen-go/ogen v0.83.0
 	github.com/pkg/errors v0.9.1
