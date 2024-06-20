@@ -90,7 +90,7 @@ func main() {
 	clock := based.StandardClock
 
 	var fireflyClient firefly.Invoker
-	if cfg := cfg.Firefly; cfg != nil && cfg.Enabled {
+	if cfg := cfg.Firefly; pointer.Get(cfg).Enabled {
 		fireflyClient, err = firefly.NewDefaultClient(firefly.ClientParams{
 			Config: cfg.Config,
 		})
@@ -110,7 +110,7 @@ func main() {
 
 	jobs := new(jobs.Registry)
 
-	if cfg := cfg.LKDR; cfg != nil && cfg.Enabled {
+	if cfg := cfg.LKDR; pointer.Get(cfg).Enabled {
 		job, err := lkdr.NewJob(ctx, lkdr.JobParams{
 			Clock:         clock,
 			Logger:        log,
@@ -125,7 +125,7 @@ func main() {
 		jobs.Register(job)
 	}
 
-	if cfg := cfg.Tinkoff; cfg != nil && cfg.Enabled {
+	if cfg := cfg.Tinkoff; pointer.Get(cfg).Enabled {
 		job, err := tinkoff.NewJob(ctx, tinkoff.JobParams{
 			Clock:   clock,
 			Logger:  log,
@@ -143,7 +143,7 @@ func main() {
 
 	triggers := triggers.NewRegistry(log)
 
-	if cfg := cfg.Schedule; cfg != nil && cfg.Enabled {
+	if cfg := cfg.Schedule; pointer.Get(cfg).Enabled {
 		trigger, err := schedule.NewTrigger(schedule.TriggerParams{
 			Clock:  clock,
 			Config: cfg.Config,
@@ -156,7 +156,7 @@ func main() {
 		triggers.Register(trigger)
 	}
 
-	if cfg := cfg.Stdin; cfg != nil && cfg.Enabled {
+	if cfg := cfg.Stdin; pointer.Get(cfg).Enabled {
 		trigger, err := stdin.NewTrigger(stdin.TriggerParams{
 			Clock: clock,
 		})
@@ -168,7 +168,7 @@ func main() {
 		triggers.Register(trigger)
 	}
 
-	if cfg := cfg.XMPP; cfg != nil && cfg.Enabled {
+	if cfg := cfg.XMPP; pointer.Get(cfg).Enabled {
 		trigger, err := xmpp.NewTrigger(xmpp.TriggerParams{
 			Clock:  clock,
 			Config: cfg.Config,
