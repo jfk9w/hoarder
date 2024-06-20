@@ -2,6 +2,7 @@ package loaders
 
 import (
 	"database/sql"
+	"strings"
 
 	"github.com/AlekSi/pointer"
 	"github.com/jfk9w-go/lkdr-api"
@@ -9,6 +10,7 @@ import (
 	"github.com/jfk9w/hoarder/internal/database"
 	"github.com/jfk9w/hoarder/internal/jobs"
 	"github.com/jfk9w/hoarder/internal/jobs/lkdr/internal/entities"
+	"github.com/jfk9w/hoarder/internal/logs"
 )
 
 type Receipts struct {
@@ -65,7 +67,14 @@ func (l receiptsBatch) load(ctx jobs.Context, offset int, limit int) (nextOffset
 	}
 
 	out, err := l.client.Receipt(ctx, in)
-	if ctx.Error(&errs, err, "failed to get data from api") {
+	if err != nil {
+		msg := "failed to get data from api"
+		if strings.Contains(err.Error(), "Внутреняя ошибка. Попробуйте еще раз.") {
+			ctx.Warn(msg, logs.Error(err))
+			return
+		}
+
+		_ = ctx.Error(&errs, err, msg)
 		return
 	}
 
