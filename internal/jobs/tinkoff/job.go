@@ -8,6 +8,8 @@ import (
 	"github.com/jfk9w-go/based"
 	"github.com/jfk9w-go/tinkoff-api"
 	"github.com/pkg/errors"
+	"github.com/tebeka/selenium"
+	"github.com/tebeka/selenium/chrome"
 	"go.uber.org/multierr"
 
 	"github.com/jfk9w/hoarder/internal/common"
@@ -25,7 +27,7 @@ const JobID = "tinkoff"
 type JobParams struct {
 	Clock         based.Clock  `validate:"required"`
 	Logger        *slog.Logger `validate:"required"`
-	Config        *Config      `validate:"required"`
+	Config        Config       `validate:"required"`
 	ClientFactory ClientFactory
 	Firefly       firefly.Invoker
 }
@@ -59,19 +61,30 @@ func NewJob(ctx context.Context, params JobParams) (*Job, error) {
 		return nil, err
 	}
 
+	authFlow := tinkoff.ApiAuthFlow
+	if cfg := params.Config.Selenium; cfg != nil && cfg.Enabled {
+		caps := selenium.Capabilities{"browserName": cfg.Browser}
+		caps.AddChrome(chrome.Capabilities{Args: cfg.Args, Path: cfg.Binary})
+		authFlow = &tinkoff.SeleniumAuthFlow{
+			Capabilities: caps,
+			URLPrefix:    cfg.URLPrefix,
+		}
+	}
+
 	storage := &storage{db: db}
 	users := make(map[string]map[string]pingingClient)
 	for user, credentials := range params.Config.Users {
 		phones := make(map[string]pingingClient)
 		users[user] = phones
 		for _, credential := range credentials {
-			client, err := tinkoff.NewClient(tinkoff.ClientParams{
+			client, err := params.ClientFactory(tinkoff.ClientParams{
 				Clock: params.Clock,
 				Credential: tinkoff.Credential{
 					Phone:    credential.Phone,
 					Password: credential.Password,
 				},
 				SessionStorage: storage,
+				AuthFlow:       authFlow,
 			})
 
 			if err != nil {

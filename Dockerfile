@@ -9,5 +9,6 @@ RUN GOOS=$TARGETOS GOARCH=$TARGETARCH make bin
 
 FROM alpine:latest
 COPY --from=builder /src/bin/* /usr/local/bin/
-RUN apk add --no-cache tzdata
-ENTRYPOINT ["hoarder"]
+COPY --from=builder /src/docker/init /
+RUN apk add --no-cache tzdata chromium chromium-chromedriver
+ENTRYPOINT ["/init"]

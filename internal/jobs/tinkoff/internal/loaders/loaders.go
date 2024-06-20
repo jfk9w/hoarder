@@ -20,6 +20,7 @@ type Client interface {
 	InvestOperationTypes(ctx context.Context) (*tinkoff.InvestOperationTypesOut, error)
 	InvestAccounts(ctx context.Context, in *tinkoff.InvestAccountsIn) (*tinkoff.InvestAccountsOut, error)
 	InvestOperations(ctx context.Context, in *tinkoff.InvestOperationsIn) (*tinkoff.InvestOperationsOut, error)
+	Ping(ctx context.Context)
 }
 
 type Interface interface {

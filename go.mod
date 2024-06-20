@@ -1,7 +1,8 @@
 module github.com/jfk9w/hoarder
 
-go 1.21
-toolchain go1.22.3
+go 1.21.0
+
+toolchain go1.22.4
 
 require (
 	github.com/AlekSi/pointer v1.2.0
@@ -12,9 +13,10 @@ require (
 	github.com/jfk9w-go/confi v0.0.4
 	github.com/jfk9w-go/lkdr-api v1.0.20
 	github.com/jfk9w-go/rucaptcha-api v1.0.10
-	github.com/jfk9w-go/tinkoff-api v1.0.11
+	github.com/jfk9w-go/tinkoff-api v1.1.0
 	github.com/ogen-go/ogen v0.83.0
 	github.com/pkg/errors v0.9.1
+	github.com/tebeka/selenium v0.9.9
 	go.opentelemetry.io/otel v1.27.0
 	go.opentelemetry.io/otel/metric v1.27.0
 	go.opentelemetry.io/otel/trace v1.27.0
@@ -27,9 +29,10 @@ require (
 )
 
 require (
+	github.com/blang/semver v3.5.1+incompatible // indirect
 	github.com/dlclark/regexp2 v1.11.0 // indirect
 	github.com/fatih/color v1.16.0 // indirect
-	github.com/gabriel-vasile/mimetype v1.4.3 // indirect
+	github.com/gabriel-vasile/mimetype v1.4.4 // indirect
 	github.com/ghodss/yaml v1.0.0 // indirect
 	github.com/go-faster/yaml v0.4.6 // indirect
 	github.com/go-logr/logr v1.4.1 // indirect
@@ -52,12 +55,12 @@ require (
 	github.com/rogpeppe/go-internal v1.11.0 // indirect
 	github.com/segmentio/asm v1.2.0 // indirect
 	go.uber.org/zap v1.27.0 // indirect
-	golang.org/x/crypto v0.21.0 // indirect
+	golang.org/x/crypto v0.24.0 // indirect
 	golang.org/x/exp v0.0.0-20240213143201-ec583247a57a // indirect
-	golang.org/x/net v0.23.0 // indirect
-	golang.org/x/sync v0.6.0 // indirect
-	golang.org/x/sys v0.18.0 // indirect
-	golang.org/x/text v0.14.0 // indirect
+	golang.org/x/net v0.26.0 // indirect
+	golang.org/x/sync v0.7.0 // indirect
+	golang.org/x/sys v0.21.0 // indirect
+	golang.org/x/text v0.16.0 // indirect
 	golang.org/x/xerrors v0.0.0-20231012003039-104605ab7028 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect

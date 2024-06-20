@@ -24,7 +24,7 @@ import (
 const JobID = "lkdr"
 
 type JobParams struct {
-	Config        *Config      `validate:"required"`
+	Config        Config       `validate:"required"`
 	Clock         based.Clock  `validate:"required"`
 	Logger        *slog.Logger `validate:"required"`
 	ClientFactory ClientFactory

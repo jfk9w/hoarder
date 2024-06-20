@@ -31,6 +31,9 @@ properties:
       accessToken:
         description: Персональный токен доступа.
         type: string
+      enabled:
+        description: Включить синхронизацию с Firefly III.
+        type: boolean
       serverUrl:
         description: URL сервера Firefly III.
         type: string
@@ -40,7 +43,7 @@ properties:
     type: object
   lkdr:
     additionalProperties: false
-    description: Настройка пайплана для сервиса ФНС "Мои чеки онлайн".
+    description: Настройка загрузки данных из сервиса ФНС "Мои чеки онлайн".
     properties:
       batchSize:
         default: 1000
@@ -65,6 +68,9 @@ properties:
           - driver
           - dsn
         type: object
+      enabled:
+        description: Включает загрузку данных из сервиса ФНС "Мои чеки онлайн".
+        type: boolean
       timeout:
         default: 5m0s
         description: Таймаут для запросов.
@@ -130,27 +136,41 @@ properties:
     additionalProperties: false
     description: Настройки фоновой синхронизации.
     properties:
-      interval:
-        default: 30m0s
-        description: Интервал синхронизации.
-        pattern: (\d+h)?(\d+m)?(\d+s)?(\d+ms)?(\d+µs)?(\d+ns)?
-        type: string
-      users:
-        additionalProperties:
-          items:
+      Config:
+        additionalProperties: false
+        properties:
+          interval:
+            default: 30m0s
+            description: Интервал синхронизации.
+            pattern: (\d+h)?(\d+m)?(\d+s)?(\d+ms)?(\d+µs)?(\d+ns)?
             type: string
-          type: array
-        description: ID пользователей, для которых данные нужно синхронизировать в фоновом режиме.
+          users:
+            additionalProperties:
+              items:
+                type: string
+              type: array
+            description: ID пользователей, для которых данные нужно синхронизировать в фоновом режиме.
+            type: object
+        required:
+          - users
         type: object
+      enabled:
+        description: Включить фоновую синхронизацию.
+        type: boolean
     required:
-      - users
+      - Config
     type: object
   stdin:
-    description: Включение интерактивной командной строки.
-    type: boolean
+    additionalProperties: false
+    description: Настройки управления через интерактивную командную строку.
+    properties:
+      enabled:
+        description: Включение интерактивной командной строки.
+        type: boolean
+    type: object
   tinkoff:
     additionalProperties: false
-    description: Настройка пайплайна для онлайн-банка "Тинькофф".
+    description: Настройка загрузки данных из Т-Банка
     properties:
       batchSize:
         default: 100
@@ -175,11 +195,45 @@ properties:
           - driver
           - dsn
         type: object
+      enabled:
+        description: Включает загрузку данных из Т-Банка.
+        type: boolean
       overlap:
         default: 168h0m0s
         description: Продолжительность "нахлеста" при обновлении операций.
         pattern: (\d+h)?(\d+m)?(\d+s)?(\d+ms)?(\d+µs)?(\d+ns)?
         type: string
+      selenium:
+        additionalProperties: false
+        description: Параметры Selenium для аутентификации.
+        properties:
+          args:
+            default:
+              - --headless
+              - --no-sandbox
+            description: Аргументы для запуска браузера.
+            items:
+              type: string
+            type: array
+          binary:
+            description: Путь к исполняемому файлу браузера.
+            type: string
+          browser:
+            description: Протестировано только с Chrome/Chromium.
+            enum:
+              - chrome
+              - chromium
+            type: string
+          enabled:
+            description: Включает аутентификацию через Selenium.
+            type: boolean
+          urlPrefix:
+            default: http://127.0.0.1:4444/wd/hub
+            description: Строка подключения к Selenium.
+            type: string
+        required:
+          - urlPrefix
+        type: object
       users:
         additionalProperties:
           items:
@@ -211,6 +265,9 @@ properties:
     additionalProperties: false
     description: Настройки XMPP-триггера.
     properties:
+      enabled:
+        description: Включение XMPP-триггера.
+        type: boolean
       jid:
         description: JID бота.
         type: string
