@@ -7,7 +7,7 @@ import (
 //go:generate ogen -clean -no-server -ct-alias application/vnd.api+json=application/json -target . -package firefly ./firefly-iii-2.0.9-v1-fix.yaml
 
 type ClientParams struct {
-	Config *Config `validate:"required"`
+	Config Config `validate:"required"`
 }
 
 func wrapClient(cfg *clientConfig) {

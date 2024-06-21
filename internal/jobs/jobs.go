@@ -42,14 +42,12 @@ type Registry struct {
 	jobs []exclusiveJob
 }
 
-type jobFilterFunc func(id string) bool
-
 func (r *Registry) Register(job Interface) {
 	r.jobs = append(r.jobs, exclusiveJob{job: job})
 }
 
 func (r *Registry) Run(ctx Context, now time.Time, userID string, jobIDs []string) []Result {
-	var filter jobFilterFunc
+	var filter func(id string) bool
 	if len(jobIDs) == 0 || jobIDs[0] == "all" {
 		filter = func(_ string) bool { return true }
 	} else {
@@ -73,15 +71,13 @@ func (r *Registry) Run(ctx Context, now time.Time, userID string, jobIDs []strin
 			continue
 		}
 
-		result := Result{JobID: jobID}
+		results = append(results, Result{JobID: jobID})
 		wg.Add(1)
-		go func() {
+		go func(idx int) {
 			defer wg.Done()
-			err := job.Run(ctx, now, userID)
-			_ = multierr.AppendInto(&result.Error, err)
-		}()
-
-		results = append(results, result)
+			err := job.Run(ctx.withLog("job", jobID), now, userID)
+			_ = multierr.AppendInto(&results[idx].Error, err)
+		}(len(results) - 1)
 	}
 
 	wg.Wait()

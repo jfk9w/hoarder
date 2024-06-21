@@ -30,15 +30,36 @@ type Config struct {
 		Values bool `yaml:"values,omitempty" doc:"Вывод значений конфигурации по умолчанию в JSON."`
 	} `yaml:"dump,omitempty" doc:"Вывод параметров конфигурации в стандартный поток вывода.\n\nПредназначены для использования как CLI-параметры."`
 
-	Log     logs.Config     `yaml:"log,omitempty" doc:"Настройки логирования для библиотеки slog."`
-	Firefly *firefly.Config `yaml:"firefly,omitempty" doc:"Настройки подключения к Firefly III."`
+	Log logs.Config `yaml:"log,omitempty" doc:"Настройки логирования для библиотеки slog."`
 
-	Schedule *schedule.Config `yaml:"schedule,omitempty" doc:"Настройки фоновой синхронизации."`
-	Stdin    bool             `yaml:"stdin,omitempty" doc:"Включение интерактивной командной строки."`
-	XMPP     *xmpp.Config     `yaml:"xmpp,omitempty" doc:"Настройки XMPP-триггера."`
+	Firefly *struct {
+		firefly.Config `yaml:",inline"`
+		Enabled        bool `yaml:"enabled,omitempty" doc:"Включить синхронизацию с Firefly III."`
+	} `yaml:"firefly,omitempty" doc:"Настройки подключения к Firefly III."`
 
-	LKDR    *lkdr.Config    `yaml:"lkdr,omitempty" doc:"Настройка пайплана для сервиса ФНС \"Мои чеки онлайн\"."`
-	Tinkoff *tinkoff.Config `yaml:"tinkoff,omitempty" doc:"Настройка пайплайна для онлайн-банка \"Тинькофф\"."`
+	Schedule *struct {
+		schedule.Config
+		Enabled bool `yaml:"enabled,omitempty" doc:"Включить фоновую синхронизацию."`
+	} `yaml:"schedule,omitempty" doc:"Настройки фоновой синхронизации."`
+
+	Stdin *struct {
+		Enabled bool `yaml:"enabled,omitempty" doc:"Включение интерактивной командной строки."`
+	} `yaml:"stdin,omitempty" doc:"Настройки управления через интерактивную командную строку."`
+
+	XMPP *struct {
+		xmpp.Config `yaml:",inline"`
+		Enabled     bool `yaml:"enabled,omitempty" doc:"Включение XMPP-триггера."`
+	} `yaml:"xmpp,omitempty" doc:"Настройки XMPP-триггера."`
+
+	LKDR *struct {
+		lkdr.Config `yaml:",inline"`
+		Enabled     bool `yaml:"enabled,omitempty" doc:"Включает загрузку данных из сервиса ФНС \"Мои чеки онлайн\"."`
+	} `yaml:"lkdr,omitempty" doc:"Настройка загрузки данных из сервиса ФНС \"Мои чеки онлайн\"."`
+
+	Tinkoff *struct {
+		tinkoff.Config `yaml:",inline"`
+		Enabled        bool `yaml:"enabled,omitempty" doc:"Включает загрузку данных из Т-Банка."`
+	} `yaml:"tinkoff,omitempty" doc:"Настройка загрузки данных из Т-Банка"`
 
 	Captcha *captcha.Config `yaml:"captcha,omitempty" doc:"Настройки для решения капчи."`
 }
@@ -64,12 +85,14 @@ func main() {
 	}
 
 	log := logs.Get(cfg.Log)
+	defer log.Info("shutdown")
+
 	clock := based.StandardClock
 
 	var fireflyClient firefly.Invoker
-	if cfg := cfg.Firefly; cfg != nil {
+	if cfg := cfg.Firefly; pointer.Get(cfg).Enabled {
 		fireflyClient, err = firefly.NewDefaultClient(firefly.ClientParams{
-			Config: cfg,
+			Config: cfg.Config,
 		})
 
 		if err != nil {
@@ -87,11 +110,11 @@ func main() {
 
 	jobs := new(jobs.Registry)
 
-	if cfg := cfg.LKDR; cfg != nil {
+	if cfg := cfg.LKDR; pointer.Get(cfg).Enabled {
 		job, err := lkdr.NewJob(ctx, lkdr.JobParams{
 			Clock:         clock,
 			Logger:        log,
-			Config:        cfg,
+			Config:        cfg.Config,
 			CaptchaSolver: captchaSolver,
 		})
 
@@ -102,11 +125,11 @@ func main() {
 		jobs.Register(job)
 	}
 
-	if cfg := cfg.Tinkoff; cfg != nil {
+	if cfg := cfg.Tinkoff; pointer.Get(cfg).Enabled {
 		job, err := tinkoff.NewJob(ctx, tinkoff.JobParams{
 			Clock:   clock,
 			Logger:  log,
-			Config:  cfg,
+			Config:  cfg.Config,
 			Firefly: fireflyClient,
 		})
 
@@ -120,10 +143,10 @@ func main() {
 
 	triggers := triggers.NewRegistry(log)
 
-	if cfg := cfg.Schedule; cfg != nil {
+	if cfg := cfg.Schedule; pointer.Get(cfg).Enabled {
 		trigger, err := schedule.NewTrigger(schedule.TriggerParams{
 			Clock:  clock,
-			Config: cfg,
+			Config: cfg.Config,
 		})
 
 		if err != nil {
@@ -133,7 +156,7 @@ func main() {
 		triggers.Register(trigger)
 	}
 
-	if cfg.Stdin {
+	if cfg := cfg.Stdin; pointer.Get(cfg).Enabled {
 		trigger, err := stdin.NewTrigger(stdin.TriggerParams{
 			Clock: clock,
 		})
@@ -145,10 +168,10 @@ func main() {
 		triggers.Register(trigger)
 	}
 
-	if cfg := cfg.XMPP; cfg != nil {
+	if cfg := cfg.XMPP; pointer.Get(cfg).Enabled {
 		trigger, err := xmpp.NewTrigger(xmpp.TriggerParams{
 			Clock:  clock,
-			Config: *cfg,
+			Config: cfg.Config,
 		})
 
 		if err != nil {

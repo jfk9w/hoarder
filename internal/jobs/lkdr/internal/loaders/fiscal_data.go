@@ -57,7 +57,6 @@ func (l fiscalDataBatch) load(ctx jobs.Context, offset, limit int) (nextOffset *
 		return
 	}
 
-	count := 0
 	for _, pendingReceipt := range pendingReceipts {
 		if pendingReceipt.HasFiscalData {
 			continue
@@ -68,6 +67,11 @@ func (l fiscalDataBatch) load(ctx jobs.Context, offset, limit int) (nextOffset *
 
 		out, err := l.client.FiscalData(ctx, &lkdr.FiscalDataIn{Key: key})
 		if err != nil {
+			if lkdr.IsDataNotFound(err) {
+				ctx.Warn("fiscal data not found", logs.Error(err))
+				continue
+			}
+
 			msg := "failed to get data from api"
 			if strings.Contains(err.Error(), "Внутреняя ошибка. Попробуйте еще раз.") {
 				ctx.Warn(msg, logs.Error(err))
@@ -92,7 +96,6 @@ func (l fiscalDataBatch) load(ctx jobs.Context, offset, limit int) (nextOffset *
 		}
 
 		ctx.Debug("updated entity in db")
-		count += 1
 	}
 
 	if len(pendingReceipts) == limit {

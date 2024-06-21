@@ -60,6 +60,11 @@ func (ctx Context) With(key string, value any) Context {
 	return ctx
 }
 
+func (ctx Context) withLog(key string, value any) Context {
+	ctx.log = ctx.log.With(slog.Any(key, value))
+	return ctx
+}
+
 func (ctx Context) WithAskFn(askFn AskFunc) Context {
 	ctx.askFn = askFn
 	return ctx

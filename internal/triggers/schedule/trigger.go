@@ -18,7 +18,7 @@ type Config struct {
 
 type TriggerParams struct {
 	Clock  based.Clock `validate:"required"`
-	Config *Config     `validate:"required"`
+	Config Config      `validate:"required"`
 }
 
 type Trigger struct {
