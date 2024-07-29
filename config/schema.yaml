@@ -136,29 +136,23 @@ properties:
     additionalProperties: false
     description: Настройки фоновой синхронизации.
     properties:
-      Config:
-        additionalProperties: false
-        properties:
-          interval:
-            default: 30m0s
-            description: Интервал синхронизации.
-            pattern: (\d+h)?(\d+m)?(\d+s)?(\d+ms)?(\d+µs)?(\d+ns)?
-            type: string
-          users:
-            additionalProperties:
-              items:
-                type: string
-              type: array
-            description: ID пользователей, для которых данные нужно синхронизировать в фоновом режиме.
-            type: object
-        required:
-          - users
-        type: object
       enabled:
         description: Включить фоновую синхронизацию.
         type: boolean
+      interval:
+        default: 30m0s
+        description: Интервал синхронизации.
+        pattern: (\d+h)?(\d+m)?(\d+s)?(\d+ms)?(\d+µs)?(\d+ns)?
+        type: string
+      users:
+        additionalProperties:
+          items:
+            type: string
+          type: array
+        description: ID пользователей, для которых данные нужно синхронизировать в фоновом режиме.
+        type: object
     required:
-      - Config
+      - users
     type: object
   stdin:
     additionalProperties: false

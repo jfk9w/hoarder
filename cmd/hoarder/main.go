@@ -38,8 +38,8 @@ type Config struct {
 	} `yaml:"firefly,omitempty" doc:"Настройки подключения к Firefly III."`
 
 	Schedule *struct {
-		schedule.Config
-		Enabled bool `yaml:"enabled,omitempty" doc:"Включить фоновую синхронизацию."`
+		schedule.Config `yaml:",inline"`
+		Enabled         bool `yaml:"enabled,omitempty" doc:"Включить фоновую синхронизацию."`
 	} `yaml:"schedule,omitempty" doc:"Настройки фоновой синхронизации."`
 
 	Stdin *struct {
