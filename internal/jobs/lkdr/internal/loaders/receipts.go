@@ -69,7 +69,7 @@ func (l receiptsBatch) load(ctx jobs.Context, offset int, limit int) (nextOffset
 	out, err := l.client.Receipt(ctx, in)
 	if err != nil {
 		msg := "failed to get data from api"
-		if strings.Contains(err.Error(), "Внутреняя ошибка. Попробуйте еще раз.") {
+		if strings.Contains(err.Error(), "Внутреняя ошибка. Попробуйте еще раз") {
 			ctx.Warn(msg, logs.Error(err))
 			return
 		}

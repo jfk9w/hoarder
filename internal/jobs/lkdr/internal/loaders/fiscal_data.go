@@ -73,7 +73,7 @@ func (l fiscalDataBatch) load(ctx jobs.Context, offset, limit int) (nextOffset *
 			}
 
 			msg := "failed to get data from api"
-			if strings.Contains(err.Error(), "Внутреняя ошибка. Попробуйте еще раз.") {
+			if strings.Contains(err.Error(), "Внутреняя ошибка. Попробуйте еще раз") {
 				ctx.Warn(msg, logs.Error(err))
 				continue
 			}
