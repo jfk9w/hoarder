@@ -13,7 +13,7 @@ require (
 	github.com/jfk9w-go/confi v0.0.4
 	github.com/jfk9w-go/lkdr-api v1.1.1
 	github.com/jfk9w-go/rucaptcha-api v1.0.10
-	github.com/jfk9w-go/tinkoff-api v1.1.0
+	github.com/jfk9w-go/tinkoff-api v1.1.1
 	github.com/ogen-go/ogen v0.83.0
 	github.com/pkg/errors v0.9.1
 	github.com/tebeka/selenium v0.9.9
