@@ -7,9 +7,9 @@ jobs:
     name: Test
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Set up Go
-        uses: actions/setup-go@v3
+        uses: actions/setup-go@v5
         with:
           go-version: stable
       - name: Lint
@@ -38,9 +38,9 @@ jobs:
       new_tag: ${{ steps.tag.outputs.new_tag }}
       changelog: ${{ steps.tag.outputs.changelog }}
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Set up Go
-        uses: actions/setup-go@v3
+        uses: actions/setup-go@v4
         with:
           go-version: stable
       - name: Coverage
@@ -55,9 +55,9 @@ jobs:
     needs: [ tag ]
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Set up Go
-        uses: actions/setup-go@v3
+        uses: actions/setup-go@v5
         with:
           go-version: stable
       - name: Package
@@ -78,7 +78,7 @@ jobs:
     needs: [ test, tag ]
     if: always() && !cancelled() && !contains(needs.*.result, 'failure')
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Login
         uses: docker/login-action@v2
         with:

@@ -3,8 +3,6 @@ MODULE := $(shell head -1 go.mod | cut -d ' ' -f2)
 GOIMPORTS := $(shell go env GOPATH)/bin/goimports
 OGEN := $(shell go env GOPATH)/bin/ogen
 
-export GOEXPERIMENT := loopvar
-
 $(GOIMPORTS):
 	go install golang.org/x/tools/cmd/goimports@latest
 
@@ -25,13 +23,13 @@ bin/%: gen $(wildcard ./internal/**/*) $(wildcard ./cmd$@/**/*)
 
 bin: $(subst ./cmd,bin,$(wildcard ./cmd/*))
 
-%/schema.yaml: bin/hoarder
+%/schema.json: bin/hoarder
 	mkdir -p $(dir $@) && ./$^ --dump.schema > $@
 
 %/defaults.json: bin/hoarder
 	mkdir -p $(dir $@) && ./$^ --dump.values > $@
 
-config: config/schema.yaml config/defaults.json
+config: config/schema.json config/defaults.json
 
 install: bin
 	cp bin/* /usr/local/bin/

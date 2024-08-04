@@ -74,7 +74,7 @@ func main() {
 	}
 
 	if pointer.Get(cfg.Dump).Schema {
-		dump(schema, confi.YAML)
+		dump(schema, confi.JSON)
 		return
 	}
 
