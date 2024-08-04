@@ -6,10 +6,11 @@
 DIR=dist
 
 rm -rf $DIR/*
+make clean config
 
 for GOOS in windows linux darwin; do
   for GOARCH in amd64 arm64; do
-    make clean bin config
+    GOOS=$GOOS GOARCH=$GOARCH make clean bin
     if [ "$GOOS" == "windows" ]; then
       for FILE in bin/*; do
         mv "$FILE" "$FILE.exe"
