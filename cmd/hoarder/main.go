@@ -23,7 +23,7 @@ import (
 )
 
 type Config struct {
-	Schema string `yaml:"$schema,omitempty" default:"https://raw.githubusercontent.com/jfk9w/hoarder/master/config/schema.yaml"`
+	Schema string `yaml:"$schema,omitempty" default:"https://raw.githubusercontent.com/jfk9w/hoarder/master/config/schema.json"`
 
 	Dump *struct {
 		Schema bool `yaml:"schema,omitempty" doc:"Вывод схемы конфигурации в YAML."`

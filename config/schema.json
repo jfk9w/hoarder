@@ -2,7 +2,7 @@
   "additionalProperties": false,
   "properties": {
     "$schema": {
-      "default": "https://raw.githubusercontent.com/jfk9w/hoarder/master/config/schema.yaml",
+      "default": "https://raw.githubusercontent.com/jfk9w/hoarder/master/config/schema.json",
       "type": "string"
     },
     "captcha": {
