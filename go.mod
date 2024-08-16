@@ -14,7 +14,7 @@ require (
 	github.com/jfk9w-go/lkdr-api v1.1.1
 	github.com/jfk9w-go/rucaptcha-api v1.0.10
 	github.com/jfk9w-go/tinkoff-api v1.1.1
-	github.com/ogen-go/ogen v1.2.2
+	github.com/ogen-go/ogen v1.3.0
 	github.com/pkg/errors v0.9.1
 	github.com/tebeka/selenium v0.9.9
 	go.opentelemetry.io/otel v1.28.0
@@ -31,7 +31,7 @@ require (
 require (
 	filippo.io/edwards25519 v1.1.0 // indirect
 	github.com/blang/semver v3.5.1+incompatible // indirect
-	github.com/dlclark/regexp2 v1.11.2 // indirect
+	github.com/dlclark/regexp2 v1.11.4 // indirect
 	github.com/fatih/color v1.17.0 // indirect
 	github.com/gabriel-vasile/mimetype v1.4.5 // indirect
 	github.com/ghodss/yaml v1.0.0 // indirect
@@ -56,12 +56,12 @@ require (
 	github.com/rogpeppe/go-internal v1.11.0 // indirect
 	github.com/segmentio/asm v1.2.0 // indirect
 	go.uber.org/zap v1.27.0 // indirect
-	golang.org/x/crypto v0.25.0 // indirect
+	golang.org/x/crypto v0.26.0 // indirect
 	golang.org/x/exp v0.0.0-20240719175910-8a7402abbf56 // indirect
-	golang.org/x/net v0.27.0 // indirect
+	golang.org/x/net v0.28.0 // indirect
 	golang.org/x/sync v0.8.0 // indirect
 	golang.org/x/sys v0.23.0 // indirect
-	golang.org/x/text v0.16.0 // indirect
+	golang.org/x/text v0.17.0 // indirect
 	golang.org/x/xerrors v0.0.0-20240716161551-93cc26a95ae9 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
