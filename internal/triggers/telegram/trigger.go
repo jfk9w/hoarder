@@ -109,7 +109,7 @@ func (t *Trigger) Run(ctx triggers.Context, jobs triggers.Jobs) {
 
 func (t *Trigger) execute(ctx context.Context, msg *tgb.MessageUpdate, client *tg.Client, jobs triggers.Jobs, jobID string) error {
 	userID, _ := t.getUserID(msg.From)
-	typing := t.startTyping(ctx, client, msg.Chat.ID)
+	typing := t.typing(ctx, client, msg.Chat.ID)
 	jctx := triggers.ContextFrom(ctx).As(userID).Job().
 		WithAskFn(func(ctx context.Context, text string) (string, error) {
 			typing.Cancel()
@@ -119,7 +119,7 @@ func (t *Trigger) execute(ctx context.Context, msg *tgb.MessageUpdate, client *t
 					return err
 				}
 
-				typing = t.startTyping(ctx, client, msg.Chat.ID)
+				typing = t.typing(ctx, client, msg.Chat.ID)
 				return nil
 			})
 		})
@@ -155,7 +155,7 @@ func (t *Trigger) answer(ctx context.Context, msg *tgb.MessageUpdate) error {
 	return err
 }
 
-func (t *Trigger) startTyping(ctx context.Context, client *tg.Client, chatID tg.ChatID) based.Goroutine {
+func (t *Trigger) typing(ctx context.Context, client *tg.Client, chatID tg.ChatID) based.Goroutine {
 	return based.Go(ctx, func(ctx context.Context) {
 		ticker := time.NewTicker(t.config.Typing)
 		defer ticker.Stop()
