@@ -50,10 +50,15 @@ func NewTrigger(params TriggerParams) (*Trigger, error) {
 		return nil, err
 	}
 
+	users, err := params.Config.Users.Reverse()
+	if err != nil {
+		return nil, errors.Wrap(err, "parse users")
+	}
+
 	return &Trigger{
 		clock:     params.Clock,
 		config:    params.Config,
-		users:     params.Config.Users.Reverse(),
+		users:     users,
 		questions: common.NewQuestions[string, string](),
 	}, nil
 }

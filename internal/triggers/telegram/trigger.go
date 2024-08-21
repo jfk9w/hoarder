@@ -12,6 +12,7 @@ import (
 	"github.com/jfk9w/hoarder/internal/triggers"
 	"github.com/mr-linch/go-tg"
 	"github.com/mr-linch/go-tg/tgb"
+	"github.com/pkg/errors"
 	"go.uber.org/multierr"
 )
 
@@ -46,11 +47,16 @@ func NewTrigger(params TriggerParams) (*Trigger, error) {
 		return nil, err
 	}
 
+	users, err := params.Config.Users.Reverse()
+	if err != nil {
+		return nil, errors.Wrap(err, "parse users")
+	}
+
 	return &Trigger{
 		clock:     params.Clock,
 		config:    params.Config,
 		log:       params.Logger,
-		users:     params.Config.Users.Reverse(),
+		users:     users,
 		questions: common.NewQuestions[string, string](),
 	}, nil
 }

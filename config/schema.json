@@ -227,7 +227,12 @@
           "type": "string"
         },
         "users": {
-          "additionalProperties": false,
+          "additionalProperties": {
+            "items": {
+              "type": "integer"
+            },
+            "type": "array"
+          },
           "description": "Маппинг пользователей в ID в Telegram.",
           "type": "object"
         }
@@ -392,7 +397,12 @@
           "type": "string"
         },
         "users": {
-          "additionalProperties": false,
+          "additionalProperties": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
           "description": "Маппинг пользователей в JID.",
           "type": "object"
         }
