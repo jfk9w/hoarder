@@ -213,31 +213,22 @@
       "description": "Настройки Telegram-триггера.",
       "properties": {
         "enabled": {
+          "description": "Включение Telegram-триггера.",
           "type": "boolean"
         },
         "token": {
           "description": "Токен бота.",
           "type": "string"
         },
+        "typing": {
+          "default": "4s",
+          "description": "Интервал для отправки действия \"печатает...\".",
+          "pattern": "(\\d+h)?(\\d+m)?(\\d+s)?(\\d+ms)?(\\d+µs)?(\\d+ns)?",
+          "type": "string"
+        },
         "users": {
-          "additionalProperties": {
-            "items": {
-              "additionalProperties": false,
-              "properties": {
-                "id": {
-                  "description": "ID пользователя.",
-                  "type": "integer"
-                },
-                "name": {
-                  "description": "Имя пользователя (без '@').",
-                  "type": "string"
-                }
-              },
-              "type": "object"
-            },
-            "type": "array"
-          },
-          "description": "Маппинг пользователей в ID или username в Telegram.",
+          "additionalProperties": false,
+          "description": "Маппинг пользователей в ID в Telegram.",
           "type": "object"
         }
       },
@@ -401,12 +392,7 @@
           "type": "string"
         },
         "users": {
-          "additionalProperties": {
-            "items": {
-              "type": "string"
-            },
-            "type": "array"
-          },
+          "additionalProperties": false,
           "description": "Маппинг пользователей в JID.",
           "type": "object"
         }

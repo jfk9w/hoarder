@@ -24,7 +24,7 @@ const (
 type Config struct {
 	Token  string                            `yaml:"token" doc:"Токен бота."`
 	Users  common.UserMap[string, tg.UserID] `yaml:"users" doc:"Маппинг пользователей в ID в Telegram."`
-	Typing time.Duration                     `yaml:"typing" doc:"Интервал для отправки действия \"печатает...\"." default:"4s"`
+	Typing time.Duration                     `yaml:"typing,omitempty" doc:"Интервал для отправки действия \"печатает...\"." default:"4s"`
 }
 
 type TriggerParams struct {

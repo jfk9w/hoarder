@@ -54,7 +54,7 @@ type Config struct {
 
 	Telegram *struct {
 		telegram.Config `yaml:",inline"`
-		Enabled         bool `yaml:"enabled,omitempty" doc:"Включение Telegram-триггера.`
+		Enabled         bool `yaml:"enabled,omitempty" doc:"Включение Telegram-триггера."`
 	} `yaml:"telegram,omitempty" doc:"Настройки Telegram-триггера."`
 
 	LKDR *struct {
