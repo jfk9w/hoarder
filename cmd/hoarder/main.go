@@ -19,6 +19,7 @@ import (
 	"github.com/jfk9w/hoarder/internal/triggers"
 	"github.com/jfk9w/hoarder/internal/triggers/schedule"
 	"github.com/jfk9w/hoarder/internal/triggers/stdin"
+	"github.com/jfk9w/hoarder/internal/triggers/telegram"
 	"github.com/jfk9w/hoarder/internal/triggers/xmpp"
 )
 
@@ -50,6 +51,11 @@ type Config struct {
 		xmpp.Config `yaml:",inline"`
 		Enabled     bool `yaml:"enabled,omitempty" doc:"Включение XMPP-триггера."`
 	} `yaml:"xmpp,omitempty" doc:"Настройки XMPP-триггера."`
+
+	Telegram *struct {
+		telegram.Config `yaml:",inline"`
+		Enabled         bool `yaml:"enabled,omitempty" doc:"Включение Telegram-триггера.`
+	} `yaml:"telegram,omitempty" doc:"Настройки Telegram-триггера."`
 
 	LKDR *struct {
 		lkdr.Config `yaml:",inline"`
@@ -176,6 +182,20 @@ func main() {
 
 		if err != nil {
 			panic(errors.Wrap(err, "create xmpp trigger"))
+		}
+
+		triggers.Register(trigger)
+	}
+
+	if cfg := cfg.Telegram; pointer.Get(cfg).Enabled {
+		trigger, err := telegram.NewTrigger(telegram.TriggerParams{
+			Clock:  clock,
+			Config: cfg.Config,
+			Logger: log,
+		})
+
+		if err != nil {
+			panic(errors.Wrap(err, "create telegram trigger"))
 		}
 
 		triggers.Register(trigger)

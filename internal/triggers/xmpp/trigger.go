@@ -22,11 +22,11 @@ import (
 const TriggerID = "xmpp"
 
 type Config struct {
-	Jid      string            `yaml:"jid" doc:"JID бота."`
-	Password string            `yaml:"password" doc:"Пароль."`
-	Users    map[string]string `yaml:"users" doc:"Маппинг JID в имя пользователя."`
-	Presence time.Duration     `yaml:"presence,omitempty" doc:"Интервал для отправки присутствия." default:"1m"`
-	State    time.Duration     `yaml:"state,omitempty" doc:"Интервал для отправки состояния (\"печатает\")." default:"5s"`
+	Jid      string                         `yaml:"jid" doc:"JID бота."`
+	Password string                         `yaml:"password" doc:"Пароль."`
+	Users    common.UserMap[string, string] `yaml:"users" doc:"Маппинг пользователей в JID."`
+	Presence time.Duration                  `yaml:"presence,omitempty" doc:"Интервал для отправки присутствия." default:"1m"`
+	State    time.Duration                  `yaml:"state,omitempty" doc:"Интервал для отправки состояния (\"печатает\")." default:"5s"`
 }
 
 type TriggerParams struct {
@@ -37,6 +37,7 @@ type TriggerParams struct {
 type Trigger struct {
 	clock  based.Clock
 	config Config
+	users  map[string]string
 
 	questions common.Questions[string, string]
 	requests  sync.WaitGroup
@@ -52,6 +53,7 @@ func NewTrigger(params TriggerParams) (*Trigger, error) {
 	return &Trigger{
 		clock:     params.Clock,
 		config:    params.Config,
+		users:     params.Config.Users.Reverse(),
 		questions: common.NewQuestions[string, string](),
 	}, nil
 }
@@ -69,7 +71,7 @@ func (t *Trigger) Run(ctx triggers.Context, jobs triggers.Jobs) {
 		}
 
 		isKnownJid := false
-		for jid := range t.config.Users {
+		for jid := range t.users {
 			if strings.HasPrefix(message.From, jid) {
 				message.From = jid
 				isKnownJid = true
@@ -144,7 +146,7 @@ func (t *Trigger) handleMessage(ctx triggers.Context, sender xmpp.Sender, messag
 		defer t.requests.Done()
 	}
 
-	userID := t.config.Users[message.From]
+	userID := t.users[message.From]
 	ctx = ctx.As(userID)
 
 	err := t.questions.Answer(ctx, userID, message.Body)
@@ -186,7 +188,7 @@ func (t *Trigger) handleMessage(ctx triggers.Context, sender xmpp.Sender, messag
 }
 
 func (t *Trigger) askFn(sender xmpp.Sender, to string) jobs.AskFunc {
-	userID := t.config.Users[to]
+	userID := t.users[to]
 	return func(ctx context.Context, text string) (string, error) {
 		return t.questions.Ask(ctx, userID, func(ctx context.Context, userID string) error {
 			return t.sendMessage(ctx, sender, to, text)
@@ -230,7 +232,7 @@ func (t *Trigger) sendMessage(cctx context.Context, sender xmpp.Sender, to strin
 
 func (t *Trigger) sendPresence(cctx context.Context, sender xmpp.Sender, show stanza.PresenceShow) {
 	ctx := triggers.ContextFrom(cctx).With("show", show)
-	for to := range t.config.Users {
+	for to := range t.users {
 		presence := stanza.NewPresence(stanza.Attrs{From: t.config.Jid, To: to})
 		presence.Show = show
 

@@ -208,6 +208,45 @@
       },
       "type": "object"
     },
+    "telegram": {
+      "additionalProperties": false,
+      "description": "Настройки Telegram-триггера.",
+      "properties": {
+        "enabled": {
+          "type": "boolean"
+        },
+        "token": {
+          "description": "Токен бота.",
+          "type": "string"
+        },
+        "users": {
+          "additionalProperties": {
+            "items": {
+              "additionalProperties": false,
+              "properties": {
+                "id": {
+                  "description": "ID пользователя.",
+                  "type": "integer"
+                },
+                "name": {
+                  "description": "Имя пользователя (без '@').",
+                  "type": "string"
+                }
+              },
+              "type": "object"
+            },
+            "type": "array"
+          },
+          "description": "Маппинг пользователей в ID или username в Telegram.",
+          "type": "object"
+        }
+      },
+      "required": [
+        "token",
+        "users"
+      ],
+      "type": "object"
+    },
     "tinkoff": {
       "additionalProperties": false,
       "description": "Настройка загрузки данных из Т-Банка",
@@ -363,9 +402,12 @@
         },
         "users": {
           "additionalProperties": {
-            "type": "string"
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
           },
-          "description": "Маппинг JID в имя пользователя.",
+          "description": "Маппинг пользователей в JID.",
           "type": "object"
         }
       },

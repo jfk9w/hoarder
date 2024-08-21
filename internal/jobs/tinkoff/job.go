@@ -118,14 +118,17 @@ func (j *Job) Close() (errs error) {
 	return
 }
 
-func (j *Job) ID() string {
-	return JobID
+func (j *Job) Info() jobs.Info {
+	return jobs.Info{
+		ID:          JobID,
+		Description: "Загрузка счетов, операций и пр. из Т-Банка и Т-Инвестиций",
+	}
 }
 
 func (j *Job) Run(ctx jobs.Context, now time.Time, userID string) (errs error) {
 	phones := j.users[userID]
 	if phones == nil {
-		return
+		return jobs.ErrJobUnconfigured
 	}
 
 	ctx = ctx.ApplyAskFn(withAuthorizer)
