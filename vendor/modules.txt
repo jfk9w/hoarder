@@ -96,7 +96,7 @@ github.com/jfk9w-go/lkdr-api
 # github.com/jfk9w-go/rucaptcha-api v1.0.10
 ## explicit; go 1.21
 github.com/jfk9w-go/rucaptcha-api
-# github.com/jfk9w-go/tinkoff-api v1.1.1
+# github.com/jfk9w-go/tinkoff-api v1.1.2
 ## explicit; go 1.21
 github.com/jfk9w-go/tinkoff-api
 # github.com/jinzhu/inflection v1.0.0
