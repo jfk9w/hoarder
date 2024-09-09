@@ -6,15 +6,12 @@ import (
 	"log/slog"
 	"reflect"
 
-	"gorm.io/gorm/clause"
-
-	"gorm.io/gorm/schema"
-
-	"gorm.io/gorm/logger"
-
 	"github.com/jfk9w-go/based"
 	"github.com/pkg/errors"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
+	"gorm.io/gorm/logger"
+	"gorm.io/gorm/schema"
 )
 
 var namingStrategy = schema.NamingStrategy{

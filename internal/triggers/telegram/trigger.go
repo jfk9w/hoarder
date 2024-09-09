@@ -7,13 +7,14 @@ import (
 	"time"
 
 	"github.com/jfk9w-go/based"
-	"github.com/jfk9w/hoarder/internal/common"
-	"github.com/jfk9w/hoarder/internal/logs"
-	"github.com/jfk9w/hoarder/internal/triggers"
 	"github.com/mr-linch/go-tg"
 	"github.com/mr-linch/go-tg/tgb"
 	"github.com/pkg/errors"
 	"go.uber.org/multierr"
+
+	"github.com/jfk9w/hoarder/internal/common"
+	"github.com/jfk9w/hoarder/internal/logs"
+	"github.com/jfk9w/hoarder/internal/triggers"
 )
 
 const (

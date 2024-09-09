@@ -1,0 +1,6 @@
+{
+    "go.useLanguageServer": true,
+    "gopls": {
+        "formatting.local": "github.com/jfk9w/hoarder"
+    }
+}
