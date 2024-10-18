@@ -10,5 +10,5 @@ RUN GOOS=$TARGETOS GOARCH=$TARGETARCH make bin
 FROM alpine:latest
 COPY --from=builder /src/bin/* /usr/local/bin/
 COPY --from=builder /src/docker/init /
-RUN apk add --no-cache tzdata chromium chromium-chromedriver
+RUN apk add --no-cache tzdata firefox geckodriver
 ENTRYPOINT ["/init"]

@@ -8,8 +8,6 @@ import (
 	"github.com/jfk9w-go/based"
 	"github.com/jfk9w-go/tinkoff-api"
 	"github.com/pkg/errors"
-	"github.com/tebeka/selenium"
-	"github.com/tebeka/selenium/chrome"
 	"go.uber.org/multierr"
 
 	"github.com/jfk9w/hoarder/internal/common"
@@ -20,6 +18,7 @@ import (
 	"github.com/jfk9w/hoarder/internal/jobs/tinkoff/internal/loaders"
 	fireflySync "github.com/jfk9w/hoarder/internal/jobs/tinkoff/internal/sync/firefly"
 	"github.com/jfk9w/hoarder/internal/logs"
+	"github.com/jfk9w/hoarder/internal/selenium"
 )
 
 const JobID = "tinkoff"
@@ -30,6 +29,7 @@ type JobParams struct {
 	Config        Config       `validate:"required"`
 	ClientFactory ClientFactory
 	Firefly       firefly.Invoker
+	Selenium      *selenium.Service
 }
 
 type Job struct {
@@ -46,6 +46,14 @@ func NewJob(ctx context.Context, params JobParams) (*Job, error) {
 		return nil, err
 	}
 
+	authFlow := tinkoff.ApiAuthFlow
+	if service := params.Selenium; service != nil {
+		authFlow = &tinkoff.SeleniumAuthFlow{
+			Capabilities: service.Capabilities(),
+			URLPrefix:    service.URLPrefix(),
+		}
+	}
+
 	if params.ClientFactory == nil {
 		params.ClientFactory = defaultClientFactory
 	}
@@ -59,16 +67,6 @@ func NewJob(ctx context.Context, params JobParams) (*Job, error) {
 
 	if err != nil {
 		return nil, err
-	}
-
-	authFlow := tinkoff.ApiAuthFlow
-	if cfg := params.Config.Selenium; cfg != nil && cfg.Enabled {
-		caps := selenium.Capabilities{"browserName": cfg.Browser}
-		caps.AddChrome(chrome.Capabilities{Args: cfg.Args, Path: cfg.Binary})
-		authFlow = &tinkoff.SeleniumAuthFlow{
-			Capabilities: caps,
-			URLPrefix:    cfg.URLPrefix,
-		}
 	}
 
 	storage := &storage{db: db}
