@@ -2,7 +2,7 @@
 
 trap 'kill $(jobs -p)' TERM
 
-hoarder $* --selenium.enabled --selenium.browser=firefox &
+hoarder $* --selenium.enabled --selenium.browser=firefox --selenium.jar=/selenium.jar &
 
 HOARDER=$!
 wait "$HOARDER"

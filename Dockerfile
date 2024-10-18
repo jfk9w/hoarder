@@ -11,4 +11,5 @@ FROM alpine:latest
 COPY --from=builder /src/bin/* /usr/local/bin/
 COPY --from=builder /src/docker/init /
 RUN apk add --no-cache tzdata firefox geckodriver
+RUN curl -o selenium.jar https://selenium-release.storage.googleapis.com/3.14/selenium-server-standalone-3.14.0.jar
 ENTRYPOINT ["/init"]
