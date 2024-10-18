@@ -100,14 +100,17 @@ func NewJob(ctx context.Context, params JobParams) (*Job, error) {
 	}, nil
 }
 
-func (j *Job) ID() string {
-	return JobID
+func (j *Job) Info() jobs.Info {
+	return jobs.Info{
+		ID:          JobID,
+		Description: `Загрузка данных из сервиса ФНС "Мои чеки онлайн"`,
+	}
 }
 
 func (j *Job) Run(ctx jobs.Context, _ time.Time, userID string) (errs error) {
 	phones := j.users[userID]
 	if phones == nil {
-		return
+		return jobs.ErrJobUnconfigured
 	}
 
 	ctx = ctx.ApplyAskFn(withAuthorizer(j.captchaSolver))

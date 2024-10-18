@@ -1,3 +1,6 @@
+.vscode/settings.json
+.vscode/settings.local.json
 bin/*
 dist/*
 config.json
+*.jar

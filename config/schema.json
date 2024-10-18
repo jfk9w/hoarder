@@ -197,6 +197,52 @@
       ],
       "type": "object"
     },
+    "selenium": {
+      "additionalProperties": false,
+      "description": "Параметры Selenium.",
+      "properties": {
+        "args": {
+          "default": [
+            "--headless"
+          ],
+          "description": "Аргументы для запуска браузера.",
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "binary": {
+          "description": "Путь к исполняемому файлу браузера.",
+          "type": "string"
+        },
+        "browser": {
+          "default": "firefox",
+          "description": "Браузер (browserName в Selenium).",
+          "enum": [
+            "chrome",
+            "chromium",
+            "firefox"
+          ],
+          "type": "string"
+        },
+        "driver": {
+          "description": "Путь к драйверу. Если пустой, будет выполнен поиск в $PATH.",
+          "type": "string"
+        },
+        "enabled": {
+          "description": "Включает аутентификацию через Selenium.",
+          "type": "boolean"
+        },
+        "jar": {
+          "description": "Путь к JAR-файлу selenium-server-standalone.",
+          "type": "string"
+        }
+      },
+      "required": [
+        "jar"
+      ],
+      "type": "object"
+    },
     "stdin": {
       "additionalProperties": false,
       "description": "Настройки управления через интерактивную командную строку.",
@@ -206,6 +252,41 @@
           "type": "boolean"
         }
       },
+      "type": "object"
+    },
+    "telegram": {
+      "additionalProperties": false,
+      "description": "Настройки Telegram-триггера.",
+      "properties": {
+        "enabled": {
+          "description": "Включение Telegram-триггера.",
+          "type": "boolean"
+        },
+        "token": {
+          "description": "Токен бота.",
+          "type": "string"
+        },
+        "typing": {
+          "default": "4s",
+          "description": "Интервал для отправки действия \"печатает...\".",
+          "pattern": "(\\d+h)?(\\d+m)?(\\d+s)?(\\d+ms)?(\\d+µs)?(\\d+ns)?",
+          "type": "string"
+        },
+        "users": {
+          "additionalProperties": {
+            "items": {
+              "type": "integer"
+            },
+            "type": "array"
+          },
+          "description": "Маппинг пользователей в ID в Telegram.",
+          "type": "object"
+        }
+      },
+      "required": [
+        "token",
+        "users"
+      ],
       "type": "object"
     },
     "tinkoff": {
@@ -252,48 +333,6 @@
           "description": "Продолжительность \"нахлеста\" при обновлении операций.",
           "pattern": "(\\d+h)?(\\d+m)?(\\d+s)?(\\d+ms)?(\\d+µs)?(\\d+ns)?",
           "type": "string"
-        },
-        "selenium": {
-          "additionalProperties": false,
-          "description": "Параметры Selenium для аутентификации.",
-          "properties": {
-            "args": {
-              "default": [
-                "--headless",
-                "--no-sandbox"
-              ],
-              "description": "Аргументы для запуска браузера.",
-              "items": {
-                "type": "string"
-              },
-              "type": "array"
-            },
-            "binary": {
-              "description": "Путь к исполняемому файлу браузера.",
-              "type": "string"
-            },
-            "browser": {
-              "description": "Протестировано только с Chrome/Chromium.",
-              "enum": [
-                "chrome",
-                "chromium"
-              ],
-              "type": "string"
-            },
-            "enabled": {
-              "description": "Включает аутентификацию через Selenium.",
-              "type": "boolean"
-            },
-            "urlPrefix": {
-              "default": "http://127.0.0.1:4444/wd/hub",
-              "description": "Строка подключения к Selenium.",
-              "type": "string"
-            }
-          },
-          "required": [
-            "urlPrefix"
-          ],
-          "type": "object"
         },
         "users": {
           "additionalProperties": {
@@ -363,9 +402,12 @@
         },
         "users": {
           "additionalProperties": {
-            "type": "string"
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
           },
-          "description": "Маппинг JID в имя пользователя.",
+          "description": "Маппинг пользователей в JID.",
           "type": "object"
         }
       },

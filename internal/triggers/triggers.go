@@ -13,6 +13,7 @@ import (
 )
 
 type Jobs interface {
+	Info() []jobs.Info
 	Run(ctx jobs.Context, now time.Time, userID string, jobIDs []string) []jobs.Result
 }
 

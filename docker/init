@@ -2,11 +2,7 @@
 
 trap 'kill $(jobs -p)' TERM
 
-CHROMEDRIVER_PORT=4444
-CHROMEDRIVER_URL_BASE=wd/hub
-
-chromedriver --port=$CHROMEDRIVER_PORT --url-base=$CHROMEDRIVER_URL_BASE --silent 2>&1 > /dev/null &
-hoarder $* --tinkoff.selenium.enabled --tinkoff.selenium.browser=chromium --tinkoff.selenium.binary=$(which chromium) --tinkoff.selenium.urlPrefix=http://localhost:$CHROMEDRIVER_PORT/$CHROMEDRIVER_URL_BASE &
+hoarder $* --selenium.enabled --selenium.browser=firefox --selenium.jar=/selenium.jar &
 
 HOARDER=$!
 wait "$HOARDER"

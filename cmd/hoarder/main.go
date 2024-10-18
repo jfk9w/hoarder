@@ -16,9 +16,11 @@ import (
 	"github.com/jfk9w/hoarder/internal/jobs/lkdr"
 	"github.com/jfk9w/hoarder/internal/jobs/tinkoff"
 	"github.com/jfk9w/hoarder/internal/logs"
+	"github.com/jfk9w/hoarder/internal/selenium"
 	"github.com/jfk9w/hoarder/internal/triggers"
 	"github.com/jfk9w/hoarder/internal/triggers/schedule"
 	"github.com/jfk9w/hoarder/internal/triggers/stdin"
+	"github.com/jfk9w/hoarder/internal/triggers/telegram"
 	"github.com/jfk9w/hoarder/internal/triggers/xmpp"
 )
 
@@ -51,6 +53,11 @@ type Config struct {
 		Enabled     bool `yaml:"enabled,omitempty" doc:"Включение XMPP-триггера."`
 	} `yaml:"xmpp,omitempty" doc:"Настройки XMPP-триггера."`
 
+	Telegram *struct {
+		telegram.Config `yaml:",inline"`
+		Enabled         bool `yaml:"enabled,omitempty" doc:"Включение Telegram-триггера."`
+	} `yaml:"telegram,omitempty" doc:"Настройки Telegram-триггера."`
+
 	LKDR *struct {
 		lkdr.Config `yaml:",inline"`
 		Enabled     bool `yaml:"enabled,omitempty" doc:"Включает загрузку данных из сервиса ФНС \"Мои чеки онлайн\"."`
@@ -60,6 +67,11 @@ type Config struct {
 		tinkoff.Config `yaml:",inline"`
 		Enabled        bool `yaml:"enabled,omitempty" doc:"Включает загрузку данных из Т-Банка."`
 	} `yaml:"tinkoff,omitempty" doc:"Настройка загрузки данных из Т-Банка"`
+
+	Selenium *struct {
+		selenium.Config `yaml:",inline"`
+		Enabled         bool `yaml:"enabled,omitempty" doc:"Включает аутентификацию через Selenium."`
+	} `yaml:"selenium,omitempty" doc:"Параметры Selenium."`
 
 	Captcha *captcha.Config `yaml:"captcha,omitempty" doc:"Настройки для решения капчи."`
 }
@@ -108,6 +120,18 @@ func main() {
 		}
 	}
 
+	var seleniumService *selenium.Service
+	if cfg := cfg.Selenium; pointer.Get(cfg).Enabled {
+		seleniumService, err = selenium.NewService(selenium.ServiceParams{
+			Config: cfg.Config,
+		})
+		if err != nil {
+			panic(errors.Wrap(err, "init selenium service"))
+		}
+
+		defer seleniumService.Stop()
+	}
+
 	jobs := new(jobs.Registry)
 
 	if cfg := cfg.LKDR; pointer.Get(cfg).Enabled {
@@ -127,10 +151,11 @@ func main() {
 
 	if cfg := cfg.Tinkoff; pointer.Get(cfg).Enabled {
 		job, err := tinkoff.NewJob(ctx, tinkoff.JobParams{
-			Clock:   clock,
-			Logger:  log,
-			Config:  cfg.Config,
-			Firefly: fireflyClient,
+			Clock:    clock,
+			Logger:   log,
+			Config:   cfg.Config,
+			Firefly:  fireflyClient,
+			Selenium: seleniumService,
 		})
 
 		if err != nil {
@@ -176,6 +201,20 @@ func main() {
 
 		if err != nil {
 			panic(errors.Wrap(err, "create xmpp trigger"))
+		}
+
+		triggers.Register(trigger)
+	}
+
+	if cfg := cfg.Telegram; pointer.Get(cfg).Enabled {
+		trigger, err := telegram.NewTrigger(telegram.TriggerParams{
+			Clock:  clock,
+			Config: cfg.Config,
+			Logger: log,
+		})
+
+		if err != nil {
+			panic(errors.Wrap(err, "create telegram trigger"))
 		}
 
 		triggers.Register(trigger)

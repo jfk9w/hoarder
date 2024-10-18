@@ -172,7 +172,7 @@ type Statement struct {
 	CreditLimit            *StatementCreditLimit            `json:"creditLimit,omitempty" gorm:"embedded"`
 	TranchesMonthlyPayment *StatementTranchesMonthlyPayment `json:"tranchesMonthlyPayment,omitempty" gorm:"embedded"`
 	BilledDebt             *StatementBilledDebt             `json:"billedDebt,omitempty" gorm:"embedded"`
-	Cashback               StatementCashback                `json:"cashback" gorm:"embedded"`
+	Cashback               *StatementCashback               `json:"cashback" gorm:"embedded"`
 	Balance                StatementBalance                 `json:"balance" gorm:"embedded"`
 	HighCashback           *StatementHighCashback           `json:"highCashback,omitempty" gorm:"embedded"`
 	PeriodStartBalance     StatementPeriodStartBalance      `json:"periodStartBalance" gorm:"embedded"`
@@ -180,7 +180,7 @@ type Statement struct {
 	AvailableLimit         *StatementAvailableLimit         `json:"availableLimit,omitempty" gorm:"embedded"`
 	Id                     string                           `json:"id" gorm:"primaryKey"`
 	InterestBonus          *StatementInterestBonus          `json:"interestBonus,omitempty" gorm:"embedded"`
-	Interest               StatementInterest                `json:"interest" gorm:"embedded"`
+	Interest               *StatementInterest               `json:"interest" gorm:"embedded"`
 	Date                   Milliseconds                     `json:"date" gorm:"index"`
 	Income                 StatementIncome                  `json:"income" gorm:"embedded"`
 	CreditBonus            *StatementCreditBonus            `json:"creditBonus,omitempty" gorm:"embedded"`
