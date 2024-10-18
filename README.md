@@ -1,7 +1,5 @@
 ## hoarder
 
-[![Go Reference](https://pkg.go.dev/badge/github.com/jfk9w/hoarder.svg)](https://pkg.go.dev/github.com/jfk9w/hoarder)
-[![Go Report](https://goreportcard.com/badge/github.com/jfk9w/hoarder)](https://goreportcard.com/report/github.com/jfk9w/hoarder)
 [![Go Coverage](https://github.com/jfk9w/hoarder/wiki/coverage.svg)](https://raw.githack.com/wiki/jfk9w/hoarder/coverage.html)
 [![CodeQL](https://github.com/jfk9w/hoarder/workflows/CodeQL/badge.svg)](https://github.com/jfk9w/hoarder/actions?query=workflow%3ACodeQL)
 
@@ -27,21 +25,12 @@
 #### Docker (рекомендуется)
 
 ```bash
-docker -v ${PWD}/config.json:/config.json:ro ghcr.io/jfk9w/hoarder:master --config.file=/config.json
-```
-
-#### Установка через Go
-
-Необходим Go версии не ниже 1.21.
-
-```bash
-GOEXPERIMENT=loopvar go install github.com/jfk9w/hoarder/cmd/hoarder@latest
-${GOPATH}/bin/hoarder --config.file=config.json
+docker -v ${PWD}/config.json:/config.json:ro -v /dev/shm:/dev/shm ghcr.io/jfk9w/hoarder:master --config.file=/config.json
 ```
 
 #### Сборка из исходников
 
-Необходим Go версии не ниже 1.21.
+Необходим Go версии не ниже 1.22.
 
 ```bash
 git clone git@github.com:jfk9w/hoarder.git
@@ -88,9 +77,8 @@ bin/hoarder --config.file=config.json
 
 **Авторизация**
 
-Авторизация происходит с помощью Selenium – для работы потребуется `chromedriver` (протестировано с `chrome` и `chromium`) и задание соответствующих
-настроек в конфигурации в секции `tinkoff/selenium`.
-В Docker-образе необходимое ПО уже установлено, дополнительная конфигурация не требуется.
+Авторизация происходит с помощью Selenium. Для работы потребуется `chromedriver` (для Chrome/Chromium) или `geckodriver` (для Firefox), `selenium-server-standalone-*.jar` (можно взять [отсюда](https://selenium-release.storage.googleapis.com/index.html), протестировано с версией 3.14.0), JRE и задание соответствующей конфигурации в секции `selenium`. 
+В Docker-образе необходимое ПО уже установлено, дополнительная конфигурация не требуется (используется `geckodriver`).
 
 Для авторизации потребуется ввести код подтверждения из СМС.
 
@@ -111,8 +99,8 @@ bin/hoarder --config.file=config.json
 
 ### Триггеры
 
-| Триггер  | Описание                                                                                                                                                                                                                                                    |
-|----------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Триггер  | Описание |
+|----------|----------|
 | telegram | Общение с пользователем (включая запрос кода подтверждения) происходит через Telegram. Для запуска джобов нужно отправить соответствующую команду боту (см. список команд в боте) |
 | xmpp     | Общение с пользователем (включая запрос кода подтверждения) происходит по протоколу XMPP (Jabber). Для запуска джобов нужно отправить соответствующее сообщение боту:<br>* `all` для запуска всех джобов<br>* `tinkoff lkdr` для запуска конкретных джобов  |
 | schedule | Фоновый запуск джобов с заданным интервалом. Запуск происходит одновременно для всех пользователей, указанных в конфигурации триггера. Коды подтверждения запрашиваться не будут.                                                                           |
