@@ -15,7 +15,7 @@ require (
 	github.com/jfk9w-go/rucaptcha-api v1.0.10
 	github.com/jfk9w-go/tinkoff-api v1.1.3
 	github.com/mr-linch/go-tg v0.15.0
-	github.com/ogen-go/ogen v1.5.0
+	github.com/ogen-go/ogen v1.6.0
 	github.com/pkg/errors v0.9.1
 	github.com/tebeka/selenium v0.9.9
 	go.opentelemetry.io/otel v1.31.0
@@ -33,7 +33,7 @@ require (
 	filippo.io/edwards25519 v1.1.0 // indirect
 	github.com/blang/semver v3.5.1+incompatible // indirect
 	github.com/dlclark/regexp2 v1.11.4 // indirect
-	github.com/fatih/color v1.17.0 // indirect
+	github.com/fatih/color v1.18.0 // indirect
 	github.com/gabriel-vasile/mimetype v1.4.6 // indirect
 	github.com/ghodss/yaml v1.0.0 // indirect
 	github.com/go-faster/yaml v0.4.6 // indirect
