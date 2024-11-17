@@ -19,11 +19,11 @@ type ClientOfferEssence struct {
 	IsActive     bool   `json:"isActive"`
 	BaseColor    string `json:"baseColor"`
 	//MccCodes     []string `json:"mccCodes,omitempty"`
-	Logo         string `json:"logo"`
-	ExternalCode string `json:"externalCode"`
-	ExternalId   string `json:"externalId"`
-	Id           string `json:"id" gorm:"primaryKey"`
-	Percent      uint   `json:"percent"`
+	Logo         string  `json:"logo"`
+	ExternalCode string  `json:"externalCode"`
+	ExternalId   string  `json:"externalId"`
+	Id           string  `json:"id" gorm:"primaryKey"`
+	Percent      float64 `json:"percent"`
 }
 
 type ClientOfferAttributes struct {

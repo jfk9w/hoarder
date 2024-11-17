@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/jfk9w-go/based"
-	"github.com/jfk9w-go/tinkoff-api"
+	"github.com/jfk9w-go/tinkoff-api/v2"
 	"github.com/pkg/errors"
 	"go.uber.org/multierr"
 
