@@ -4,7 +4,7 @@ import (
 	"errors"
 
 	"github.com/AlekSi/pointer"
-	"github.com/jfk9w-go/tinkoff-api"
+	"github.com/jfk9w-go/tinkoff-api/v2"
 
 	"github.com/jfk9w/hoarder/internal/database"
 	"github.com/jfk9w/hoarder/internal/jobs"

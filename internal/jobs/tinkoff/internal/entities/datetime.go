@@ -4,7 +4,7 @@ import (
 	"database/sql/driver"
 	"time"
 
-	"github.com/jfk9w-go/tinkoff-api"
+	"github.com/jfk9w-go/tinkoff-api/v2"
 	"github.com/pkg/errors"
 )
 

@@ -3,7 +3,7 @@ package loaders
 import (
 	"context"
 
-	"github.com/jfk9w-go/tinkoff-api"
+	"github.com/jfk9w-go/tinkoff-api/v2"
 	"gorm.io/gorm/schema"
 
 	"github.com/jfk9w/hoarder/internal/database"
