@@ -107,8 +107,8 @@ github.com/jackc/puddle/v2 v2.2.2 h1:PR8nw+E/1w0GLuRFSmiioY6UooMp6KJv0/61nB7icHo
 github.com/jackc/puddle/v2 v2.2.2/go.mod h1:vriiEXHvEE654aYKXXjOvZM39qJ0q+azkZFrfEOc3H4=
 github.com/jfk9w-go/based v1.0.12 h1:y24CGzj1erICqB5QW3mCTpUsIwGZ9JKRbsRn0cWgXao=
 github.com/jfk9w-go/based v1.0.12/go.mod h1:w0Ipni58DYvTCnuAc78zlVAePNuriRhejreEjb9wm9w=
-github.com/jfk9w-go/confi v0.0.4 h1:Xfa3vTAnpHJFm1DeoK+MG4hYDBPOnJ4ZyNv3aOTpgrY=
-github.com/jfk9w-go/confi v0.0.4/go.mod h1:n6ugp7ewOusdKa8FNeZzsD3AQshP9DdlYSbQ2D//wFw=
+github.com/jfk9w-go/confi v0.0.5 h1:fcGtQput0r2QdjToZhvmM4IcVtiLdA44sRaO9s0/Xzg=
+github.com/jfk9w-go/confi v0.0.5/go.mod h1:2Ez+ibWHAMGltwzFUjRGRrcLAPbWnkXJNow/9Ad9zjY=
 github.com/jfk9w-go/lkdr-api v1.1.4 h1:22qHVbRWys4Jw9eVLWpjIvOtED9fDIKf5WHUj+DQguQ=
 github.com/jfk9w-go/lkdr-api v1.1.4/go.mod h1:G4GA6ZEkiflY/b9AoHMDWMQjYsu77Gv+b7xJn01pZcg=
 github.com/jfk9w-go/rucaptcha-api v1.0.10 h1:VK1+XCTX8TLL3LwxjMQOw0n//9MFZWnJkmKz8hG7b/I=
