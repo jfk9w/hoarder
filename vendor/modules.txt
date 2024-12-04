@@ -122,7 +122,7 @@ github.com/mattn/go-sqlite3
 ## explicit; go 1.18
 github.com/mr-linch/go-tg
 github.com/mr-linch/go-tg/tgb
-# github.com/ogen-go/ogen v1.8.0
+# github.com/ogen-go/ogen v1.8.1
 ## explicit; go 1.22.0
 github.com/ogen-go/ogen/conv
 github.com/ogen-go/ogen/http
