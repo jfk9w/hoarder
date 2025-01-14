@@ -15,7 +15,7 @@ github.com/dlclark/regexp2/syntax
 # github.com/fatih/color v1.18.0
 ## explicit; go 1.17
 github.com/fatih/color
-# github.com/gabriel-vasile/mimetype v1.4.6
+# github.com/gabriel-vasile/mimetype v1.4.8
 ## explicit; go 1.20
 github.com/gabriel-vasile/mimetype
 github.com/gabriel-vasile/mimetype/internal/charset
@@ -48,8 +48,8 @@ github.com/go-playground/locales/currency
 # github.com/go-playground/universal-translator v0.18.1
 ## explicit; go 1.18
 github.com/go-playground/universal-translator
-# github.com/go-playground/validator/v10 v10.23.0
-## explicit; go 1.18
+# github.com/go-playground/validator/v10 v10.24.0
+## explicit; go 1.20
 github.com/go-playground/validator/v10
 # github.com/go-sql-driver/mysql v1.8.1
 ## explicit; go 1.18
@@ -84,7 +84,7 @@ github.com/jackc/pgx/v5/stdlib
 ## explicit; go 1.19
 github.com/jackc/puddle/v2
 github.com/jackc/puddle/v2/internal/genstack
-# github.com/jfk9w-go/based v1.0.13
+# github.com/jfk9w-go/based v1.0.14
 ## explicit; go 1.21
 github.com/jfk9w-go/based
 # github.com/jfk9w-go/confi v0.0.5
@@ -96,7 +96,7 @@ github.com/jfk9w-go/lkdr-api
 # github.com/jfk9w-go/rucaptcha-api v1.0.10
 ## explicit; go 1.21
 github.com/jfk9w-go/rucaptcha-api
-# github.com/jfk9w-go/tinkoff-api/v2 v2.0.5
+# github.com/jfk9w-go/tinkoff-api/v2 v2.0.6
 ## explicit; go 1.21
 github.com/jfk9w-go/tinkoff-api/v2
 # github.com/jinzhu/inflection v1.0.0
@@ -202,7 +202,7 @@ go.uber.org/zap/internal/exit
 go.uber.org/zap/internal/pool
 go.uber.org/zap/internal/stacktrace
 go.uber.org/zap/zapcore
-# golang.org/x/crypto v0.31.0
+# golang.org/x/crypto v0.32.0
 ## explicit; go 1.20
 golang.org/x/crypto/pbkdf2
 golang.org/x/crypto/sha3
@@ -211,7 +211,7 @@ golang.org/x/crypto/sha3
 golang.org/x/exp/constraints
 golang.org/x/exp/maps
 golang.org/x/exp/slices
-# golang.org/x/net v0.31.0
+# golang.org/x/net v0.34.0
 ## explicit; go 1.18
 golang.org/x/net/html
 golang.org/x/net/html/atom
@@ -221,7 +221,7 @@ golang.org/x/net/idna
 ## explicit; go 1.18
 golang.org/x/sync/errgroup
 golang.org/x/sync/semaphore
-# golang.org/x/sys v0.28.0
+# golang.org/x/sys v0.29.0
 ## explicit; go 1.18
 golang.org/x/sys/cpu
 golang.org/x/sys/unix
