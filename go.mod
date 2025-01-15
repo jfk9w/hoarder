@@ -11,7 +11,7 @@ require (
 	github.com/google/uuid v1.6.0
 	github.com/jfk9w-go/based v1.0.14
 	github.com/jfk9w-go/confi v0.0.5
-	github.com/jfk9w-go/lkdr-api v1.1.6
+	github.com/jfk9w-go/lkdr-api v1.1.7
 	github.com/jfk9w-go/rucaptcha-api v1.0.10
 	github.com/jfk9w-go/tinkoff-api/v2 v2.0.6
 	github.com/mr-linch/go-tg v0.15.0
