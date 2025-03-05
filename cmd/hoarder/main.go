@@ -14,7 +14,7 @@ import (
 	"github.com/jfk9w/hoarder/internal/firefly"
 	"github.com/jfk9w/hoarder/internal/jobs"
 	"github.com/jfk9w/hoarder/internal/jobs/lkdr"
-	"github.com/jfk9w/hoarder/internal/jobs/tinkoff"
+	"github.com/jfk9w/hoarder/internal/jobs/tbank"
 	"github.com/jfk9w/hoarder/internal/logs"
 	"github.com/jfk9w/hoarder/internal/selenium"
 	"github.com/jfk9w/hoarder/internal/triggers"
@@ -64,8 +64,8 @@ type Config struct {
 	} `yaml:"lkdr,omitempty" doc:"Настройка загрузки данных из сервиса ФНС \"Мои чеки онлайн\"."`
 
 	Tinkoff *struct {
-		tinkoff.Config `yaml:",inline"`
-		Enabled        bool `yaml:"enabled,omitempty" doc:"Включает загрузку данных из Т-Банка."`
+		tbank.Config `yaml:",inline"`
+		Enabled      bool `yaml:"enabled,omitempty" doc:"Включает загрузку данных из Т-Банка."`
 	} `yaml:"tinkoff,omitempty" doc:"Настройка загрузки данных из Т-Банка"`
 
 	Selenium *struct {
@@ -150,7 +150,7 @@ func main() {
 	}
 
 	if cfg := cfg.Tinkoff; pointer.Get(cfg).Enabled {
-		job, err := tinkoff.NewJob(ctx, tinkoff.JobParams{
+		job, err := tbank.NewJob(ctx, tbank.JobParams{
 			Clock:    clock,
 			Logger:   log,
 			Config:   cfg.Config,
@@ -159,7 +159,7 @@ func main() {
 		})
 
 		if err != nil {
-			panic(errors.Wrapf(err, "create %s job", tinkoff.JobID))
+			panic(errors.Wrapf(err, "create %s job", tbank.JobID))
 		}
 
 		defer job.Close()

@@ -29,53 +29,10 @@ jobs:
             echo 'run make config and commit changes'
             exit 1
           fi
-  tag:
-    name: Tag
-    needs: [ test ]
-    runs-on: ubuntu-latest
-    if: github.event_name == 'push' && github.ref_type == 'branch' && github.ref_name == 'master'
-    outputs:
-      new_tag: ${{ steps.tag.outputs.new_tag }}
-      changelog: ${{ steps.tag.outputs.changelog }}
-    steps:
-      - uses: actions/checkout@v4
-      - name: Set up Go
-        uses: actions/setup-go@v4
-        with:
-          go-version: stable
-      - name: Coverage
-        uses: ncruces/go-coverage-report@main
-      - name: Tag
-        id: tag
-        uses: mathieudutour/github-tag-action@v6.1
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-  release:
-    name: Release
-    needs: [ tag ]
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: Set up Go
-        uses: actions/setup-go@v5
-        with:
-          go-version: stable
-      - name: Package
-        run: build/dist.sh
-        env:
-          NAME: ${{ github.event.repository.name }}
-          VERSION: ${{ needs.tag.outputs.new_tag }}
-      - name: Release
-        uses: ncipollo/release-action@v1
-        with:
-          tag: ${{ needs.tag.outputs.new_tag }}
-          name: ${{ needs.tag.outputs.new_tag }}
-          body: ${{ needs.tag.outputs.changelog }}
-          artifacts: "dist/*"
   docker:
     name: Docker
     runs-on: ubuntu-latest
-    needs: [ test, tag ]
+    needs: [ test ]
     if: always() && !cancelled() && !contains(needs.*.result, 'failure')
     steps:
       - uses: actions/checkout@v4
@@ -88,19 +45,14 @@ jobs:
       - name: Build & push
         run: |
           PLATFORM="linux/amd64"
-          if [[ "$NEW_TAG" != "" ]]; then
-            IMAGE_TAGS="-t ghcr.io/$GITHUB_REPOSITORY:$NEW_TAG -t ghcr.io/$GITHUB_REPOSITORY:latest"
+          if [[ "$GITHUB_REF_NAME" == "master" ]]; then
+            IMAGE_TAGS="-t ghcr.io/$GITHUB_REPOSITORY:latest"
             PLATFORM="$PLATFORM,linux/arm64"
           else
             IMAGE_TAGS="-t ghcr.io/$GITHUB_REPOSITORY:${GITHUB_REF_NAME##*/}"
-            if [[ "$GITHUB_REF_TYPE" == "tag" ]]; then
-              IMAGE_TAGS="$IMAGE_TAGS -t ghcr.io/$GITHUB_REPOSITORY:latest"
-              PLATFORM="$PLATFORM,linux/arm64"
-            fi
           fi
 
           docker buildx create --use
           docker buildx build . $IMAGE_TAGS --platform=$PLATFORM --push
         env:
-          NEW_TAG: ${{ needs.tag.outputs.new_tag }}
           BUILDX_NO_DEFAULT_ATTESTATIONS: 1
