@@ -2,14 +2,14 @@ module github.com/jfk9w/hoarder
 
 go 1.23.0
 
-toolchain go1.24.0
+toolchain go1.24.1
 
 require (
 	github.com/AlekSi/pointer v1.2.0
 	github.com/go-faster/errors v0.7.1
 	github.com/go-faster/jx v1.1.0
 	github.com/google/uuid v1.6.0
-	github.com/jfk9w-go/based v1.0.15
+	github.com/jfk9w-go/based v1.0.16
 	github.com/jfk9w-go/confi v0.0.5
 	github.com/jfk9w-go/lkdr-api v1.1.8
 	github.com/jfk9w-go/rucaptcha-api v1.0.10
@@ -41,7 +41,7 @@ require (
 	github.com/go-logr/stdr v1.2.2 // indirect
 	github.com/go-playground/locales v0.14.1 // indirect
 	github.com/go-playground/universal-translator v0.18.1 // indirect
-	github.com/go-playground/validator/v10 v10.25.0 // indirect
+	github.com/go-playground/validator/v10 v10.26.0 // indirect
 	github.com/go-sql-driver/mysql v1.9.0 // indirect
 	github.com/google/go-querystring v1.1.0 // indirect
 	github.com/jackc/pgpassfile v1.0.0 // indirect
