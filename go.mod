@@ -15,7 +15,7 @@ require (
 	github.com/jfk9w-go/rucaptcha-api v1.0.10
 	github.com/jfk9w-go/tbank-api v0.0.0-20250305201350-74b1b2944fc2
 	github.com/mr-linch/go-tg v0.15.0
-	github.com/ogen-go/ogen v1.12.0
+	github.com/ogen-go/ogen v1.13.0
 	github.com/pkg/errors v0.9.1
 	github.com/tebeka/selenium v0.9.9
 	go.opentelemetry.io/otel v1.35.0
@@ -58,12 +58,12 @@ require (
 	github.com/tomasen/realip v0.0.0-20180522021738-f0c99a92ddce // indirect
 	go.opentelemetry.io/auto/sdk v1.1.0 // indirect
 	go.uber.org/zap v1.27.0 // indirect
-	golang.org/x/crypto v0.37.0 // indirect
+	golang.org/x/crypto v0.38.0 // indirect
 	golang.org/x/exp v0.0.0-20250228200357-dead58393ab7 // indirect
-	golang.org/x/net v0.39.0 // indirect
-	golang.org/x/sync v0.13.0 // indirect
-	golang.org/x/sys v0.32.0 // indirect
-	golang.org/x/text v0.24.0 // indirect
+	golang.org/x/net v0.40.0 // indirect
+	golang.org/x/sync v0.14.0 // indirect
+	golang.org/x/sys v0.33.0 // indirect
+	golang.org/x/text v0.25.0 // indirect
 	golang.org/x/xerrors v0.0.0-20240903120638-7835f813f4da // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
