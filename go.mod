@@ -23,7 +23,7 @@ require (
 	go.opentelemetry.io/otel/trace v1.36.0
 	go.uber.org/multierr v1.11.0
 	gorm.io/driver/mysql v1.5.7
-	gorm.io/driver/postgres v1.5.11
+	gorm.io/driver/postgres v1.6.0
 	gorm.io/driver/sqlite v1.5.7
 	gorm.io/gorm v1.30.0
 	gosrc.io/xmpp v0.5.1
