@@ -48,7 +48,7 @@ github.com/go-playground/locales/currency
 # github.com/go-playground/universal-translator v0.18.1
 ## explicit; go 1.18
 github.com/go-playground/universal-translator
-# github.com/go-playground/validator/v10 v10.26.0
+# github.com/go-playground/validator/v10 v10.27.0
 ## explicit; go 1.20
 github.com/go-playground/validator/v10
 # github.com/go-sql-driver/mysql v1.9.0
@@ -84,13 +84,13 @@ github.com/jackc/pgx/v5/stdlib
 ## explicit; go 1.19
 github.com/jackc/puddle/v2
 github.com/jackc/puddle/v2/internal/genstack
-# github.com/jfk9w-go/based v1.0.16
+# github.com/jfk9w-go/based v1.0.17
 ## explicit; go 1.21
 github.com/jfk9w-go/based
 # github.com/jfk9w-go/confi v0.0.5
 ## explicit; go 1.21
 github.com/jfk9w-go/confi
-# github.com/jfk9w-go/lkdr-api v1.1.9
+# github.com/jfk9w-go/lkdr-api v1.1.10
 ## explicit; go 1.21
 github.com/jfk9w-go/lkdr-api
 # github.com/jfk9w-go/rucaptcha-api v1.0.10
