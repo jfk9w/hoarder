@@ -10,7 +10,7 @@ require (
 	github.com/go-faster/jx v1.1.0
 	github.com/google/uuid v1.6.0
 	github.com/jfk9w-go/based v1.0.18
-	github.com/jfk9w-go/confi v0.0.5
+	github.com/jfk9w-go/confi v0.0.6
 	github.com/jfk9w-go/lkdr-api v1.1.10
 	github.com/jfk9w-go/rucaptcha-api v1.0.10
 	github.com/jfk9w-go/tbank-api v0.0.0-20250305201350-74b1b2944fc2

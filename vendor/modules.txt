@@ -87,7 +87,7 @@ github.com/jackc/puddle/v2/internal/genstack
 # github.com/jfk9w-go/based v1.0.18
 ## explicit; go 1.21
 github.com/jfk9w-go/based
-# github.com/jfk9w-go/confi v0.0.5
+# github.com/jfk9w-go/confi v0.0.6
 ## explicit; go 1.21
 github.com/jfk9w-go/confi
 # github.com/jfk9w-go/lkdr-api v1.1.10
