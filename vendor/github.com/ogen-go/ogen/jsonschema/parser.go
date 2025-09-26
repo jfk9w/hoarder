@@ -20,8 +20,10 @@ import (
 const (
 	xOgenName       = "x-ogen-name"
 	xOgenProperties = "x-ogen-properties"
+	xOgenType       = "x-ogen-type"
 	xOgenTimeFormat = "x-ogen-time-format"
 	xOapiExtraTags  = "x-oapi-codegen-extra-tags"
+	xOgenValidate   = "x-ogen-validate"
 )
 
 // Parser parses JSON schemas.
@@ -179,6 +181,11 @@ func (p *Parser) parse1(schema *RawSchema, ctx *jsonpointer.ResolveCtx, hook fun
 					s.Properties[idx].X = x
 				}
 
+			case xOgenType:
+				if err := val.Decode(&s.XOgenType); err != nil {
+					return err
+				}
+
 			case xOgenTimeFormat:
 				if err := val.Decode(&s.XOgenTimeFormat); err != nil {
 					return err
@@ -186,6 +193,11 @@ func (p *Parser) parse1(schema *RawSchema, ctx *jsonpointer.ResolveCtx, hook fun
 
 			case xOapiExtraTags:
 				if err := val.Decode(&s.ExtraTags); err != nil {
+					return err
+				}
+
+			case xOgenValidate:
+				if err := val.Decode(&s.OgenValidate); err != nil {
 					return err
 				}
 			}
@@ -315,6 +327,8 @@ func (p *Parser) parseSchema(schema *RawSchema, ctx *jsonpointer.ResolveCtx, hoo
 				"patternProperties": {},
 				"minProperties":     {},
 				"maxProperties":     {},
+				"minLength":         {},
+				"maxLength":         {},
 			},
 			"array": {
 				"items":       {},

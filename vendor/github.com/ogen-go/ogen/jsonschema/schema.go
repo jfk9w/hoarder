@@ -45,6 +45,7 @@ type XProperty struct {
 // Schema is a JSON Schema.
 type Schema struct {
 	XOgenName string // Annotation to set type name.
+	XOgenType string // Annotation to set custom type.
 
 	Ref Ref // Whether schema is referenced.
 
@@ -94,6 +95,9 @@ type Schema struct {
 	// Object validation.
 	MaxProperties *uint64
 	MinProperties *uint64
+
+	// OgenValidate is a map of custom validation parameters.
+	OgenValidate map[string]any
 
 	Examples []Example
 	// Default schema value.
