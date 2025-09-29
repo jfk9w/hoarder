@@ -150,8 +150,8 @@ github.com/mattn/go-sqlite3 v1.14.24 h1:tpSp2G2KyMnnQu99ngJ47EIkWVmliIizyZBfPrBW
 github.com/mattn/go-sqlite3 v1.14.24/go.mod h1:Uh1q+B4BYcTPb+yiD3kU8Ct7aC0hY9fxUwlHK0RXw+Y=
 github.com/mr-linch/go-tg v0.15.0 h1:OKI+SAk9aT3sU9iGNO1Hd209pyE8ILwiblfeVFeszoA=
 github.com/mr-linch/go-tg v0.15.0/go.mod h1:poS5Fu8a76VHcoG0QOjYzytuMIs0570DkITujOtdOI8=
-github.com/ogen-go/ogen v1.15.0 h1:AuSLghM88ijLy8eIFr5d5kHYRU1i3Ewk1tGArpvDDTY=
-github.com/ogen-go/ogen v1.15.0/go.mod h1:bS+BP2cV7+IGjOM24znBmh+PrpZvYFXA7o3BNF4Hj2E=
+github.com/ogen-go/ogen v1.15.1 h1:Ujz2BY3DhcsuE3QUFbFQgN4qD/ak1GPJFfb58oig4qU=
+github.com/ogen-go/ogen v1.15.1/go.mod h1:bS+BP2cV7+IGjOM24znBmh+PrpZvYFXA7o3BNF4Hj2E=
 github.com/onsi/ginkgo v1.6.0/go.mod h1:lLunBs/Ym6LB5Z9jYTR76FiuTmxDTDusOGeTQH+WWjE=
 github.com/onsi/ginkgo v1.8.0/go.mod h1:lLunBs/Ym6LB5Z9jYTR76FiuTmxDTDusOGeTQH+WWjE=
 github.com/onsi/gomega v1.4.3/go.mod h1:ex+gbHU/CVuBBDIJjb2X0qEXbFg53c61hWP/1CpauHY=
