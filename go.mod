@@ -15,7 +15,7 @@ require (
 	github.com/jfk9w-go/rucaptcha-api v1.0.10
 	github.com/jfk9w-go/tbank-api v0.0.0-20250305201350-74b1b2944fc2
 	github.com/mr-linch/go-tg v0.15.0
-	github.com/ogen-go/ogen v1.15.2
+	github.com/ogen-go/ogen v1.16.0
 	github.com/pkg/errors v0.9.1
 	github.com/tebeka/selenium v0.9.9
 	go.opentelemetry.io/otel v1.38.0
@@ -55,6 +55,7 @@ require (
 	github.com/mattn/go-isatty v0.0.20 // indirect
 	github.com/mattn/go-sqlite3 v1.14.24 // indirect
 	github.com/segmentio/asm v1.2.0 // indirect
+	github.com/shopspring/decimal v1.4.0 // indirect
 	github.com/tomasen/realip v0.0.0-20180522021738-f0c99a92ddce // indirect
 	go.opentelemetry.io/auto/sdk v1.1.0 // indirect
 	go.uber.org/zap v1.27.0 // indirect
