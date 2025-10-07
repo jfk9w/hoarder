@@ -9,9 +9,9 @@ require (
 	github.com/go-faster/errors v0.7.1
 	github.com/go-faster/jx v1.1.0
 	github.com/google/uuid v1.6.0
-	github.com/jfk9w-go/based v1.0.19
+	github.com/jfk9w-go/based v1.0.20
 	github.com/jfk9w-go/confi v0.0.7
-	github.com/jfk9w-go/lkdr-api v1.1.12
+	github.com/jfk9w-go/lkdr-api v1.1.13
 	github.com/jfk9w-go/rucaptcha-api v1.0.10
 	github.com/jfk9w-go/tbank-api v0.0.0-20250305201350-74b1b2944fc2
 	github.com/mr-linch/go-tg v0.15.0
@@ -34,14 +34,14 @@ require (
 	github.com/blang/semver v3.5.1+incompatible // indirect
 	github.com/dlclark/regexp2 v1.11.5 // indirect
 	github.com/fatih/color v1.18.0 // indirect
-	github.com/gabriel-vasile/mimetype v1.4.8 // indirect
+	github.com/gabriel-vasile/mimetype v1.4.10 // indirect
 	github.com/ghodss/yaml v1.0.0 // indirect
 	github.com/go-faster/yaml v0.4.6 // indirect
 	github.com/go-logr/logr v1.4.3 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect
 	github.com/go-playground/locales v0.14.1 // indirect
 	github.com/go-playground/universal-translator v0.18.1 // indirect
-	github.com/go-playground/validator/v10 v10.27.0 // indirect
+	github.com/go-playground/validator/v10 v10.28.0 // indirect
 	github.com/go-sql-driver/mysql v1.9.0 // indirect
 	github.com/google/go-querystring v1.1.0 // indirect
 	github.com/jackc/pgpassfile v1.0.0 // indirect
