@@ -13,7 +13,7 @@ require (
 	github.com/jfk9w-go/confi v0.0.7
 	github.com/jfk9w-go/lkdr-api v1.1.13
 	github.com/jfk9w-go/rucaptcha-api v1.0.10
-	github.com/jfk9w-go/tbank-api v0.0.0-20250305201350-74b1b2944fc2
+	github.com/jfk9w-go/tbank-api v0.0.1
 	github.com/mr-linch/go-tg v0.15.0
 	github.com/ogen-go/ogen v1.16.0
 	github.com/pkg/errors v0.9.1
