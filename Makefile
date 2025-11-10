@@ -1,18 +1,6 @@
 MODULE := $(shell head -1 go.mod | cut -d ' ' -f2)
 
-GOIMPORTS := $(shell go env GOPATH)/bin/goimports
-OGEN := $(shell go env GOPATH)/bin/ogen
-
-$(GOIMPORTS):
-	go install golang.org/x/tools/cmd/goimports@latest
-
-$(OGEN):
-	go install github.com/ogen-go/ogen/cmd/ogen@v0.76.0
-
-fmt: $(GOIMPORTS)
-	$(GOIMPORTS) -local $(MODULE) -l -w $(shell find . -type f -name '*.go' -not -path "./vendor/*")
-
-gen: $(OGEN)
+gen: 
 	go generate ./...
 
 test: gen
