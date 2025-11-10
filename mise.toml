@@ -1,17 +1,3 @@
-[settings]
-experimental = true
-
-[env]
-hoarder_log_level = "debug"
-hoarder_selenium_enabled = "true"
-hoarder_selenium_browser = "chrome"
-hoarder_selenium_jar = "{{ config_root }}/selenium.jar"
-
-[hooks]
-postinstall = "curl -C - -o {{ config_root }}/selenium.jar https://selenium-release.storage.googleapis.com/3.14/selenium-server-standalone-3.14.0.jar"
-
 [tools]
-"asdf:mise-plugins/mise-chromedriver" = "latest"
 go = "latest"
 "go:github.com/ogen-go/ogen/cmd/ogen" = "v0.76.0"
-java = "21"
