@@ -12,5 +12,6 @@ postinstall = "curl -C - -o {{ config_root }}/selenium.jar https://selenium-rele
 
 [tools]
 "asdf:mise-plugins/mise-chromedriver" = "latest"
+go = "latest"
 "go:github.com/ogen-go/ogen/cmd/ogen" = "v0.76.0"
 java = "21"
