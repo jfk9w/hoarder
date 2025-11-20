@@ -108,8 +108,8 @@ github.com/jfk9w-go/based v1.0.20 h1:jsEC7d1Z9D4o1RBs82b4Zb0BoAZGoYvJj4OwGW6ci3M
 github.com/jfk9w-go/based v1.0.20/go.mod h1:4lDFUB09b3TmSo8DMPP0Mm1sQcnrRgRq2bE001qx8cg=
 github.com/jfk9w-go/confi v0.0.7 h1:tQNpi1fV/MCZ2nX9G3FVYNisTOI7QTWgv499g1Lv6Yc=
 github.com/jfk9w-go/confi v0.0.7/go.mod h1:pqHsy+OtG1ASR/FWwUuzzgtUH4i2sMbLYTlxYf3JlbE=
-github.com/jfk9w-go/lkdr-api v1.1.13 h1:vZYELpC0Fq9a3Ukobkb+JbW3/DhZpgsySwjfpOr/kS8=
-github.com/jfk9w-go/lkdr-api v1.1.13/go.mod h1:SrSj0tulvkT9UvnU9GCS2oCV2cz+rvYYyig3EPPXdfE=
+github.com/jfk9w-go/lkdr-api v1.1.14 h1:SZATq4L/UxT9eGZRCYVb7zx/luK9K00DGElQQGorSIw=
+github.com/jfk9w-go/lkdr-api v1.1.14/go.mod h1:sJv8MgFjAJfKV8PmehJ5hwyl+N6KeThXk/4wKszZ/CE=
 github.com/jfk9w-go/rucaptcha-api v1.0.10 h1:VK1+XCTX8TLL3LwxjMQOw0n//9MFZWnJkmKz8hG7b/I=
 github.com/jfk9w-go/rucaptcha-api v1.0.10/go.mod h1:uZYZBHOzkgmldHnzokwxJ4xh7R/jy/MUcxGeNVG39XM=
 github.com/jfk9w-go/tbank-api v0.0.1 h1:MhxZKc3kNMSnhcuXkCzZN2uSJ+rqpO/cgKQCVDmyjdo=
