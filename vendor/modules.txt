@@ -87,7 +87,7 @@ github.com/jackc/pgx/v5/stdlib
 ## explicit; go 1.19
 github.com/jackc/puddle/v2
 github.com/jackc/puddle/v2/internal/genstack
-# github.com/jfk9w-go/based v1.0.20
+# github.com/jfk9w-go/based v1.0.21
 ## explicit; go 1.24.0
 github.com/jfk9w-go/based
 # github.com/jfk9w-go/confi v0.0.7
