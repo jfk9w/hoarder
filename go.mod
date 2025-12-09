@@ -18,9 +18,9 @@ require (
 	github.com/ogen-go/ogen v1.18.0
 	github.com/pkg/errors v0.9.1
 	github.com/tebeka/selenium v0.9.9
-	go.opentelemetry.io/otel v1.38.0
-	go.opentelemetry.io/otel/metric v1.38.0
-	go.opentelemetry.io/otel/trace v1.38.0
+	go.opentelemetry.io/otel v1.39.0
+	go.opentelemetry.io/otel/metric v1.39.0
+	go.opentelemetry.io/otel/trace v1.39.0
 	go.uber.org/multierr v1.11.0
 	gorm.io/driver/mysql v1.6.0
 	gorm.io/driver/postgres v1.6.0
@@ -32,6 +32,7 @@ require (
 require (
 	filippo.io/edwards25519 v1.1.0 // indirect
 	github.com/blang/semver v3.5.1+incompatible // indirect
+	github.com/cespare/xxhash/v2 v2.3.0 // indirect
 	github.com/dlclark/regexp2 v1.11.5 // indirect
 	github.com/fatih/color v1.18.0 // indirect
 	github.com/gabriel-vasile/mimetype v1.4.10 // indirect
@@ -57,7 +58,7 @@ require (
 	github.com/segmentio/asm v1.2.1 // indirect
 	github.com/shopspring/decimal v1.4.0 // indirect
 	github.com/tomasen/realip v0.0.0-20180522021738-f0c99a92ddce // indirect
-	go.opentelemetry.io/auto/sdk v1.1.0 // indirect
+	go.opentelemetry.io/auto/sdk v1.2.1 // indirect
 	go.uber.org/zap v1.27.1 // indirect
 	golang.org/x/crypto v0.45.0 // indirect
 	golang.org/x/exp v0.0.0-20250228200357-dead58393ab7 // indirect
