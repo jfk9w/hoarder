@@ -18,7 +18,7 @@ github.com/dlclark/regexp2/syntax
 # github.com/fatih/color v1.18.0
 ## explicit; go 1.17
 github.com/fatih/color
-# github.com/gabriel-vasile/mimetype v1.4.10
+# github.com/gabriel-vasile/mimetype v1.4.11
 ## explicit; go 1.21
 github.com/gabriel-vasile/mimetype
 github.com/gabriel-vasile/mimetype/internal/charset
@@ -54,7 +54,7 @@ github.com/go-playground/locales/currency
 # github.com/go-playground/universal-translator v0.18.1
 ## explicit; go 1.18
 github.com/go-playground/universal-translator
-# github.com/go-playground/validator/v10 v10.28.0
+# github.com/go-playground/validator/v10 v10.29.0
 ## explicit; go 1.24.0
 github.com/go-playground/validator/v10
 # github.com/go-sql-driver/mysql v1.9.0
@@ -90,7 +90,7 @@ github.com/jackc/pgx/v5/stdlib
 ## explicit; go 1.19
 github.com/jackc/puddle/v2
 github.com/jackc/puddle/v2/internal/genstack
-# github.com/jfk9w-go/based v1.0.21
+# github.com/jfk9w-go/based v1.0.22
 ## explicit; go 1.24.0
 github.com/jfk9w-go/based
 # github.com/jfk9w-go/confi v0.0.7
