@@ -9,7 +9,7 @@ require (
 	github.com/go-faster/errors v0.7.1
 	github.com/go-faster/jx v1.2.0
 	github.com/google/uuid v1.6.0
-	github.com/jfk9w-go/based v1.0.23
+	github.com/jfk9w-go/based v1.0.24
 	github.com/jfk9w-go/confi v0.0.7
 	github.com/jfk9w-go/lkdr-api v1.1.17
 	github.com/jfk9w-go/rucaptcha-api v1.0.10
@@ -42,7 +42,7 @@ require (
 	github.com/go-logr/stdr v1.2.2 // indirect
 	github.com/go-playground/locales v0.14.1 // indirect
 	github.com/go-playground/universal-translator v0.18.1 // indirect
-	github.com/go-playground/validator/v10 v10.30.0 // indirect
+	github.com/go-playground/validator/v10 v10.30.1 // indirect
 	github.com/go-sql-driver/mysql v1.9.0 // indirect
 	github.com/google/go-querystring v1.1.0 // indirect
 	github.com/jackc/pgpassfile v1.0.0 // indirect
