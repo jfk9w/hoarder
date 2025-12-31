@@ -13,7 +13,7 @@ require (
 	github.com/jfk9w-go/confi v0.0.7
 	github.com/jfk9w-go/lkdr-api v1.1.18
 	github.com/jfk9w-go/rucaptcha-api v1.0.10
-	github.com/jfk9w-go/tbank-api v0.0.6
+	github.com/jfk9w-go/tbank-api v0.0.7
 	github.com/mr-linch/go-tg v0.15.0
 	github.com/ogen-go/ogen v1.18.0
 	github.com/pkg/errors v0.9.1
@@ -44,7 +44,7 @@ require (
 	github.com/go-playground/universal-translator v0.18.1 // indirect
 	github.com/go-playground/validator/v10 v10.30.1 // indirect
 	github.com/go-sql-driver/mysql v1.9.0 // indirect
-	github.com/google/go-querystring v1.1.0 // indirect
+	github.com/google/go-querystring v1.2.0 // indirect
 	github.com/jackc/pgpassfile v1.0.0 // indirect
 	github.com/jackc/pgservicefile v0.0.0-20240606120523-5a60cdf6a761 // indirect
 	github.com/jackc/pgx/v5 v5.7.2 // indirect
