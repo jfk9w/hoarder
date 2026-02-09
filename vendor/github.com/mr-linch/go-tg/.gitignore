@@ -12,7 +12,17 @@
 *.out
 
 # Dependency directories (remove the comment below to include it)
-# vendor/
+vendor/
 .vscode
 .envrc
 go.work*
+CLAUDE.md
+.claude
+gen/go-tg-gen
+
+# Coverage
+coverage.out
+coverage.html
+coverage.txt
+.zed
+_refs/
