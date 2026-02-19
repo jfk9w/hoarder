@@ -90,7 +90,7 @@ func NewPoller(handler Handler, client *tg.Client, opts ...PollerOption) *Poller
 	return poller
 }
 
-func (poller *Poller) log(format string, args ...interface{}) {
+func (poller *Poller) log(format string, args ...any) {
 	if poller.logger != nil {
 		poller.logger.Printf("tgb.Poller: "+format, args...)
 	}
@@ -131,7 +131,6 @@ func (poller *Poller) processUpdates(ctx context.Context, updates []tg.Update) {
 				Update: update,
 				Client: poller.client,
 			})
-
 			if err != nil {
 				poller.log("error handling update: %v", err)
 			}
@@ -188,5 +187,4 @@ func (poller *Poller) Run(ctx context.Context) error {
 			}
 		}
 	}
-
 }
