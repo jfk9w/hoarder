@@ -35,6 +35,8 @@ type Webhook struct {
 
 	ipFromRequestFunc func(r *http.Request) string
 
+	webhookReplyEnabled bool
+
 	isSetup bool
 }
 
@@ -116,6 +118,15 @@ func WithWebhookAllowedUpdates(updates ...tg.UpdateType) WebhookOption {
 	}
 }
 
+// WithWebhookReply controls whether the first Update.Reply call returns its response
+// directly in the webhook HTTP response body (bypassing the Client and interceptor chain).
+// Enabled by default. When disabled, all Reply calls go through Client.Do as usual.
+func WithWebhookReply(enabled bool) WebhookOption {
+	return func(webhook *Webhook) {
+		webhook.webhookReplyEnabled = enabled
+	}
+}
+
 func NewWebhook(handler Handler, client *tg.Client, url string, options ...WebhookOption) *Webhook {
 	securityToken := sha256.Sum256([]byte(client.Token()))
 	token := hex.EncodeToString(securityToken[:])
@@ -133,6 +144,8 @@ func NewWebhook(handler Handler, client *tg.Client, url string, options ...Webho
 		securityToken:   token,
 
 		ipFromRequestFunc: DefaultWebhookRequestIP,
+
+		webhookReplyEnabled: true,
 	}
 
 	for _, option := range options {
@@ -160,41 +173,54 @@ func (webhook *Webhook) Setup(ctx context.Context) (err error) {
 		return fmt.Errorf("get webhook info: %w", err)
 	}
 
-	if info.URL != webhook.url ||
-		info.MaxConnections != webhook.maxConnections ||
-		(len(info.AllowedUpdates) > 0 && !slices.Equal(info.AllowedUpdates, webhook.allowedUpdates)) ||
-		(webhook.ip != "" && info.IPAddress != webhook.ip) ||
-		(info.PendingUpdateCount > 0 && webhook.dropPendingUpdates) {
-
-		webhook.log("current webhook config is outdated, updating...")
-
-		setWebhookCall := webhook.client.SetWebhook(webhook.url)
-
-		if webhook.maxConnections > 0 {
-			setWebhookCall = setWebhookCall.MaxConnections(webhook.maxConnections)
-		}
-
-		if webhook.ip != "" {
-			setWebhookCall = setWebhookCall.IPAddress(webhook.ip)
-		}
-
-		if webhook.securityToken != "" {
-			setWebhookCall = setWebhookCall.SecretToken(webhook.securityToken)
-		}
-
-		if webhook.dropPendingUpdates {
-			setWebhookCall = setWebhookCall.DropPendingUpdates(true)
-		}
-
-		if webhook.allowedUpdates != nil {
-			setWebhookCall = setWebhookCall.AllowedUpdates(webhook.allowedUpdates)
-		}
-
-		return setWebhookCall.DoVoid(ctx)
+	if !webhook.needsUpdate(info) {
+		return nil
 	}
 
-	return nil
+	webhook.log("current webhook config is outdated, updating...")
 
+	setWebhookCall := webhook.client.SetWebhook(webhook.url)
+
+	if webhook.maxConnections > 0 {
+		setWebhookCall = setWebhookCall.MaxConnections(webhook.maxConnections)
+	}
+
+	if webhook.ip != "" {
+		setWebhookCall = setWebhookCall.IPAddress(webhook.ip)
+	}
+
+	if webhook.securityToken != "" {
+		setWebhookCall = setWebhookCall.SecretToken(webhook.securityToken)
+	}
+
+	if webhook.dropPendingUpdates {
+		setWebhookCall = setWebhookCall.DropPendingUpdates(true)
+	}
+
+	if webhook.allowedUpdates != nil {
+		setWebhookCall = setWebhookCall.AllowedUpdates(webhook.allowedUpdates)
+	}
+
+	return setWebhookCall.DoVoid(ctx)
+}
+
+func (webhook *Webhook) needsUpdate(info tg.WebhookInfo) bool {
+	if info.URL != webhook.url {
+		return true
+	}
+	if info.MaxConnections != webhook.maxConnections {
+		return true
+	}
+	if len(info.AllowedUpdates) > 0 && !slices.Equal(info.AllowedUpdates, webhook.allowedUpdates) {
+		return true
+	}
+	if webhook.ip != "" && info.IPAddress != webhook.ip {
+		return true
+	}
+	if info.PendingUpdateCount > 0 && webhook.dropPendingUpdates {
+		return true
+	}
+	return false
 }
 
 func (webhook *Webhook) isAllowedIP(ip netip.Addr) bool {
@@ -288,11 +314,27 @@ func (webhook *Webhook) ServeRequest(ctx context.Context, r *WebhookRequest) *We
 		}
 	}
 
+	if !webhook.webhookReplyEnabled {
+		update := &Update{
+			Update: baseUpdate,
+			Client: webhook.client,
+		}
+
+		if err := webhook.handler.Handle(ctx, update); err != nil {
+			webhook.log("handler error: %v", err)
+		}
+
+		return &WebhookResponse{
+			Status: http.StatusOK,
+		}
+	}
+
 	update := newUpdateWebhook(baseUpdate, webhook.client)
 	defer update.disableWebhookReply()
 
 	done := make(chan struct{})
 
+	//nolint:contextcheck // handler runs independently from HTTP request lifecycle
 	go func() {
 		handlerCtx, handlerCtxClose := context.WithCancel(context.Background())
 		defer handlerCtxClose()
@@ -317,7 +359,6 @@ func (webhook *Webhook) ServeRequest(ctx context.Context, r *WebhookRequest) *We
 
 		if reply != nil {
 			body, err := json.Marshal(reply)
-
 			if err != nil {
 				webhook.log("marshal webhook response error: %v", err)
 				return response
@@ -366,20 +407,20 @@ func (webhook *Webhook) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if response.Body != nil {
 		_, _ = w.Write(response.Body)
 	}
-
 }
 
 // Run starts the webhook server.
 func (webhook *Webhook) Run(ctx context.Context, listen string) error {
 	if !webhook.isSetup {
 		if err := webhook.Setup(ctx); err != nil {
-			return fmt.Errorf("setup webhook: %v", err)
+			return fmt.Errorf("setup webhook: %w", err)
 		}
 	}
 
 	server := &http.Server{
-		Addr:    listen,
-		Handler: webhook,
+		Addr:              listen,
+		Handler:           webhook,
+		ReadHeaderTimeout: 10 * time.Second,
 	}
 
 	go func() {
@@ -387,9 +428,10 @@ func (webhook *Webhook) Run(ctx context.Context, listen string) error {
 
 		webhook.log("shutdown server...")
 
-		closeCtx, close := context.WithTimeout(context.Background(), 10*time.Second)
-		defer close()
+		closeCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+		defer cancel()
 
+		//nolint:contextcheck // parent context is cancelled, need fresh context for graceful shutdown
 		if err := server.Shutdown(closeCtx); err != nil {
 			webhook.log("server shutdown error: %v", err)
 		}
@@ -398,7 +440,7 @@ func (webhook *Webhook) Run(ctx context.Context, listen string) error {
 	webhook.log("starting webhook server on %s", listen)
 
 	if err := server.ListenAndServe(); err != http.ErrServerClosed {
-		return fmt.Errorf("server error: %v", err)
+		return fmt.Errorf("server error: %w", err)
 	}
 
 	return nil
