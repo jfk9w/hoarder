@@ -128,8 +128,8 @@ github.com/mattn/go-sqlite3
 ## explicit; go 1.18
 github.com/mr-linch/go-tg
 github.com/mr-linch/go-tg/tgb
-# github.com/ogen-go/ogen v1.20.0
-## explicit; go 1.24.0
+# github.com/ogen-go/ogen v1.20.1
+## explicit; go 1.25.0
 github.com/ogen-go/ogen/conv
 github.com/ogen-go/ogen/http
 github.com/ogen-go/ogen/internal/httpcookie
@@ -222,8 +222,8 @@ golang.org/x/crypto/sha3
 golang.org/x/exp/constraints
 golang.org/x/exp/maps
 golang.org/x/exp/slices
-# golang.org/x/net v0.50.0
-## explicit; go 1.24.0
+# golang.org/x/net v0.51.0
+## explicit; go 1.25.0
 golang.org/x/net/http/httpguts
 golang.org/x/net/idna
 # golang.org/x/sync v0.19.0
