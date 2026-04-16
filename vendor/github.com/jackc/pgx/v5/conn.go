@@ -65,11 +65,12 @@ func (cc *ConnConfig) ConnString() string { return cc.connString }
 // Conn is a PostgreSQL connection handle. It is not safe for concurrent usage. Use a connection pool to manage access
 // to multiple database connections from multiple goroutines.
 type Conn struct {
-	pgConn             *pgconn.PgConn
-	config             *ConnConfig // config used when establishing this connection
-	preparedStatements map[string]*pgconn.StatementDescription
-	statementCache     stmtcache.Cache
-	descriptionCache   stmtcache.Cache
+	pgConn                  *pgconn.PgConn
+	config                  *ConnConfig // config used when establishing this connection
+	preparedStatements      map[string]*pgconn.StatementDescription
+	failedDescribeStatement string
+	statementCache          stmtcache.Cache
+	descriptionCache        stmtcache.Cache
 
 	queryTracer    QueryTracer
 	batchTracer    BatchTracer
@@ -172,7 +173,7 @@ func ParseConfigWithOptions(connString string, options ParseConfigOptions) (*Con
 		delete(config.RuntimeParams, "statement_cache_capacity")
 		n, err := strconv.ParseInt(s, 10, 32)
 		if err != nil {
-			return nil, fmt.Errorf("cannot parse statement_cache_capacity: %w", err)
+			return nil, pgconn.NewParseConfigError(connString, "cannot parse statement_cache_capacity", err)
 		}
 		statementCacheCapacity = int(n)
 	}
@@ -182,7 +183,7 @@ func ParseConfigWithOptions(connString string, options ParseConfigOptions) (*Con
 		delete(config.RuntimeParams, "description_cache_capacity")
 		n, err := strconv.ParseInt(s, 10, 32)
 		if err != nil {
-			return nil, fmt.Errorf("cannot parse description_cache_capacity: %w", err)
+			return nil, pgconn.NewParseConfigError(connString, "cannot parse description_cache_capacity", err)
 		}
 		descriptionCacheCapacity = int(n)
 	}
@@ -202,7 +203,9 @@ func ParseConfigWithOptions(connString string, options ParseConfigOptions) (*Con
 		case "simple_protocol":
 			defaultQueryExecMode = QueryExecModeSimpleProtocol
 		default:
-			return nil, fmt.Errorf("invalid default_query_exec_mode: %s", s)
+			return nil, pgconn.NewParseConfigError(
+				connString, "invalid default_query_exec_mode", fmt.Errorf("unknown value %q", s),
+			)
 		}
 	}
 
@@ -314,6 +317,14 @@ func (c *Conn) Close(ctx context.Context) error {
 // Prepare is idempotent; i.e. it is safe to call Prepare multiple times with the same name and sql arguments. This
 // allows a code path to Prepare and Query/Exec without concern for if the statement has already been prepared.
 func (c *Conn) Prepare(ctx context.Context, name, sql string) (sd *pgconn.StatementDescription, err error) {
+	if c.failedDescribeStatement != "" {
+		err = c.Deallocate(ctx, c.failedDescribeStatement)
+		if err != nil {
+			return nil, fmt.Errorf("failed to deallocate previously failed statement %q: %w", c.failedDescribeStatement, err)
+		}
+		c.failedDescribeStatement = ""
+	}
+
 	if c.prepareTracer != nil {
 		ctx = c.prepareTracer.TracePrepareStart(ctx, c, TracePrepareStartData{Name: name, SQL: sql})
 	}
@@ -346,6 +357,10 @@ func (c *Conn) Prepare(ctx context.Context, name, sql string) (sd *pgconn.Statem
 
 	sd, err = c.pgConn.Prepare(ctx, psName, sql, nil)
 	if err != nil {
+		var pErr *pgconn.PrepareError
+		if errors.As(err, &pErr) {
+			c.failedDescribeStatement = psKey
+		}
 		return nil, err
 	}
 
@@ -420,7 +435,7 @@ func (c *Conn) IsClosed() bool {
 	return c.pgConn.IsClosed()
 }
 
-func (c *Conn) die(err error) {
+func (c *Conn) die() {
 	if c.IsClosed() {
 		return
 	}
@@ -501,6 +516,18 @@ optionLoop:
 	if len(arguments) == 0 {
 		mode = QueryExecModeSimpleProtocol
 	}
+
+	defer func() {
+		if err != nil {
+			if sc := c.statementCache; sc != nil {
+				sc.Invalidate(sql)
+			}
+
+			if sc := c.descriptionCache; sc != nil {
+				sc.Invalidate(sql)
+			}
+		}
+	}()
 
 	if sd, ok := c.preparedStatements[sql]; ok {
 		return c.execPrepared(ctx, sd, arguments)
@@ -583,17 +610,9 @@ func (c *Conn) execPrepared(ctx context.Context, sd *pgconn.StatementDescription
 		return pgconn.CommandTag{}, err
 	}
 
-	result := c.pgConn.ExecPrepared(ctx, sd.Name, c.eqb.ParamValues, c.eqb.ParamFormats, c.eqb.ResultFormats).Read()
+	result := c.pgConn.ExecStatement(ctx, sd, c.eqb.ParamValues, c.eqb.ParamFormats, c.eqb.ResultFormats).Read()
 	c.eqb.reset() // Allow c.eqb internal memory to be GC'ed as soon as possible.
 	return result.CommandTag, result.Err
-}
-
-type unknownArgumentTypeQueryExecModeExecError struct {
-	arg any
-}
-
-func (e *unknownArgumentTypeQueryExecModeExecError) Error() string {
-	return fmt.Sprintf("cannot use unregistered type %T as query argument in QueryExecModeExec", e.arg)
 }
 
 func (c *Conn) execSQLParams(ctx context.Context, sql string, args []any) (pgconn.CommandTag, error) {
@@ -661,11 +680,12 @@ const (
 	// should implement pgtype.Int64Valuer.
 	QueryExecModeExec
 
-	// Use the simple protocol. Assume the PostgreSQL query parameter types based on the Go type of the arguments. Queries
-	// are executed in a single round trip. Type mappings can be registered with pgtype.Map.RegisterDefaultPgType. Queries
-	// will be rejected that have arguments that are unregistered or ambiguous. e.g. A map[string]string may have the
-	// PostgreSQL type json or hstore. Modes that know the PostgreSQL type can use a map[string]string directly as an
-	// argument. This mode cannot.
+	// Use the simple protocol. Assume the PostgreSQL query parameter types based on the Go type of the arguments. This is
+	// especially significant for []byte values. []byte values are encoded as PostgreSQL bytea. string must be used
+	// instead for text type values including json and jsonb. Type mappings can be registered with
+	// pgtype.Map.RegisterDefaultPgType. Queries will be rejected that have arguments that are unregistered or ambiguous.
+	// e.g. A map[string]string may have the PostgreSQL type json or hstore. Modes that know the PostgreSQL type can use a
+	// map[string]string directly as an argument. This mode cannot. Queries are executed in a single round trip.
 	//
 	// QueryExecModeSimpleProtocol should have the user application visible behavior as QueryExecModeExec. This includes
 	// the warning regarding differences in text format and binary format encoding with user defined types. There may be
@@ -824,7 +844,7 @@ optionLoop:
 		if !explicitPreparedStatement && mode == QueryExecModeCacheDescribe {
 			rows.resultReader = c.pgConn.ExecParams(ctx, sql, c.eqb.ParamValues, sd.ParamOIDs, c.eqb.ParamFormats, resultFormats)
 		} else {
-			rows.resultReader = c.pgConn.ExecPrepared(ctx, sd.Name, c.eqb.ParamValues, c.eqb.ParamFormats, resultFormats)
+			rows.resultReader = c.pgConn.ExecStatement(ctx, sd, c.eqb.ParamValues, c.eqb.ParamFormats, resultFormats)
 		}
 	} else if mode == QueryExecModeExec {
 		err := c.eqb.Build(c.typeMap, nil, args)
@@ -919,6 +939,10 @@ func (c *Conn) QueryRow(ctx context.Context, sql string, args ...any) Row {
 // Depending on the QueryExecMode, all queries may be prepared before any are executed. This means that creating a table
 // and using it in a subsequent query in the same batch can fail.
 func (c *Conn) SendBatch(ctx context.Context, b *Batch) (br BatchResults) {
+	if len(b.QueuedQueries) == 0 {
+		return &emptyBatchResults{conn: c}
+	}
+
 	if c.batchTracer != nil {
 		ctx = c.batchTracer.TraceBatchStart(ctx, c, TraceBatchStartData{Batch: b})
 		defer func() {
@@ -1170,7 +1194,7 @@ func (c *Conn) sendBatchExtendedWithDescription(ctx context.Context, b *Batch, d
 			for _, sd := range distinctNewQueries {
 				results, err := pipeline.GetResults()
 				if err != nil {
-					return err
+					return newErrPreprocessingBatch("prepare", sd.SQL, err)
 				}
 
 				resultSD, ok := results.(*pgconn.StatementDescription)
@@ -1204,15 +1228,14 @@ func (c *Conn) sendBatchExtendedWithDescription(ctx context.Context, b *Batch, d
 	for _, bi := range b.QueuedQueries {
 		err := c.eqb.Build(c.typeMap, bi.sd, bi.Arguments)
 		if err != nil {
-			// we wrap the error so we the user can understand which query failed inside the batch
-			err = fmt.Errorf("error building query %s: %w", bi.SQL, err)
+			err = newErrPreprocessingBatch("build", bi.SQL, err)
 			return &pipelineBatchResults{ctx: ctx, conn: c, err: err, closed: true}
 		}
 
 		if bi.sd.Name == "" {
 			pipeline.SendQueryParams(bi.sd.SQL, c.eqb.ParamValues, bi.sd.ParamOIDs, c.eqb.ParamFormats, c.eqb.ResultFormats)
 		} else {
-			pipeline.SendQueryPrepared(bi.sd.Name, c.eqb.ParamValues, c.eqb.ParamFormats, c.eqb.ResultFormats)
+			pipeline.SendQueryStatement(bi.sd, c.eqb.ParamValues, c.eqb.ParamFormats, c.eqb.ResultFormats)
 		}
 	}
 
