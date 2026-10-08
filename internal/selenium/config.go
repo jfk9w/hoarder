@@ -7,6 +7,7 @@ type Config struct {
 	Driver  string   `yaml:"driver,omitempty" doc:"Путь к драйверу. Если пустой, будет выполнен поиск в $PATH."`
 	Browser string   `yaml:"browser,omitempty" enum:"chrome,chromium,firefox" default:"firefox" doc:"Браузер (browserName в Selenium)."`
 	Binary  string   `yaml:"binary,omitempty" doc:"Путь к исполняемому файлу браузера."`
+	Profile string   `yaml:"profile,omitempty" doc:"Путь к профилю Firefox с пользовательскими настройками и сертификатами."`
 	Args    []string `yaml:"args,omitempty" doc:"Аргументы для запуска браузера." default:"[--headless]"`
 }
 

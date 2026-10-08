@@ -236,6 +236,10 @@
         "jar": {
           "description": "Путь к JAR-файлу selenium-server-standalone.",
           "type": "string"
+        },
+        "profile": {
+          "description": "Путь к профилю Firefox с пользовательскими настройками и сертификатами.",
+          "type": "string"
         }
       },
       "required": [

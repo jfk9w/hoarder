@@ -39,10 +39,16 @@ func NewService(params ServiceParams) (*Service, error) {
 		}
 
 		opts = append(opts, selenium.GeckoDriver(driverPath))
-		caps.AddFirefox(firefox.Capabilities{
+		firefoxCaps := firefox.Capabilities{
 			Args:   params.Config.Args,
 			Binary: params.Config.Binary,
-		})
+		}
+		if profile := params.Config.Profile; profile != "" {
+			if err := firefoxCaps.SetProfile(profile); err != nil {
+				return nil, errors.Wrap(err, "load firefox profile")
+			}
+		}
+		caps.AddFirefox(firefoxCaps)
 
 	case "chrome", "chromium":
 		driverPath, err := params.Config.getDriverPath("chromedriver")

@@ -1,4 +1,4 @@
-FROM --platform=$BUILDPLATFORM golang:alpine AS builder
+FROM --platform=$BUILDPLATFORM docker.io/library/golang:alpine AS builder
 ARG TARGETOS
 ARG TARGETARCH
 WORKDIR /src
@@ -8,10 +8,28 @@ RUN curl -o selenium.jar https://selenium-release.storage.googleapis.com/3.14/se
 RUN go install github.com/ogen-go/ogen/cmd/ogen@v0.76.0     # this is stupid
 RUN GOOS=$TARGETOS GOARCH=$TARGETARCH make bin
 
-FROM instrumentisto/geckodriver:latest
+FROM docker.io/instrumentisto/geckodriver:latest
 COPY --from=builder /src/bin/* /usr/local/bin/
 COPY --from=builder /src/docker/init /
 COPY --from=builder /src/selenium.jar /
-RUN apt-get update
-RUN apt-get install -y --no-install-recommends --no-install-suggests tzdata openjdk-21-jre-headless
+COPY docker/russian-trusted-root-ca.crt /usr/local/share/ca-certificates/russian-trusted-root-ca.crt
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends --no-install-suggests \
+        ca-certificates \
+        libnss3-tools \
+        openjdk-21-jre-headless \
+        tzdata \
+    && update-ca-certificates \
+    && mkdir -p /opt/hoarder/firefox-profile \
+    && certutil -N --empty-password -d sql:/opt/hoarder/firefox-profile \
+    && certutil -A \
+        -d sql:/opt/hoarder/firefox-profile \
+        -n "Russian Trusted Root CA" \
+        -t "C,," \
+        -i /usr/local/share/ca-certificates/russian-trusted-root-ca.crt \
+    && certutil -V \
+        -d sql:/opt/hoarder/firefox-profile \
+        -n "Russian Trusted Root CA" \
+        -u L \
+    && rm -rf /var/lib/apt/lists/*
 ENTRYPOINT ["/init"]
