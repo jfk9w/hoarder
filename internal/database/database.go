@@ -88,7 +88,7 @@ func extractUpsertClause(entity any) clause.OnConflict {
 loop:
 	for {
 		switch value.Kind() {
-		case reflect.Ptr:
+		case reflect.Pointer:
 			value = value.Elem()
 		case reflect.Slice:
 			value = value.Index(0)
@@ -97,7 +97,7 @@ loop:
 		}
 	}
 
-	for value.Kind() == reflect.Ptr || value.Kind() == reflect.Slice {
+	for value.Kind() == reflect.Pointer || value.Kind() == reflect.Slice {
 		value = value.Elem()
 	}
 

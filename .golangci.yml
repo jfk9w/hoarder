@@ -1,2 +1,9 @@
-run:
-  skip-dirs-use-default: true
+version: "2"
+
+linters:
+  exclusions:
+    rules:
+      # Entity packages are deliberately dot-imported in the older loaders.
+      # Keep the existing style out of this infrastructure-only change.
+      - linters: [staticcheck]
+        text: "ST1001:"

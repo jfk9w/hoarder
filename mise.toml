@@ -1,3 +1,67 @@
+[env]
+MISE_JOBS = "1"
+
 [tools]
 go = "latest"
+golangci-lint = "latest"
+gotestsum = "latest"
 "go:github.com/ogen-go/ogen/cmd/ogen" = "v0.76.0"
+"go:golang.org/x/tools/cmd/goimports" = "latest"
+
+[tasks.generate]
+description = "Generate sources"
+sources = ["**/deps.go", "**/*.yaml"]
+outputs = { auto = true }
+run = "go generate ./..."
+
+[tasks.build]
+description = "Build binaries in bin/"
+depends = ["generate"]
+sources = [
+  "go.mod",
+  "go.sum",
+  "**/*.go",
+  "!**/*_test.go",
+]
+outputs = ["bin/hoarder"]
+run = "go build -o bin/hoarder ./cmd/hoarder"
+
+[tasks.test]
+description = "Run tests"
+depends = ["generate"]
+run = "gotestsum --format pkgname-and-test-fails --format-hide-empty-pkg -- -count=1 -race ./..."
+
+[tasks.fmt]
+description = "Format Go sources"
+run = '''
+find . -path ./vendor -prune -o -name '*.go' -print0 \
+  | xargs -0 goimports -local "$(go list -m)" -w
+'''
+
+[tasks.lint]
+description = "Run linters"
+depends = ["generate"]
+run = "golangci-lint run --timeout=10m"
+
+[tasks.config]
+description = "Generate configuration schema and defaults"
+depends = ["build"]
+run = '''
+mkdir -p config
+env -i PATH="$PATH" HOME="$HOME" ./bin/hoarder --dump.schema > config/schema.json
+env -i PATH="$PATH" HOME="$HOME" ./bin/hoarder --dump.values > config/defaults.json
+'''
+
+[tasks.check-generated]
+description = "Check that generated files are committed"
+depends = ["config"]
+run = "git diff --exit-code"
+
+[tasks.check]
+description = "Run all CI checks"
+depends = ["lint", "test", "check-generated"]
+
+[tasks.image]
+description = "Build the container image"
+usage = 'arg "[tag]" help="Image tag" default="hoarder:latest"'
+run = 'docker build --tag "${usage_tag?}" .'

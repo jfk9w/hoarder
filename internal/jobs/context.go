@@ -23,7 +23,7 @@ type contextPath []contextPathElement
 func (p contextPath) String() string {
 	var b strings.Builder
 	for _, el := range p {
-		b.WriteString(fmt.Sprintf("%v: ", el.value))
+		_, _ = fmt.Fprintf(&b, "%v: ", el.value)
 	}
 
 	return b.String()

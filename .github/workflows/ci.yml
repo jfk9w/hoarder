@@ -10,23 +10,8 @@ jobs:
       - uses: actions/checkout@v4
       - name: Set up
         uses: jdx/mise-action@v3
-      - name: Lint
-        uses: golangci/golangci-lint-action@v3
-        with:
-          args: --verbose --timeout=10m
-          version: latest
-      - name: Build
-        run: make bin
-      - name: Test
-        run: make test
-      - name: Check config schema & defaults
-        run: |
-          make config
-          if [[ $(git diff --stat) != '' ]]; then
-            git --no-pager diff
-            echo 'run make config and commit changes'
-            exit 1
-          fi
+      - name: Check
+        run: mise run check
   docker:
     name: Docker
     runs-on: ubuntu-latest

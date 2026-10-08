@@ -162,7 +162,7 @@ func main() {
 			panic(errors.Wrapf(err, "create %s job", tbank.JobID))
 		}
 
-		defer job.Close()
+		defer func() { _ = job.Close() }()
 		jobs.Register(job)
 	}
 
@@ -221,7 +221,7 @@ func main() {
 	}
 
 	triggers.Run(ctx, jobs)
-	defer triggers.Close()
+	defer func() { _ = triggers.Close() }()
 
 	if err := based.AwaitSignal(ctx, syscall.SIGINT, syscall.SIGTERM); err != nil {
 		panic(err)
